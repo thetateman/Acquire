@@ -1,0 +1,6 @@
+1. Make navbar and its js logic reusable components.
+2. Complete input validation for login and signup.
+3. Style the login page better. 
+4. Match express sessions with userIDs to better track across site.
+5. Game logic
+6. Connect frontend to game logic.

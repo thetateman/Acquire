@@ -1,0 +1,95 @@
+body {
+    font-family: "Helvetica Neue", sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+input {
+    outline: none;
+    font-size: 1.0rem;
+    padding: 0 5px;
+    display: inline-block;
+    size: 10;
+}
+
+button {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    padding: 3px 15px;
+    color: white;
+    line-height: 15px;
+    background-color: #00bcd4;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.12) 0 1px 6px, rgba(0, 0, 0, 0.12) 0 1px 4px;
+    transition: all 150ms ease-in;
+    outline: none;
+}
+
+button:hover {
+    background-color: #79d7e4;
+}
+
+button.turn:hover {
+    background-color: #eaeaea;
+}
+
+.controls-wrapper {
+    background-color: rgb(182, 182, 182);
+    width: 650px;
+    margin: 20px auto;
+    border: 1px solid lightgrey;
+}
+
+.chat-wrapper {
+    padding: 10px;
+}
+
+.chat-wrapper form {
+    display: flex;
+}
+
+.chat-wrapper form input {
+    font-size: 1.0rem;
+    margin: 0 10px 0 0;
+    padding: 0 5px;
+    flex-grow: 1;
+}
+
+.chat-wrapper form button {
+    width: 80px;
+}
+
+#events {
+    height: 150px;
+}
+
+#login {
+    line-height: 30px;
+}
+
+#email-form {
+
+    line-height: 60px;
+    padding-right: 80px;
+    height: 37px;
+}
+
+#login-form {
+    padding-bottom: 35px;
+}
+
+#image{
+    max-width: 1500px; 
+    width: 100%; 
+    max-height: 1000px;
+    min-height: 635px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-position: center;
+    background-size: cover;
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5),  rgba(0, 0, 0, 0.5)), url(http://localhost:8080/img/a_background.jpg);
+ }
