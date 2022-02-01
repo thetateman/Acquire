@@ -16,6 +16,90 @@ require('dotenv').config();
 
 const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 
+
+
+let games = {};
+function createGame(){
+    let newGame = {
+        id: 45678,
+        user_ids: [1, 4, 3, 5],
+        state: {
+            inPlay: true,
+            turn: 0,
+            board: [
+            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+            ['e', 'e', 'e', 'e', 'e', 'e', 'l', 'l', 'e', 'e', 'e', 'e',],
+            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 's', 'e', 'e', 'e',],
+            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',]
+            ],
+            bank_shares: {
+                imperial: 25,
+                continental: 25,
+                american: 25, 
+                worldwide: 25,
+                festival: 25, 
+                luxor: 25,
+                tower: 25
+            },
+            player_states: [
+                {
+                imperial: 25,
+                continental: 25,
+                american: 25, 
+                worldwide: 25,
+                festival: 25, 
+                luxor: 25,
+                tower: 25
+                }
+            ]
+        }
+
+    };
+    return newGame;
+}
+
+function updateGame(game, userID, updateType, updateData){
+    /**
+    * Called after receiving game updating websocket message, updates in-memory game object.
+    * @param {object} game - the game to be updated.
+    * @param {int} userID - the id of the user who initiated the action.
+    * @param {string} updateType - updateType should be in: ['playTile', 'purchaseShares', 'chooseRemainingChain', 'disposeShares', 'endGame'].
+    * @param {object} updateData - action details, e.g., coordinates of tile played.
+    * @returns {string} 'Success' or error string
+     */
+
+     switch(updateType){
+        case 'playTile':
+            console.log("here");
+            game.state.turn = updateData.x;
+            break;
+        case 'purchaseShares':
+
+            break;
+        case 'chooseRemainingChain':
+
+            break;
+        case 'disposeShares':
+
+            break;
+        case 'endGame':
+
+            break;
+        default:
+            console.log("Not a valid updateType.")
+            return "invalidUpdateType";
+     }
+}
+
+
+
+
+
 const app = express();
 
 app.use(express.json());
@@ -91,3 +175,12 @@ server.on('error', (err) => {
 server.listen(8080, () => {
     console.log('server is ready.');
 });
+
+let id1 = 45;
+let id2 = 95;
+let updateID = 45;
+games[id1] = createGame();
+games[id2] = createGame();
+console.log(games);
+updateGame(games[updateID], 4, "playTile", {x:5, y:2});
+console.log(games);
