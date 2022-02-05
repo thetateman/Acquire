@@ -4,8 +4,8 @@ const bcrypt = require("bcryptjs");
 const mongoose = require('mongoose');
 
 
-class UserMiddleware{
-  static async createUserMiddleware(req, res, next) {
+class GameMiddleware{
+  static async retrieveAllActiveGames(req, res, next) {
       require('dotenv').config();
       const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
       .then(()=>console.log('connected'))
@@ -91,4 +91,4 @@ class UserMiddleware{
     }
   }
 }
-module.exports = UserMiddleware;
+module.exports = GameMiddleware;

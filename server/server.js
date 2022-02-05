@@ -19,10 +19,18 @@ const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 
 
 let games = {};
-function createGame(){
+function createGame(games, numPlayers){
+    gameIDs = Object.keys(games)
+    let id;
+    for(i = 1; i < 10000; i++){
+        if(!gameIDs.includes(i.toString())){
+            id = i;
+            break;
+        }
+    }
     let newGame = {
-        id: 45678,
-        user_ids: [1, 4, 3, 5],
+        id: id,
+        user_ids: new Array(numPlayers).fill(-1),
         state: {
             inPlay: true,
             turn: 0,
@@ -48,6 +56,7 @@ function createGame(){
             },
             player_states: [
                 {
+                tiles: [],
                 imperial: 25,
                 continental: 25,
                 american: 25, 
@@ -60,7 +69,8 @@ function createGame(){
         }
 
     };
-    return newGame;
+    games[id] = newGame;
+    return id;
 }
 
 function updateGame(game, userID, updateType, updateData){
@@ -127,6 +137,7 @@ app.use("/api", apiRouter);
 function authLogic(req, res, next) {
     console.log(req.sessionID);
     console.log(req.originalUrl);
+    //TODO: fix below
     if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.jpg'){
          next();
     } else {
@@ -143,6 +154,12 @@ app.use('/login', (req, res) => {
 app.use('/lobby', (req, res) => {
     res.sendFile(path.resolve(`${__dirname}/../client/lobby.html`));
 });
+app.use('/game', (req, res) => {
+    requestedGameID = req.query.gameid;
+    console.log(requestedGameID);
+    res.sendFile(path.resolve(`${__dirname}/../client/index.html`));
+});
+
 
 
 
@@ -161,10 +178,35 @@ io.on('connection', (sock) => {
     sock.on('message', (text) => {
         io.emit('message', text);
         console.log(`got the message: ${text}.`);
-        });
+    });
     sock.on('turn', ({x, y}) => {
         io.emit('turn', {x, y, color});
         console.log(JSON.stringify({x, y}));
+    });
+    sock.on('gameRequest', gameID => {
+        if(gameID === "all"){
+            sock.emit('gameResponse', games);
+        }else{
+            requestedGame = games[parseInt(gameID, 10)];
+            if(requestedGame){
+                sock.emit('gameResponse', requestedGame);
+            } else {
+                console.log("Requested a game that does not exist!");
+                sock.emit('gameResponse', "none");
+            }
+        }
+        
+    });
+    sock.on('newGame', gameInfo => {
+        const newGameID = createGame(games, gameInfo.numPlayers);
+        updateObject = {
+            "action": "addGame",
+            "game": games[newGameID],
+        }
+        io.emit('gameListUpdate', updateObject);
+    });
+    sock.on('gameAction', ({game, userID, updateType, updateData}) => {
+        const updateResult = updateGame(game, userID, updateType, updateData);
     });
 });
 
@@ -176,11 +218,10 @@ server.listen(8080, () => {
     console.log('server is ready.');
 });
 
-let id1 = 45;
-let id2 = 95;
-let updateID = 45;
-games[id1] = createGame();
-games[id2] = createGame();
+
+let updateID = 1;
+createGame(games, 4);
+createGame(games, 5);
 console.log(games);
 updateGame(games[updateID], 4, "playTile", {x:5, y:2});
-console.log(games);
+console.log(Object.entries(games));
