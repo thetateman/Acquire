@@ -45,7 +45,7 @@ const onLogin = (e) => {
                     password: login_pw,
                      };
     
-    fetch('http://localhost:8080/api/loginUser', {
+    fetch('/api/loginUser', {
         method: 'POST', // or 'PUT'
         headers: {
             'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ const onLogin = (e) => {
                 let success = displayLoginError(json.result);
                 console.log('Success:', json);
                 if(success){
-                    location.href = "http://localhost:8080";
+                    location.href = "/";
                 }
             })
         })
@@ -92,7 +92,7 @@ const onSignUp = (e) => {
                     repeated_password: repeated_password
                      };
     
-    fetch('http://localhost:8080/api/createUser', {
+    fetch('/api/createUser', {
         method: 'POST', // or 'PUT'
         headers: {
             'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ const onSignUp = (e) => {
                 let success = displaySignupError(json.result);
                 console.log('Success:', json);
                 if(success){
-                    location.href = "http://localhost:8080";
+                    location.href = "/";
                 }
             })
         })

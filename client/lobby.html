@@ -13,18 +13,33 @@
                 <a href="#" id="logout-button">Logout</a>
             </div>
         </div>
-        <ul class="game-list">
-            <li>Placeholder Game</li>
-            <li>Placeholder Game</li>
-            <li>Placeholder Game</li>
-            <li>Placeholder Game</li>
-            <li>Placeholder Game</li>
-            <li>Placeholder Game</li>
-            <li>Placeholder Game</li>
-            <li>Placeholder Game</li>
-            <li>Placeholder Game</li>
-            <li>Placeholder Game</li>
-            <li>Placeholder Game</li>
-        </ul>
+        <div class="controls-wrapper">
+            <ul id="games">
+                <!-- template game
+                <li>Game #98765
+                    <button>Watch</button>
+                    <button>Join</button>
+                </li>
+                -->
+            </ul>
+            <div class="controls">
+                <div class="chat-wrapper">
+                    <form id="new-game-form">
+                        <span class="input-label">No. of Players:</span>
+                        <select id="num-players">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                        </select>
+                        <button id="new-game-button">New Game</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="src/client_lobby.js"></script>
     </body>
 </html>

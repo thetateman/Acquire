@@ -101,6 +101,8 @@ const getClickCoordinates = (element, ev) => {
 
     sock.on('message', log);
     sock.on('turn', ({ x, y, color}) => fillCell(x, y, color));
+    sock.on('gameResponse', game => console.log(game));
+
     document
     .querySelector('#chat-form')
     .addEventListener('submit', onChatSubmitted(sock));
@@ -110,4 +112,6 @@ const getClickCoordinates = (element, ev) => {
     .addEventListener('click', logout);
 
     canvas.addEventListener('click', onClick);
+    sock.emit('gameRequest', window.location.href.split("gameid=").at(-1));
+
 })();
