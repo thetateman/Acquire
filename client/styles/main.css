@@ -44,6 +44,10 @@ li {
     padding: 10px 10px 10px 10px;
 }
 
+a {
+    text-decoration: none;
+}
+
 canvas {
     display: block;
     margin: 10px auto;

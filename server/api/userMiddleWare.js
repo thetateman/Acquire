@@ -57,6 +57,7 @@ class UserMiddleware{
     const username = loginID;
     const email = loginID;
     
+    let responseObj = {error: "none", user: {}};
     
     let user;
     if(loginType === 'email'){
@@ -65,15 +66,19 @@ class UserMiddleware{
         user = await UserModel.findOne({username})
     }
     if(!user){
-        return res.json({ result: "wrongLoginID" });
+        responseObj.error = "wrongLoginID";
+        return res.json(responseObj);
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if(!isMatch){
-        return res.json({ result: "wrongPassword" });
+        responseObj.error = "wrongPassword";
+        return res.json(responseObj);
     } else {
         req.session.isAuth = true;
-        req.session.username = username;
-        return res.json({ result: "pass" });
+        req.session.username = user.username;
+        responseObj.user = user;
+        responseObj.user.password = "";
+        return res.json(responseObj);
     }
   };
 

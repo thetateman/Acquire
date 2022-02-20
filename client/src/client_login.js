@@ -54,9 +54,10 @@ const onLogin = (e) => {
         })
         .then(function(response){
             response.json().then(function(json){
-                let success = displayLoginError(json.result);
+                let success = displayLoginError(json.error);
                 console.log('Success:', json);
                 if(success){
+                    localStorage.setItem('username', json.user.username);
                     location.href = "/";
                 }
             })

@@ -19,7 +19,7 @@ const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 
 
 let games = {};
-function createGame(games, numPlayers){
+function createGame(games, numPlayers, creator = ""){
     gameIDs = Object.keys(games)
     let id;
     for(i = 1; i < 10000; i++){
@@ -28,9 +28,11 @@ function createGame(games, numPlayers){
             break;
         }
     }
+    let users = new Array(numPlayers).fill("");
+    users[0] = creator;
     let newGame = {
         id: id,
-        user_ids: new Array(numPlayers).fill(-1),
+        user_ids: users,
         state: {
             inPlay: true,
             turn: 0,
@@ -120,7 +122,7 @@ const sessionStore = new MongoStore({
     collection: 'sessions'
 });
 
-app.use(session({
+const sessionMiddleware = session({
     secret: 'some secret',
     resave: false,
     saveUninitialized: true,
@@ -128,7 +130,9 @@ app.use(session({
     cookie: {
         maxAge: 1000 * 60 * 60 * 24
     }
-}));
+});
+
+app.use(sessionMiddleware);
 
 
 app.use("/api", apiRouter);
@@ -167,6 +171,10 @@ const server = http.createServer(app);
 const io = socketio(server);
 let player_id = 0;
 
+io.use(function(socket, next) {
+    sessionMiddleware(socket.request, socket.request.res, next);
+});
+
 io.on('connection', (sock) => {
    
     current_player_id = player_id;
@@ -174,6 +182,7 @@ io.on('connection', (sock) => {
     colors = ["red", "orange", "yellow", "green", "blue", "purple", "black"]
     color = colors[current_player_id % colors.length];
     sock.emit('message', 'You are connected');
+    console.log(sock.request.session);
 
     sock.on('message', (text) => {
         io.emit('message', text);
@@ -197,13 +206,14 @@ io.on('connection', (sock) => {
         }
         
     });
-    sock.on('newGame', gameInfo => {
-        const newGameID = createGame(games, gameInfo.numPlayers);
+    sock.on('newGame', ({numPlayers, creator}) => {
+        const newGameID = createGame(games, parseInt(numPlayers, 10), creator);
         updateObject = {
             "action": "addGame",
             "game": games[newGameID],
         }
         io.emit('gameListUpdate', updateObject);
+         
     });
     sock.on('gameAction', ({game, userID, updateType, updateData}) => {
         const updateResult = updateGame(game, userID, updateType, updateData);
@@ -222,6 +232,5 @@ server.listen(8080, () => {
 let updateID = 1;
 createGame(games, 4);
 createGame(games, 5);
-console.log(games);
 updateGame(games[updateID], 4, "playTile", {x:5, y:2});
 console.log(Object.entries(games));
