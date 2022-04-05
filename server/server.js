@@ -6,111 +6,18 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 
 const apiRouter = require("./api/api.router.js");
-
+const game = require("./classes/game.js");
 const userModel = require("./models/User");
 
 const MongoStore = require('connect-mongo')(session);
 
 require('dotenv').config();
 
-
 const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 
-
-
+//The games object defines the state of all active games - need to do more research to determine if 
+//there is a better way to store this information.
 let games = {};
-function createGame(games, numPlayers, creator = ""){
-    gameIDs = Object.keys(games)
-    let id;
-    for(i = 1; i < 10000; i++){
-        if(!gameIDs.includes(i.toString())){
-            id = i;
-            break;
-        }
-    }
-    let users = new Array(numPlayers).fill("");
-    users[0] = creator;
-    let newGame = {
-        id: id,
-        user_ids: users,
-        state: {
-            inPlay: true,
-            turn: 0,
-            board: [
-            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-            ['e', 'e', 'e', 'e', 'e', 'e', 'l', 'l', 'e', 'e', 'e', 'e',],
-            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 's', 'e', 'e', 'e',],
-            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-            ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',]
-            ],
-            bank_shares: {
-                imperial: 25,
-                continental: 25,
-                american: 25, 
-                worldwide: 25,
-                festival: 25, 
-                luxor: 25,
-                tower: 25
-            },
-            player_states: [
-                {
-                tiles: [],
-                imperial: 25,
-                continental: 25,
-                american: 25, 
-                worldwide: 25,
-                festival: 25, 
-                luxor: 25,
-                tower: 25
-                }
-            ]
-        }
-
-    };
-    games[id] = newGame;
-    return id;
-}
-
-function updateGame(game, userID, updateType, updateData){
-    /**
-    * Called after receiving game updating websocket message, updates in-memory game object.
-    * @param {object} game - the game to be updated.
-    * @param {int} userID - the id of the user who initiated the action.
-    * @param {string} updateType - updateType should be in: ['playTile', 'purchaseShares', 'chooseRemainingChain', 'disposeShares', 'endGame'].
-    * @param {object} updateData - action details, e.g., coordinates of tile played.
-    * @returns {string} 'Success' or error string
-     */
-
-     switch(updateType){
-        case 'playTile':
-            console.log("here");
-            game.state.turn = updateData.x;
-            break;
-        case 'purchaseShares':
-
-            break;
-        case 'chooseRemainingChain':
-
-            break;
-        case 'disposeShares':
-
-            break;
-        case 'endGame':
-
-            break;
-        default:
-            console.log("Not a valid updateType.")
-            return "invalidUpdateType";
-     }
-}
-
-
-
-
 
 const app = express();
 
@@ -166,7 +73,6 @@ app.use('/game', (req, res) => {
 
 
 
-
 const server = http.createServer(app);
 const io = socketio(server);
 let player_id = 0;
@@ -182,7 +88,7 @@ io.on('connection', (sock) => {
     colors = ["red", "orange", "yellow", "green", "blue", "purple", "black"]
     color = colors[current_player_id % colors.length];
     sock.emit('message', 'You are connected');
-    console.log(sock.request.session);
+    //console.log(sock.request.session);
 
     sock.on('message', (text) => {
         io.emit('message', text);
@@ -207,7 +113,8 @@ io.on('connection', (sock) => {
         
     });
     sock.on('newGame', ({numPlayers, creator}) => {
-        const newGameID = createGame(games, parseInt(numPlayers, 10), creator);
+        // creator arg no longer used, left in place for demonstration
+        const newGameID = game.createGame(games, parseInt(numPlayers, 10), sock.request.session.username);
         updateObject = {
             "action": "addGame",
             "game": games[newGameID],
@@ -216,7 +123,7 @@ io.on('connection', (sock) => {
          
     });
     sock.on('gameAction', ({game, userID, updateType, updateData}) => {
-        const updateResult = updateGame(game, userID, updateType, updateData);
+        const updateResult = game.updateGame(game, userID, updateType, updateData);
     });
 });
 
@@ -229,8 +136,9 @@ server.listen(8080, () => {
 });
 
 
+//Create and edit some placeholder games for testing
 let updateID = 1;
-createGame(games, 4);
-createGame(games, 5);
-updateGame(games[updateID], 4, "playTile", {x:5, y:2});
+game.createGame(games, 4);
+game.createGame(games, 5);
+game.updateGame(games[updateID], 4, "playTile", {x:5, y:2});
 console.log(Object.entries(games));

@@ -32,7 +32,9 @@ const onNewGame = (creator) => (sock) => (e) => {
     e.preventDefault();
     numPlayers = document.querySelector('#num-players').value;
     console.log(creator);
-    sock.emit('newGame', {numPlayers, creator});
+    creator = "testtext"
+    sock.emit('newGame', {numPlayers, creator}); 
+    // creator arg no longer used by server, left in place for demonstration
 };
 
 
@@ -44,7 +46,7 @@ const onNewGame = (creator) => (sock) => (e) => {
     
     
     sock.emit('gameRequest', "all");
-    let currentUser = localStorage.getItem('username');
+    let currentUser = localStorage.getItem('username'); //There has to be a better way to do this
     console.log(currentUser);
     document
     .querySelector('#new-game-form')
