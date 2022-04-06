@@ -12,6 +12,27 @@ class game {
         }
         return id;
     };
+    //updates board with new tile, returns string in ["normal", "newChain", "merger"]
+    static tilePlacer(board, x, y){
+        //check neighbors
+        let connectingChains = [];
+        if(board[y+1][x] != 'e'){
+            connectingChains.push(board[y+1][x]);
+        }
+        if(board[y-1][x] != 'e'){
+            connectingChains.push(board[y-1][x]);
+        }
+        if(board[y][x+1] != 'e'){
+            connectingChains.push(board[y][x+1]);
+        }
+        if(board[y][x-1] != 'e'){
+            connectingChains.push(board[y][x-1]);
+        }
+        //TODO: finish above
+        return 'normal';
+
+        
+    };
     static createGame(games, numPlayers, creator = ""){
         let users = new Array(numPlayers).fill("");
         users[0] = creator;
@@ -22,6 +43,7 @@ class game {
             state: {
                 inPlay: true,
                 turn: 0,
+                expectedNextAction: 'playTile',
                 board: [
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
@@ -70,28 +92,58 @@ class game {
         * @param {object} updateData - action details, e.g., coordinates of tile played.
         * @returns {string} 'Success' or error string
         */
-
+        //const actions = ['playTile', 'chooseNewChain', chooseRemainingChain', 'disposeShares', 'purchaseShares']
+        if (updateType !== game.state.expectedNextAction){
+            return 'unexpectedActionType';
+        }
         switch(updateType){
             case 'playTile':
-                console.log("here");
-                game.state.turn = updateData.x;
-                break;
-            case 'purchaseShares':
+                //check that action is legal
+                //update the game
+                switch(this.tilePlacer(game.state.board, updateData.x, updateData.y)){
+                    case 'normal':
+                        game.state.expectedNextAction = 'purchaseShares'; //should we wait for a pass if player has no cash?
+                        console.log("ok, now we're waiting to purchase shares...")
+                        break;
+                    case 'newChain':
+                        //TODO
+                        game.state.expectedNextAction = 'chooseNewChain';
+                        break;
+                    case 'merger':
+                        //TODO
+                        break;
+                    default:
+                        console.log("Not a valid placement type.")
+                }
+
 
                 break;
-            case 'chooseChain':
+            case 'chooseNewChain':
+                //TODO
+                break;
+            case 'chooseRemainingChain':
+                //TODO: decide where to store chain choice. 
+                // - maybe game needs an 'active merger' object to store info like this.
+
+                game.state.expectedNextAction = 'disposeShares'
 
                 break;
             case 'disposeShares':
 
                 break;
-            case 'endGame':
+            case 'purchaseShares':
 
+
+
+                if(updateData.endGame === true){
+                    game.state.inPlay = false;
+                }
                 break;
             default:
                 console.log("Not a valid updateType.")
                 return "invalidUpdateType";
         }
+        return "success";
     };
 }
 
