@@ -7,7 +7,8 @@
         perhaps all active game state data should be in server, all methods should be in game class.
 
     UpdateGame method
-        1. playTile 
+        1. playTile
+            1. Tile Placer - search 
 6. Connect frontend to game logic.
 7. Document client js
 8. Disaster recovery

@@ -14,22 +14,40 @@ class game {
     };
     //updates board with new tile, returns string in ["normal", "newChain", "merger"]
     static tilePlacer(board, x, y){
-        //check neighbors
         let connectingChains = [];
-        if(board[y+1][x] != 'e'){
+        let placementType = 'normal';
+        let tileChain = 's';
+
+        //check neighbors
+        if(board[y+1][x] != 'e' && board[y+1][x] != null){
             connectingChains.push(board[y+1][x]);
         }
-        if(board[y-1][x] != 'e'){
+        if(board[y-1][x] != 'e' && board[y-1][x] != null){
             connectingChains.push(board[y-1][x]);
         }
-        if(board[y][x+1] != 'e'){
+        if(board[y][x+1] != 'e' && board[y][x+1] != null){
             connectingChains.push(board[y][x+1]);
         }
-        if(board[y][x-1] != 'e'){
+        if(board[y][x-1] != 'e' && board[y][x-1] != null){
             connectingChains.push(board[y][x-1]);
         }
-        //TODO: finish above
-        return 'normal';
+        if(connectingChains.length > 0){
+            if(connectingChains.every((element) => element == 's')){
+                placementType = 'newChain';
+            }
+            else {
+                if(connectingChains.length == 1){
+                    tileChain = connectingChains[0];
+                }
+                else {
+                    placementType = 'merger';
+                }
+            }
+        }
+        board[y][x] = tileChain; //maybe change for merger case
+        console.log(connectingChains);
+        console.log(placementType);
+        return placementType;
 
         
     };
@@ -46,7 +64,7 @@ class game {
                 expectedNextAction: 'playTile',
                 board: [
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'l', 'l', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
@@ -108,6 +126,7 @@ class game {
                     case 'newChain':
                         //TODO
                         game.state.expectedNextAction = 'chooseNewChain';
+                        console.log("waiting to choose chain...")
                         break;
                     case 'merger':
                         //TODO

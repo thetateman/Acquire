@@ -140,5 +140,5 @@ server.listen(8080, () => {
 let updateID = 1;
 game.createGame(games, 4);
 game.createGame(games, 5);
-game.updateGame(games[updateID], 4, "playTile", {x:5, y:2});
+game.updateGame(games[updateID], 4, "playTile", {x:0, y:1});
 console.log(Object.entries(games));
