@@ -18,7 +18,7 @@ class game {
 
     //------------------Game Update Helper Functions------------------------
     
-    static tilePlacer(board, x, y){
+    static tilePlacer(board, chains, x, y){
         //updates board with new tile, returns string in ["normal", "newChain", "merger"]
         let connectingChains = [];
         let placementType = 'normal';
@@ -49,6 +49,8 @@ class game {
             else {
                 if(connectingChains.length == 1){
                     tileChain = connectingChains[0];
+                    chains[connectingChains].push({'x': x, 'y': y});
+
                 }
                 else {
                     placementType = 'merger';
@@ -87,13 +89,13 @@ class game {
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',]
                 ],
                 chains: {
-                    imperial: [],
-                    continental: [],
-                    american: [], 
-                    worldwide: [],
-                    festival: [], 
-                    luxor: [],
-                    tower: []
+                    i: [],
+                    c: [],
+                    a: [], 
+                    w: [],
+                    f: [], 
+                    l: [],
+                    t: []
                 },
                 bank_shares: {
                     imperial: 25,
@@ -134,14 +136,23 @@ class game {
         * @returns {string} 'Success' or error string
         */
         //const actions = ['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares']
+        /*
         if (updateType !== game.state.expectedNextAction){
             return 'unexpectedActionType';
         }
+        */
         switch(updateType){
             case 'playTile':
                 //check that action is legal
+                if((! (0 <= updateData.x && updateData.x <= 11)) || (! (0 <= updateData.y && updateData.y <= 8))){
+                    return "tileOutsideBoard";
+                } 
+                if(game.state.board[updateData.y][updateData.x] !== 'e'){
+                    return "tileAlreadyPlayed";
+                }
+                //TODO: check for dead/asleep tiles
                 //update the game
-                switch(this.tilePlacer(game.state.board, updateData.x, updateData.y)){
+                switch(this.tilePlacer(game.state.board, game.state.chains, updateData.x, updateData.y)){
                     case 'normal':
                         game.state.expectedNextAction = 'purchaseShares'; //should we wait for a pass if player has no cash?
                         console.log("ok, now we're waiting to purchase shares...")
@@ -154,6 +165,7 @@ class game {
                         break;
                     case 'merger':
                         //TODO
+                        game.state.expectedNextAction = 'disposeShares';
                         break;
                     default:
                         console.log("Not a valid placement type.")
@@ -175,6 +187,7 @@ class game {
                 break;
             case 'disposeShares':
 
+                game.state.expectedNextAction = 'purchaseShares'
                 break;
             case 'purchaseShares':
 
