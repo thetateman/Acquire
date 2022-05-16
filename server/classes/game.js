@@ -1,7 +1,10 @@
 class game {
-    //eventually games should have a UUID for storage and stats calculation
-    //this just creates human readable IDs for active games
+
+    //------------------Game Creation Helper Functions------------------------
+    
     static genNewGameID(games){ 
+        //eventually games should have a UUID for storage and stats calculation
+        //this just creates human readable IDs for active games
         let gameIDs = Object.keys(games)
         let id;
         for(let i = 1; i < 10000; i++){
@@ -12,18 +15,25 @@ class game {
         }
         return id;
     };
-    //updates board with new tile, returns string in ["normal", "newChain", "merger"]
+
+    //------------------Game Update Helper Functions------------------------
+    
     static tilePlacer(board, x, y){
+        //updates board with new tile, returns string in ["normal", "newChain", "merger"]
         let connectingChains = [];
         let placementType = 'normal';
         let tileChain = 's';
 
         //check neighbors
-        if(board[y+1][x] != 'e' && board[y+1][x] != null){
-            connectingChains.push(board[y+1][x]);
+        if(board[y+1] != null){
+            if(board[y+1][x] != 'e' && board[y+1][x] != null){
+                connectingChains.push(board[y+1][x]);
+            }
         }
-        if(board[y-1][x] != 'e' && board[y-1][x] != null){
-            connectingChains.push(board[y-1][x]);
+        if(board[y-1] != null){
+            if(board[y-1][x] != 'e' && board[y-1][x] != null){
+                connectingChains.push(board[y-1][x]);
+            }
         }
         if(board[y][x+1] != 'e' && board[y][x+1] != null){
             connectingChains.push(board[y][x+1]);
@@ -34,6 +44,7 @@ class game {
         if(connectingChains.length > 0){
             if(connectingChains.every((element) => element == 's')){
                 placementType = 'newChain';
+                tileChain = 'p' //pending, should change with next action
             }
             else {
                 if(connectingChains.length == 1){
@@ -41,10 +52,11 @@ class game {
                 }
                 else {
                     placementType = 'merger';
+                    tileChain = 'p'; //pending, should change with next action
                 }
             }
         }
-        board[y][x] = tileChain; //maybe change for merger case
+        board[y][x] = tileChain; //maybe change for non-normal cases
         console.log(connectingChains);
         console.log(placementType);
         return placementType;
@@ -62,17 +74,27 @@ class game {
                 inPlay: true,
                 turn: 0,
                 expectedNextAction: 'playTile',
+                lastPlayedTile: {},
                 board: [
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'l', 'l', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 's', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',]
                 ],
+                chains: {
+                    imperial: [],
+                    continental: [],
+                    american: [], 
+                    worldwide: [],
+                    festival: [], 
+                    luxor: [],
+                    tower: []
+                },
                 bank_shares: {
                     imperial: 25,
                     continental: 25,
@@ -85,6 +107,7 @@ class game {
                 player_states: [
                     {
                     tiles: [],
+                    cash: 6000,
                     imperial: 25,
                     continental: 25,
                     american: 25, 
@@ -106,11 +129,11 @@ class game {
         * Called after receiving game updating websocket message, updates in-memory game object.
         * @param {object} game - the game to be updated.
         * @param {int} userID - the id of the user who initiated the action.
-        * @param {string} updateType - updateType should be in: ['playTile', 'purchaseShares', 'chooseRemainingChain', 'disposeShares', 'endGame'].
+        * @param {string} updateType - updateType should be in: ['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares'].
         * @param {object} updateData - action details, e.g., coordinates of tile played.
         * @returns {string} 'Success' or error string
         */
-        //const actions = ['playTile', 'chooseNewChain', chooseRemainingChain', 'disposeShares', 'purchaseShares']
+        //const actions = ['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares']
         if (updateType !== game.state.expectedNextAction){
             return 'unexpectedActionType';
         }
@@ -126,6 +149,7 @@ class game {
                     case 'newChain':
                         //TODO
                         game.state.expectedNextAction = 'chooseNewChain';
+                        game.state.lastPlayedTile = updateData;
                         console.log("waiting to choose chain...")
                         break;
                     case 'merger':
@@ -139,6 +163,8 @@ class game {
                 break;
             case 'chooseNewChain':
                 //TODO
+
+                game.state.expectedNextAction = 'purchaseShares'
                 break;
             case 'chooseRemainingChain':
                 //TODO: decide where to store chain choice. 
@@ -156,6 +182,10 @@ class game {
 
                 if(updateData.endGame === true){
                     game.state.inPlay = false;
+                }
+                else {
+                    game.state.expectedNextAction = 'playTile';
+                    game.state.turn++;
                 }
                 break;
             default:
