@@ -20,11 +20,67 @@ class game {
     
     static tilePlacer(board, chains, active_merger, x, y){
         //updates board with new tile, returns string in ["normal", "newChain", "merger"]
-        let connectingChains = []; // List of unique chains adjacent to new tile
         let placementType = 'normal';
         let tileChain = 's';
+        let connectingChains = this.getNeighbors(board, x, y); // List of unique chains adjacent to new tile
 
-        //check neighbors
+        if(connectingChains.length > 0){
+            if(connectingChains.every((element) => element === 's')){
+                placementType = 'newChain';
+                tileChain = 'p' //pending, should change with next action
+            }
+            else {
+                let connectingTrueChains = connectingChains.filter((f) => f !== 's')
+                if(connectingTrueChains.length === 1){
+                    tileChain = connectingTrueChains[0];
+                    console.log(connectingTrueChains);
+                    chains[tileChain].push({'x': x, 'y': y});
+                    let connectedSingleTiles = this.getConnectingSingles(board, x, y)
+                    chains[tileChain] = chains[tileChain].concat(connectedSingleTiles);
+                    connectedSingleTiles.forEach((tile) => {board[tile.y][tile.x] = tileChain;});
+                    
+
+                }
+                else {
+                    let mergingChains = [];
+                    let largestChains = [connectingTrueChains[0]];
+                    for(let i = 1; i < connectingTrueChains.length; i++){
+                        if(connectingTrueChains[i].length > largestChains[0].length){
+                            largestChains.length = 0;
+                            largestChains.push(connectingTrueChains[i]);
+                        }
+                        else if(chains[connectingTrueChains[i]].length === chains[largestChains[0]].length){
+                            largestChains.push(connectingTrueChains[i]);
+                        }
+                    }
+                    console.log("testing......");
+                    console.log(largestChains);
+                    let remainingChain = 'p'; //pending, should change with next action
+                    if(largestChains.length === 1){
+                        remainingChain = largestChains[0];
+                    }
+                    //connectingTrueChains.forEach((chain) => mergingChains.push(chains[chain]));
+                    active_merger.merging_chains = connectingTrueChains;
+                    active_merger.largest_chains = largestChains;
+                    active_merger.remaining_chain = remainingChain;
+                    placementType = 'merger';
+                    tileChain = 'p'; //pending, should change with next action
+                }
+            }
+        }
+        board[y][x] = tileChain; //maybe change for non-normal cases
+        console.log(connectingChains);
+        console.log(placementType);
+        return placementType;
+
+        
+    };
+    static getNeighbors(board, x, y){
+        /**
+        * Checks each tile adjacent to input and adds unique tile types to input
+        * @returns {array} List of unique tile types adjacent to input tile (excludes 'e')
+        */
+        let connectingChains = [];
         if(board[y+1] != null){ //Check that row is in range
             if(board[y+1][x] != 'e' && board[y+1][x] != null){ // If tile is not empty and not outside the board
                 if(!connectingChains.includes(board[y+1][x])){ // Check that we did not already add chain
@@ -49,55 +105,13 @@ class game {
                 connectingChains.push(board[y][x-1]);
             }
         }
-        if(connectingChains.length > 0){
-            if(connectingChains.every((element) => element === 's')){
-                placementType = 'newChain';
-                tileChain = 'p' //pending, should change with next action
-            }
-            else {
-                let connectingTrueChains = connectingChains.filter((f) => f !== 's')
-                if(connectingTrueChains.length === 1){
-                    tileChain = connectingTrueChains[0];
-                    chains[tileChain].push({'x': x, 'y': y});
-                    let connectedSingleTiles = this.getConnectingSingles(board, x, y)
-                    chains[tileChain] = chains[tileChain].concat(connectedSingleTiles);
-                    connectedSingleTiles.forEach((tile) => {board[tile.y][tile.x] = tileChain;});
-                    
-
-                }
-                else {
-                    let mergingChains = [];
-                    let largestChains = [connectingTrueChains[0]];
-                    for(let i = 1; i < connectingTrueChains.length; i++){
-                        if(connectingTrueChains[i].length > largestChains[0].length){
-                            largestChains = [connectingTrueChains[i]];
-                        }
-                        else if(connectingTrueChains[i].length === largestChains[0].length){
-                            largestChains.push(connectingTrueChains[i]);
-                        }
-                    }
-                    let remainingChain = 'p'; //pending, should change with next action
-                    if(largestChains.length === 1){
-                        remainingChain = largestChains[0];
-                    }
-                    //connectingTrueChains.forEach((chain) => mergingChains.push(chains[chain]));
-                    active_merger.merging_chains = connectingTrueChains;
-                    active_merger.largest_chains = largestChains;
-                    active_merger.remaining_chain = remainingChain;
-                    placementType = 'merger';
-                    tileChain = 'p'; //pending, should change with next action
-                }
-            }
-        }
-        board[y][x] = tileChain; //maybe change for non-normal cases
-        console.log(connectingChains);
-        console.log(placementType);
-        return placementType;
-
-        
+        return connectingChains;
     };
-    
     static getConnectingSingles(board, x, y){
+        /**
+        * Performs a depth-first search for every connected single tile
+        * @returns {array} List of single tiles connected to input
+        */
         let searching = true;
         let currentTile;
         let currentTileIndex;
@@ -143,7 +157,7 @@ class game {
             
         }
         return connectingSingles;
-    }
+    };
     
     static createGame(games, numPlayers, creator = ""){
         let users = new Array(numPlayers).fill("");
@@ -241,13 +255,11 @@ class game {
                         console.log("ok, now we're waiting to purchase shares...")
                         break;
                     case 'newChain':
-                        //TODO
                         game.state.expectedNextAction = 'chooseNewChain';
                         game.state.lastPlayedTile = updateData;
                         console.log("waiting to choose chain...")
                         break;
                     case 'merger':
-                        //TODO
                         if(game.state.active_merger.remaining_chain === 'p'){ // If waiting on chain choice
                             game.state.expectedNextAction = 'chooseRemainingChain';
                         }
@@ -281,8 +293,6 @@ class game {
                 game.state.expectedNextAction = 'purchaseShares';
                 break;
             case 'chooseRemainingChain':
-                //TODO: decide where to store chain choice. 
-                // - maybe game needs an 'active merger' object to store info like this.
                 if(game.state.active_merger.remaining_chain === 'p'){
                     if(game.state.active_merger.largest_chains.includes(updateData.remainingChainChoice)){
                         game.state.active_merger.remaining_chain = updateData.remainingChainChoice;
