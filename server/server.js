@@ -137,7 +137,7 @@ server.listen(8080, () => {
 
 
 //Create and edit some placeholder games for testing
-let updateID = 1;
+let updateID = 2;
 game.createGame(games, 4);
 game.createGame(games, 5);
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:0, y:0}));
@@ -154,12 +154,9 @@ console.log(game.updateGame(games[updateID], 4, "disposeShares", {}));
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:1, y:2}));
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:1, y:0}));
 console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'f'}));
-console.log(games[1].state.chains);
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:1, y:1}));
-console.log(games[1].state.chains);
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:2, y:2}));
 console.log(game.updateGame(games[updateID], 4, "disposeShares", {}));
-console.log(games[1].state.chains);
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:0, y:8}));
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:1, y:8}));
 console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'w'}));
@@ -180,11 +177,6 @@ console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:5}));
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:6}));
 console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'f'}));
 
-
-
-
-
-
-console.log(Object.entries(games));
-console.log(games[1].state.chains);
-console.log(games[1].state.board);
+console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {f: 2, a: 1}}));
+console.log(games[updateID].state.player_states[4]);
+console.log(games[updateID].state.bank_shares);

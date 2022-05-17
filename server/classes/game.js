@@ -205,6 +205,17 @@ class game {
     };
     
     static createGame(games, numPlayers, creator = ""){
+        let playerStates = new Array(numPlayers).fill({
+            tiles: [],
+            cash: 6000,
+            i: 0,
+            c: 0,
+            a: 0, 
+            w: 0,
+            f: 0, 
+            l: 0,
+            t: 0
+            });
         let users = new Array(numPlayers).fill("");
         users[0] = creator;
         let id = this.genNewGameID(games)
@@ -240,27 +251,15 @@ class game {
                     t: []
                 },
                 bank_shares: {
-                    imperial: 25,
-                    continental: 25,
-                    american: 25, 
-                    worldwide: 25,
-                    festival: 25, 
-                    luxor: 25,
-                    tower: 25
+                    i: 25,
+                    c: 25,
+                    a: 25, 
+                    w: 25,
+                    f: 25, 
+                    l: 25,
+                    t: 25
                 },
-                player_states: [
-                    {
-                    tiles: [],
-                    cash: 6000,
-                    imperial: 25,
-                    continental: 25,
-                    american: 25, 
-                    worldwide: 25,
-                    festival: 25, 
-                    luxor: 25,
-                    tower: 25
-                    }
-                ]
+                player_states: playerStates
             }
 
         };
@@ -382,8 +381,36 @@ class game {
                 game.state.expectedNextAction = 'purchaseShares'
                 break;
             case 'purchaseShares':
+                //validity checks:
+                // 1. <=3 shares
+                // 2. shares are available for purchase (on board, >0 in bank)
+                // 3. user has adequate funds for purchase
+                // 4. 
 
+                // First loop perfroms validity checks.
+                let numTotalShares = 0;
+                for (const [key, value] of Object.entries(updateData.purchase)) {
+                    let purchasePricePerShare = 0; //TODO: handle prices
+                    let purchasePrice = 0;
 
+                    numTotalShares += value;
+                    if(numTotalShares > 3){
+                        return "tooManyShares";
+                    }
+                    if(value > game.state.bank_shares[key]){
+                        return "notEnoughShares";
+                    }
+                }
+                // Second loop updates game state.
+                for (const [key, value] of Object.entries(updateData.purchase)) {
+                    let purchasePricePerShare = 0; //TODO: handle prices
+                    let purchasePrice = 0;
+
+                    game.state.bank_shares[key] -= value;
+                    game.state.player_states[userID][key] += value;
+                    game.state.player_states[userID].cash -= purchasePrice;
+                  }
+                  
 
                 if(updateData.endGame === true){
                     game.state.inPlay = false;
