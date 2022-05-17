@@ -30,12 +30,12 @@ class game {
                 tileChain = 'p' //pending, should change with next action
             }
             else {
-                let connectingTrueChains = connectingChains.filter((f) => f !== 's')
+                let connectingTrueChains = connectingChains.filter((f) => f !== 's');
                 if(connectingTrueChains.length === 1){
                     tileChain = connectingTrueChains[0];
                     console.log(connectingTrueChains);
                     chains[tileChain].push({'x': x, 'y': y});
-                    let connectedSingleTiles = this.getConnectingSingles(board, x, y)
+                    let connectedSingleTiles = this.getConnectingSingles(board, x, y);
                     chains[tileChain] = chains[tileChain].concat(connectedSingleTiles);
                     connectedSingleTiles.forEach((tile) => {board[tile.y][tile.x] = tileChain;});
                     
@@ -158,6 +158,51 @@ class game {
         }
         return connectingSingles;
     };
+
+    static predictTileType(board, chains, available_chains, x, y){
+        /**
+        * Uses getNeighbors function and chain info to calculate the potential type of a tile.
+        * predictedType should be in ['<chain>', 's'(single), 'm'(merger), 'n'(new chain), 'z'(asleep), 'd'(dead)].
+        * @returns {string} Character representing the type a tile would be if played
+        * 
+        */
+       let predictedType = 's';
+       let neighbors = this.getNeighbors(board, x, y);
+       let connectingTrueChains = neighbors.filter((f) => f !== 's');
+       if(connectingTrueChains.length > 0){
+           if(connectingTrueChains.length === 1){
+               predictedType = connectingTrueChains[0];
+               return predictedType;
+           } 
+           else {
+               let numSafeChains = 0;
+               for(let i = 0; i < connectingTrueChains.length; i++){
+                   if(chains[connectingTrueChains[i]].length >= 11){
+                       numSafeChains++;
+                   }
+               }
+               if(numSafeChains >= 2){
+                   predictedType = 'd';
+                   return predictedType;
+               }
+               else {
+                   predictedType = 'm';
+                   return predictedType;
+               }
+           }
+       }
+       else if(neighbors.length > 0){
+            if(available_chains.length === 0){
+                predictedType = 'z';
+                return predictedType;
+            }
+            else {
+                predictedType = 'n';
+                return predictedType;
+            }
+       }
+       return predictedType;
+    };
     
     static createGame(games, numPlayers, creator = ""){
         let users = new Array(numPlayers).fill("");
@@ -248,6 +293,9 @@ class game {
                     return "tileAlreadyPlayed";
                 }
                 //TODO: check for dead/asleep tiles
+                if(['z', 'd'].includes(this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, updateData.x, updateData.y))){
+                    return "tileDeadOrAsleep";
+                }
                 //update the game
                 switch(this.tilePlacer(game.state.board, game.state.chains, game.state.active_merger, updateData.x, updateData.y)){
                     case 'normal':
@@ -315,6 +363,7 @@ class game {
                     game.state.active_merger.merging_chains.forEach((chain) => {
                         mergingChainTiles = mergingChainTiles.concat(JSON.parse(JSON.stringify(game.state.chains[chain])));
                         game.state.chains[chain] = [];
+                        game.state.available_chains.push(chain);
                     });
                     mergingChainTiles = mergingChainTiles.concat(
                         this.getConnectingSingles(game.state.board, mergingTile.x, mergingTile.y));

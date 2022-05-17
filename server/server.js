@@ -160,6 +160,28 @@ console.log(games[1].state.chains);
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:2, y:2}));
 console.log(game.updateGame(games[updateID], 4, "disposeShares", {}));
 console.log(games[1].state.chains);
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:0, y:8}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:1, y:8}));
+console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'w'}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:3, y:8}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:4, y:8}));
+console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'c'}));
+
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:6, y:8}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:7, y:8}));
+console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'a'}));
+
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:9, y:8}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:10, y:8}));
+console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'l'}));
+
+
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:5}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:6}));
+console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'f'}));
+
+
+
 
 
 
