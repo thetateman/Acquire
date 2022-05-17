@@ -140,11 +140,11 @@ server.listen(8080, () => {
 let updateID = 1;
 game.createGame(games, 4);
 game.createGame(games, 5);
-console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:2}));
-game.updateGame(games[updateID], 4, "purchaseShares", {x:0, y:0});
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:0, y:0}));
-console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:3}));
-console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:4}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:4, y:2}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:3, y:2}));
+console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'i'}));
+
 
 
 

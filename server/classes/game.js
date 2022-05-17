@@ -20,36 +20,49 @@ class game {
     
     static tilePlacer(board, chains, x, y){
         //updates board with new tile, returns string in ["normal", "newChain", "merger"]
-        let connectingChains = [];
+        let connectingChains = []; // List of unique chains adjacent to new tile
         let placementType = 'normal';
         let tileChain = 's';
 
         //check neighbors
-        if(board[y+1] != null){
-            if(board[y+1][x] != 'e' && board[y+1][x] != null){
-                connectingChains.push(board[y+1][x]);
+        if(board[y+1] != null){ //Check that row is in range
+            if(board[y+1][x] != 'e' && board[y+1][x] != null){ // If tile is not empty and not outside the board
+                if(!connectingChains.includes(board[y+1][x])){ // Check that we did not already add chain
+                    connectingChains.push(board[y+1][x]); //Add chain to connectingChains
+                }
             }
         }
         if(board[y-1] != null){
             if(board[y-1][x] != 'e' && board[y-1][x] != null){
-                connectingChains.push(board[y-1][x]);
+                if(!connectingChains.includes(board[y-1][x])){
+                    connectingChains.push(board[y-1][x]);
+                }
             }
         }
         if(board[y][x+1] != 'e' && board[y][x+1] != null){
-            connectingChains.push(board[y][x+1]);
+            if(!connectingChains.includes(board[y][x+1])){
+                connectingChains.push(board[y][x+1]);
+            }
         }
         if(board[y][x-1] != 'e' && board[y][x-1] != null){
-            connectingChains.push(board[y][x-1]);
+            if(!connectingChains.includes(board[y][x-1])){
+                connectingChains.push(board[y][x-1]);
+            }
         }
         if(connectingChains.length > 0){
-            if(connectingChains.every((element) => element == 's')){
+            if(connectingChains.every((element) => element === 's')){
                 placementType = 'newChain';
                 tileChain = 'p' //pending, should change with next action
             }
             else {
-                if(connectingChains.length == 1){
-                    tileChain = connectingChains[0];
-                    chains[connectingChains].push({'x': x, 'y': y});
+                let connectingTrueChains = connectingChains.filter((f) => f !== 's')
+                if(connectingTrueChains.length === 1){
+                    tileChain = connectingTrueChains[0];
+                    chains[tileChain].push({'x': x, 'y': y});
+                    let connectedSingleTiles = this.getConnectingSingles(board, x, y)
+                    chains[tileChain] = chains[tileChain].concat(connectedSingleTiles);
+                    connectedSingleTiles.forEach((tile) => {board[tile.y][tile.x] = tileChain;});
+                    
 
                 }
                 else {
@@ -65,6 +78,55 @@ class game {
 
         
     };
+    
+    static getConnectingSingles(board, x, y){
+        let searching = true;
+        let currentTile;
+        let currentTileIndex;
+        let newTile;
+        let connectingSingles = [];
+        let searchEdgeStack = [{x, y}];
+        while(searchEdgeStack.length !== 0){
+            currentTileIndex = searchEdgeStack.length - 1;
+            currentTile = searchEdgeStack[currentTileIndex];
+            newTile = {'x': currentTile.x, 'y': currentTile.y+1};
+            if(board[newTile.y] != null){
+                if(board[newTile.y][newTile.x] === 's'){
+                    if(!connectingSingles.find((tile) => tile.x === newTile.x && tile.y === newTile.y)){
+                        connectingSingles.push(JSON.parse(JSON.stringify(newTile)));
+                        searchEdgeStack.push(JSON.parse(JSON.stringify(newTile)));
+                    }
+                }
+            }
+            newTile = {'x': currentTile.x, 'y': currentTile.y-1};
+            if(board[newTile.y] != null){
+                if(board[newTile.y][newTile.x] === 's'){
+                    if(!connectingSingles.find((tile) => tile.x === newTile.x && tile.y === newTile.y)){
+                        connectingSingles.push(JSON.parse(JSON.stringify(newTile)));
+                        searchEdgeStack.push(JSON.parse(JSON.stringify(newTile)));
+                    }
+                }
+            }
+            newTile = {'x': currentTile.x+1, 'y': currentTile.y};
+            if(board[newTile.y][newTile.x] === 's'){
+                if(!connectingSingles.find((tile) => tile.x === newTile.x && tile.y === newTile.y)){
+                    connectingSingles.push(JSON.parse(JSON.stringify(newTile)));
+                    searchEdgeStack.push(JSON.parse(JSON.stringify(newTile)));
+                }
+            }
+            newTile = {'x': currentTile.x-1, 'y': currentTile.y};
+            if(board[newTile.y][newTile.x] === 's'){
+                if(!connectingSingles.find((tile) => tile.x === newTile.x && tile.y === newTile.y)){
+                    connectingSingles.push(JSON.parse(JSON.stringify(newTile)));
+                    searchEdgeStack.push(JSON.parse(JSON.stringify(newTile)));
+                }
+            }
+            searchEdgeStack.splice(currentTileIndex, 1);
+            
+        }
+        return connectingSingles;
+    }
+    
     static createGame(games, numPlayers, creator = ""){
         let users = new Array(numPlayers).fill("");
         users[0] = creator;
@@ -79,15 +141,17 @@ class game {
                 lastPlayedTile: {},
                 board: [
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'l', 'l', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',]
+                ['e', 'e', 'e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 's', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 'e', 's', 's', 'e', 'e', 'e', 'e', 'e', 'e',]
                 ],
+                single_tiles: [],
+                available_chains: ['i', 'c', 'a', 'w', 'f', 'l', 't'],
                 chains: {
                     i: [],
                     c: [],
@@ -174,9 +238,21 @@ class game {
 
                 break;
             case 'chooseNewChain':
-                //TODO
+                // Check that chain is available
+                if(!game.state.available_chains.includes(updateData.newChainChoice)){
+                    return 'chainUnavailable';
+                }
+                // Remove choice from list of available chains
+                game.state.available_chains = game.state.available_chains.filter((f) => f !== updateData.newChainChoice);
 
-                game.state.expectedNextAction = 'purchaseShares'
+                // Create list of played tile and connecting single tiles, add the
+                // list to the selected chain, and update the board.
+                let newTile = game.state.lastPlayedTile;
+                let connectedSingleTiles = this.getConnectingSingles(game.state.board, newTile.x, newTile.y); 
+                connectedSingleTiles.push({'x': newTile.x, 'y': newTile.y});
+                game.state.chains[updateData.newChainChoice] = connectedSingleTiles;
+                connectedSingleTiles.forEach((tile) => {game.state.board[tile.y][tile.x] = updateData.newChainChoice;});
+                game.state.expectedNextAction = 'purchaseShares';
                 break;
             case 'chooseRemainingChain':
                 //TODO: decide where to store chain choice. 
