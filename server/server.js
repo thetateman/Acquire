@@ -144,9 +144,14 @@ console.log(game.updateGame(games[updateID], 4, "playTile", {x:0, y:0}));
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:4, y:2}));
 console.log(game.updateGame(games[updateID], 4, "playTile", {x:3, y:2}));
 console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'i'}));
-
-
-
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:6, y:2}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:7, y:2}));
+console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 't'}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:3}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:2}));
+console.log(game.updateGame(games[updateID], 4, "chooseRemainingChain", {remainingChainChoice: 'i'}));
+console.log(games[1].state.chains);
+console.log(game.updateGame(games[updateID], 4, "disposeShares", {}));
 
 console.log(Object.entries(games));
 console.log(games[1].state.chains);

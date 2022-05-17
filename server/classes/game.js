@@ -18,7 +18,7 @@ class game {
 
     //------------------Game Update Helper Functions------------------------
     
-    static tilePlacer(board, chains, x, y){
+    static tilePlacer(board, chains, active_merger, x, y){
         //updates board with new tile, returns string in ["normal", "newChain", "merger"]
         let connectingChains = []; // List of unique chains adjacent to new tile
         let placementType = 'normal';
@@ -66,6 +66,24 @@ class game {
 
                 }
                 else {
+                    let mergingChains = [];
+                    let largestChains = [connectingTrueChains[0]];
+                    for(let i = 1; i < connectingTrueChains.length; i++){
+                        if(connectingTrueChains[i].length > largestChains[0].length){
+                            largestChains = [connectingTrueChains[i]];
+                        }
+                        else if(connectingTrueChains[i].length === largestChains[0].length){
+                            largestChains.push(connectingTrueChains[i]);
+                        }
+                    }
+                    let remainingChain = 'p'; //pending, should change with next action
+                    if(largestChains.length === 1){
+                        remainingChain = largestChains[0];
+                    }
+                    //connectingTrueChains.forEach((chain) => mergingChains.push(chains[chain]));
+                    active_merger.merging_chains = connectingTrueChains;
+                    active_merger.largest_chains = largestChains;
+                    active_merger.remaining_chain = remainingChain;
                     placementType = 'merger';
                     tileChain = 'p'; //pending, should change with next action
                 }
@@ -142,16 +160,17 @@ class game {
                 board: [
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 'e', 'e', 'e', 'l', 'l', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 's', 's', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
-                ['e', 'e', 'e', 'e', 's', 's', 'e', 'e', 'e', 'e', 'e', 'e',]
+                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
+                ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',]
                 ],
                 single_tiles: [],
                 available_chains: ['i', 'c', 'a', 'w', 'f', 'l', 't'],
+                active_merger: {},
                 chains: {
                     i: [],
                     c: [],
@@ -216,7 +235,7 @@ class game {
                 }
                 //TODO: check for dead/asleep tiles
                 //update the game
-                switch(this.tilePlacer(game.state.board, game.state.chains, updateData.x, updateData.y)){
+                switch(this.tilePlacer(game.state.board, game.state.chains, game.state.active_merger, updateData.x, updateData.y)){
                     case 'normal':
                         game.state.expectedNextAction = 'purchaseShares'; //should we wait for a pass if player has no cash?
                         console.log("ok, now we're waiting to purchase shares...")
@@ -229,7 +248,14 @@ class game {
                         break;
                     case 'merger':
                         //TODO
-                        game.state.expectedNextAction = 'disposeShares';
+                        if(game.state.active_merger.remaining_chain === 'p'){ // If waiting on chain choice
+                            game.state.expectedNextAction = 'chooseRemainingChain';
+                        }
+                        else{
+                            game.state.expectedNextAction = 'disposeShares'
+                        }
+                        game.state.lastPlayedTile = updateData;
+                        console.log(game.state.active_merger)
                         break;
                     default:
                         console.log("Not a valid placement type.")
@@ -257,11 +283,42 @@ class game {
             case 'chooseRemainingChain':
                 //TODO: decide where to store chain choice. 
                 // - maybe game needs an 'active merger' object to store info like this.
-
+                if(game.state.active_merger.remaining_chain === 'p'){
+                    if(game.state.active_merger.largest_chains.includes(updateData.remainingChainChoice)){
+                        game.state.active_merger.remaining_chain = updateData.remainingChainChoice;
+                    }
+                    else {
+                        return "notLargestChainInMerger";
+                    }
+                }
                 game.state.expectedNextAction = 'disposeShares'
 
                 break;
             case 'disposeShares':
+                let shareDisposalComplete = false;
+
+                shareDisposalComplete = true;
+                if(shareDisposalComplete){
+                    let mergingTile = game.state.lastPlayedTile;
+                    let mergingChainTiles = [mergingTile];
+                    console.log(game.state.active_merger);
+                    game.state.active_merger.merging_chains.forEach((chain) => {
+                        mergingChainTiles = mergingChainTiles.concat(JSON.parse(JSON.stringify(game.state.chains[chain])));
+                        game.state.chains[chain] = [];
+                    });
+                    mergingChainTiles = mergingChainTiles.concat(
+                        this.getConnectingSingles(game.state.board, mergingTile.x, mergingTile.y));
+                    game.state.chains[game.state.active_merger.remaining_chain] = mergingChainTiles;
+                    //mergingChainTiles.forEach((tile) => {game.state.board[tile.y][tile.x] = game.state.active_merger.remaining_chain;});
+                    for(let i = 0; i < mergingChainTiles.length; i++){
+                        let currentTile = mergingChainTiles[i];
+                        game.state.board[currentTile.y][currentTile.x] = game.state.active_merger.remaining_chain;
+                    }
+                    console.log("merging tiles")
+                    console.log(mergingChainTiles);
+                    
+                }
+                
 
                 game.state.expectedNextAction = 'purchaseShares'
                 break;
