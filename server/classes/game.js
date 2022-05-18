@@ -258,37 +258,66 @@ class game {
         }
         console.log(elimChains);
         for(let i = 0; i < elimChains.length; i++){
-            let firstPlace = -1;
-            let secondPlace = -1;
-            let firstShareNum = 0;
-            let secondShareNum = 0;
+            let firstPlaces = [];
+            let secondPlaces = [];
+            let firstShareNum = 0.5;
+            let secondShareNum = 0.5;
             for(let j = 0; j < game.num_players; j++){
                 if(game.state.player_states[j][elimChains[i]] > firstShareNum){
-                    firstPlace = j;
+                    firstPlaces.length = 0;
+                    firstPlaces.push(j);
                     firstShareNum = game.state.player_states[j][elimChains[i]];
+                } 
+                else if(game.state.player_states[j][elimChains[i]] == firstShareNum){
+                    firstPlaces.push(j);
                 }
             }
-            for(let j = 0; j < game.num_players; j++){
-                if(j === firstPlace){
+            if(firstPlaces.length > 1){ //first place tie
+                // all players who tie for first place split first and second place awards.
+                let combinedReward = 15 * game.state.share_prices[elimChains[i]]; 
+                let splitReward = combinedReward / firstPlaces.length;
+                splitReward += (100 - (splitReward % 100)) //Rounding up to 100th place.
+                for(let k = 0; k < firstPlaces.length; k++){
+                    game.state.player_states[firstPlaces[k]].cash += splitReward;
+                    console.log(`Player ${firstPlaces[k]} tied for first and receives ${splitReward} for ${elimChains[i]}`);
+                }
+            }
+            else{ // no tie for first
+                for(let j = 0; j < game.num_players; j++){
+                    if(j === firstPlaces[0]){
+                        continue;
+                    }
+                    if(game.state.player_states[j][elimChains[i]] > secondShareNum){
+                        secondPlaces.length = 0;
+                        secondPlaces.push(j);
+                        secondShareNum = game.state.player_states[j][elimChains[i]];
+                    }
+                    else if(game.state.player_states[j][elimChains[i]] == secondShareNum){
+                        secondPlaces.push(j);
+                    }
+                }
+                if(secondPlaces.length > 1){ //tie for second
+                    let splitReward = 5 * game.state.share_prices[elimChains[i]] / secondPlaces.length;
+                    splitReward += (100 - (splitReward % 100)) //Rounding up to 100th place.
+                    for(let k = 0; k < secondPlaces.length; k++){
+                        game.state.player_states[secondPlaces[k]].cash += splitReward;
+                        console.log(`Player ${firstPlaces[k]} tied for second and receives ${splitReward} for ${elimChains[i]}`);
+                    }
+                }
+                if(firstPlaces.length === 0){
+                    console.log(`No ${elimChains[i]} shares, skipping prizes. (should only happen in debug).`);
                     continue;
                 }
-                if(game.state.player_states[j][elimChains[i]] > secondShareNum){
-                    secondPlace = j;
-                    secondShareNum = game.state.player_states[j][elimChains[i]];
+                if(secondPlaces.length === 0){
+                    secondPlaces.push(firstPlaces[0]);
+                    console.log(`No one had second in ${elimChains[i]}, giving second place prize to ${firstPlaces[0]}`);
                 }
+                console.log(`No ties: awarding ${10 * game.state.share_prices[elimChains[i]]} to ` + 
+                    `player ${firstPlaces[0]} and ${5 * game.state.share_prices[elimChains[i]]} to player ` +
+                    `${secondPlaces[0]} for ${elimChains[i]}.`);
+                game.state.player_states[firstPlaces[0]].cash += 10 * game.state.share_prices[elimChains[i]];
+                game.state.player_states[secondPlaces[0]].cash += 5 * game.state.share_prices[elimChains[i]];
             }
-            if(secondPlace === -1){
-                secondPlace = firstPlace;
-            }
-            if(firstPlace === -1){
-                console.log("No shares, skipping prizes. (should only happen in debug).");
-                continue;
-            }
-            console.log(`awarding ${10 * game.state.share_prices[elimChains[i]]} to ` + 
-                `player ${firstPlace} and ${5 * game.state.share_prices[elimChains[i]]} to player ` +
-                `${secondPlace} for ${elimChains[i]}.`);
-            game.state.player_states[firstPlace].cash += 10 * game.state.share_prices[elimChains[i]];
-            game.state.player_states[secondPlace].cash += 5 * game.state.share_prices[elimChains[i]];
         }
     };
     
@@ -317,6 +346,7 @@ class game {
             state: {
                 inPlay: true,
                 turn: 0,
+                play_count: 0,
                 expectedNextAction: 'playTile',
                 lastPlayedTile: {},
                 board: [
@@ -368,21 +398,26 @@ class game {
         return id;
     };
 
-    static updateGame(game, userID, updateType, updateData){
+    static updateGame(game, userID, updateType, updateData, admin=false){
         /**
         * Called after receiving game updating websocket message, updates in-memory game object.
         * @param {object} game - the game to be updated.
         * @param {int} userID - the id of the user who initiated the action.
         * @param {string} updateType - updateType should be in: ['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares'].
         * @param {object} updateData - action details, e.g., coordinates of tile played.
+        * @param {boolean} admin - updater is using administrator privilages to override game rules.
         * @returns {string} 'Success' or error string
         */
         //const actions = ['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares']
-        /*
-        if (updateType !== game.state.expectedNextAction){
+        
+        console.log(`Player ${game.state.turn}'s turn to ${game.state.expectedNextAction}.`);
+        if(userID !== game.state.turn && !admin){
+            return 'notPlayersTurn';
+        }
+        if (updateType !== game.state.expectedNextAction && !admin){
             return 'unexpectedActionType';
         }
-        */
+        
         switch(updateType){
             case 'playTile':
                 //check that action is legal
@@ -539,7 +574,8 @@ class game {
                 }
                 else {
                     game.state.expectedNextAction = 'playTile';
-                    game.state.turn++;
+                    game.state.play_count++;
+                    game.state.turn = game.state.play_count % game.num_players;
                 }
                 break;
             default:
