@@ -18,7 +18,7 @@ class game {
 
     //------------------Game Update Helper Functions------------------------
     
-    static tilePlacer(board, chains, active_merger, x, y){
+    static tilePlacer(board, chains, share_prices, active_merger, x, y){
         //updates board with new tile, returns string in ["normal", "newChain", "merger"]
         let placementType = 'normal';
         let tileChain = 's';
@@ -38,6 +38,7 @@ class game {
                     let connectedSingleTiles = this.getConnectingSingles(board, x, y);
                     chains[tileChain] = chains[tileChain].concat(connectedSingleTiles);
                     connectedSingleTiles.forEach((tile) => {board[tile.y][tile.x] = tileChain;});
+                    this.updatePrice(tileChain, chains, share_prices);
                     
 
                 }
@@ -203,6 +204,49 @@ class game {
        }
        return predictedType;
     };
+
+    // Update the price of a chain
+    static updatePrice(chain, chains, share_prices){
+        let basePrice = 0;
+        let finalPrice = 0;
+        switch(chain){
+            case 'i':
+            case 'c':
+                basePrice = 200;
+                break;
+            case 'a':
+            case 'w':
+            case 'f':
+                basePrice = 100;
+                break;
+            case 't':
+            case 'l':
+                basePrice = 0;
+                break;
+            default:
+                return "notValidChain";
+                break;
+        }
+        if(chains[chain].length <= 6){
+            finalPrice = basePrice + 100 * chains[chain].length;
+        }
+        else if(chains[chain].length <= 10){
+            finalPrice = basePrice + 600;
+        }
+        else if(chains[chain].length <= 20){
+            finalPrice = basePrice + 700;
+        }
+        else if(chains[chain].length <= 30){
+            finalPrice = basePrice + 800;
+        }
+        else if(chains[chain].length <= 40){
+            finalPrice = basePrice + 900;
+        }
+        else{
+            finalPrice = basePrice + 1000;
+        }
+        share_prices[chain] = finalPrice;
+    };
     
     static createGame(games, numPlayers, creator = ""){
         let playerStates = new Array(numPlayers).fill({
@@ -259,6 +303,15 @@ class game {
                     l: 25,
                     t: 25
                 },
+                share_prices: {
+                    i: 0,
+                    c: 0,
+                    a: 0, 
+                    w: 0,
+                    f: 0, 
+                    l: 0,
+                    t: 0
+                },
                 player_states: playerStates
             }
 
@@ -296,7 +349,7 @@ class game {
                     return "tileDeadOrAsleep";
                 }
                 //update the game
-                switch(this.tilePlacer(game.state.board, game.state.chains, game.state.active_merger, updateData.x, updateData.y)){
+                switch(this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, updateData.x, updateData.y)){
                     case 'normal':
                         game.state.expectedNextAction = 'purchaseShares'; //should we wait for a pass if player has no cash?
                         console.log("ok, now we're waiting to purchase shares...")
@@ -337,6 +390,7 @@ class game {
                 connectedSingleTiles.push({'x': newTile.x, 'y': newTile.y});
                 game.state.chains[updateData.newChainChoice] = connectedSingleTiles;
                 connectedSingleTiles.forEach((tile) => {game.state.board[tile.y][tile.x] = updateData.newChainChoice;});
+                this.updatePrice(updateData.newChainChoice, game.state.chains, game.state.share_prices);
                 game.state.expectedNextAction = 'purchaseShares';
                 break;
             case 'chooseRemainingChain':
@@ -372,6 +426,9 @@ class game {
                         let currentTile = mergingChainTiles[i];
                         game.state.board[currentTile.y][currentTile.x] = game.state.active_merger.remaining_chain;
                     }
+                    game.state.active_merger.merging_chains.forEach((chain) => {
+                        this.updatePrice(chain, game.state.chains, game.state.share_prices)
+                    });
                     console.log("merging tiles")
                     console.log(mergingChainTiles);
                     
@@ -389,22 +446,30 @@ class game {
 
                 // First loop perfroms validity checks.
                 let numTotalShares = 0;
+                let totalPurchasePrice = 0;
                 for (const [key, value] of Object.entries(updateData.purchase)) {
-                    let purchasePricePerShare = 0; //TODO: handle prices
-                    let purchasePrice = 0;
+                    let purchasePricePerShare = game.state.share_prices[key]; //TODO: handle prices
+                    let purchasePrice = purchasePricePerShare * value;
 
                     numTotalShares += value;
+                    totalPurchasePrice += purchasePrice;
+                    if(game.state.chains[key].length < 1){
+                        return "chainNotOnBoard";
+                    }
                     if(numTotalShares > 3){
                         return "tooManyShares";
                     }
                     if(value > game.state.bank_shares[key]){
                         return "notEnoughShares";
                     }
+                    if(totalPurchasePrice > game.state.player_states[userID].cash){
+                        return "notEnoughCash";
+                    }
                 }
                 // Second loop updates game state.
                 for (const [key, value] of Object.entries(updateData.purchase)) {
-                    let purchasePricePerShare = 0; //TODO: handle prices
-                    let purchasePrice = 0;
+                    let purchasePricePerShare = game.state.share_prices[key];
+                    let purchasePrice = purchasePricePerShare * value;
 
                     game.state.bank_shares[key] -= value;
                     game.state.player_states[userID][key] += value;
