@@ -114,6 +114,7 @@ io.on('connection', (sock) => {
     });
     sock.on('newGame', ({numPlayers, creator}) => {
         // creator arg no longer used, left in place for demonstration
+        //TODO: fix this (creator/UUID stuff)
         const newGameID = game.createGame(games, parseInt(numPlayers, 10), sock.request.session.username);
         updateObject = {
             "action": "addGame",
@@ -137,76 +138,83 @@ server.listen(8080, () => {
 
 
 //Create and edit some placeholder games for testing
+//TODO: updateGame unit tests
 let updateID = 2;
-game.createGame(games, 4);
-game.createGame(games, 5);
-console.log(game.updateGame(games[updateID], 0, "playTile", {x:0, y:0}));
-console.log(game.updateGame(games[updateID], 0, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 1, "playTile", {x:4, y:2}));
-console.log(game.updateGame(games[updateID], 1, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 2, "playTile", {x:3, y:2}));
-console.log(game.updateGame(games[updateID], 2, "chooseNewChain", {newChainChoice: 'i'}));
-console.log(game.updateGame(games[updateID], 2, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 3, "playTile", {x:6, y:2}));
-console.log(game.updateGame(games[updateID], 3, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 4, "playTile", {x:7, y:2}));
-console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 't'}));
-console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 0, "playTile", {x:5, y:3}));
-console.log(game.updateGame(games[updateID], 0, "purchaseShares", {endGame: false, purchase: {t: 1}}));
-console.log(game.updateGame(games[updateID], 1, "playTile", {x:5, y:2}));
-console.log(game.updateGame(games[updateID], 1, "chooseRemainingChain", {remainingChainChoice: 'i'}));
-console.log(game.updateGame(games[updateID], 1, "disposeShares", {}));
-console.log(game.updateGame(games[updateID], 1, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 2, "playTile", {x:1, y:2}));
-console.log(game.updateGame(games[updateID], 2, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 3, "playTile", {x:1, y:0}));
-console.log(game.updateGame(games[updateID], 3, "chooseNewChain", {newChainChoice: 'f'}));
-console.log(game.updateGame(games[updateID], 3, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 4, "playTile", {x:1, y:1}));
-console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 0, "playTile", {x:2, y:2}));
-console.log(game.updateGame(games[updateID], 0, "disposeShares", {}));
-console.log(game.updateGame(games[updateID], 0, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 1, "playTile", {x:0, y:8}));
-console.log(game.updateGame(games[updateID], 1, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 2, "playTile", {x:1, y:8}));
-console.log(game.updateGame(games[updateID], 2, "chooseNewChain", {newChainChoice: 'w'}));
-console.log(game.updateGame(games[updateID], 2, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 3, "playTile", {x:3, y:8}));
-console.log(game.updateGame(games[updateID], 3, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 4, "playTile", {x:4, y:8}));
-console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'c'}));
-console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {}}));
+game.createGame(games, 4, 4);
+game.createGame(games, 5, 7655);
+console.log(game.updateGame(games[updateID], 7654, "joinGame", {}))
+console.log(game.updateGame(games[updateID], 7653, "joinGame", {}))
+console.log(game.updateGame(games[updateID], 7652, "joinGame", {}))
+console.log(games[updateID].user_uuids);
+console.log(game.updateGame(games[updateID], 7655, "playTile", {x:0, y:0}, true));
+console.log(game.updateGame(games[updateID], 7655, "purchaseShares", {endGame: false, purchase: {}}));
+console.log(game.updateGame(games[updateID], 7654, "playTile", {x:4, y:2}, true));
+console.log(game.updateGame(games[updateID], 7654, "purchaseShares", {endGame: false, purchase: {}}));
+console.log(game.updateGame(games[updateID], 7653, "playTile", {x:3, y:2}, true));
+console.log(game.updateGame(games[updateID], 7653, "chooseNewChain", {newChainChoice: 'i'}));
+console.log(game.updateGame(games[updateID], 7653, "purchaseShares", {endGame: false, purchase: {}}));
+console.log(games[updateID].state.player_states[0]);
+console.log(game.updateGame(games[updateID], 7652, "playTile", {x:6, y:2}, true));
+console.log(game.updateGame(games[updateID], 7652, "purchaseShares", {endGame: false, purchase: {}}));
+console.log(game.updateGame(games[updateID], 7655, "playTile", {x:7, y:2}, true));
+console.log(game.updateGame(games[updateID], 7655, "chooseNewChain", {newChainChoice: 't'}));
+console.log(game.updateGame(games[updateID], 7655, "purchaseShares", {endGame: false, purchase: {t: 3}}));
+/*
+console.log(game.updateGame(games[updateID], 0, "playTile", {x:5, y:3}, true));
+console.log(game.updateGame(games[updateID], 0, "purchaseShares", {endGame: false, purchase: {t: 1}}, true));
+console.log(game.updateGame(games[updateID], 1, "playTile", {x:5, y:2}, true));
+console.log(game.updateGame(games[updateID], 1, "chooseRemainingChain", {remainingChainChoice: 'i'}, true));
+console.log(game.updateGame(games[updateID], 1, "disposeShares", {}, true));
+console.log(game.updateGame(games[updateID], 1, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 2, "playTile", {x:1, y:2}, true));
+console.log(game.updateGame(games[updateID], 2, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 3, "playTile", {x:1, y:0}, true));
+console.log(game.updateGame(games[updateID], 3, "chooseNewChain", {newChainChoice: 'f'}, true));
+console.log(game.updateGame(games[updateID], 3, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:1, y:1}, true));
+console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 0, "playTile", {x:2, y:2}, true));
+console.log(game.updateGame(games[updateID], 0, "disposeShares", {}, true));
+console.log(game.updateGame(games[updateID], 0, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 1, "playTile", {x:0, y:8}, true));
+console.log(game.updateGame(games[updateID], 1, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 2, "playTile", {x:1, y:8}, true));
+console.log(game.updateGame(games[updateID], 2, "chooseNewChain", {newChainChoice: 'w'}, true));
+console.log(game.updateGame(games[updateID], 2, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 3, "playTile", {x:3, y:8}, true));
+console.log(game.updateGame(games[updateID], 3, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:4, y:8}, true));
+console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoice: 'c'}, true));
+console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {}}, true));
 
-console.log(game.updateGame(games[updateID], 0, "playTile", {x:6, y:8}));
-console.log(game.updateGame(games[updateID], 0, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 1, "playTile", {x:7, y:8}));
-console.log(game.updateGame(games[updateID], 1, "chooseNewChain", {newChainChoice: 'a'}));
-console.log(game.updateGame(games[updateID], 1, "purchaseShares", {endGame: false, purchase: {}}));
+console.log(game.updateGame(games[updateID], 0, "playTile", {x:6, y:8}, true));
+console.log(game.updateGame(games[updateID], 0, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 1, "playTile", {x:7, y:8}, true));
+console.log(game.updateGame(games[updateID], 1, "chooseNewChain", {newChainChoice: 'a'}, true));
+console.log(game.updateGame(games[updateID], 1, "purchaseShares", {endGame: false, purchase: {}}, true));
 
-console.log(game.updateGame(games[updateID], 2, "playTile", {x:9, y:8}));
-console.log(game.updateGame(games[updateID], 2, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 3, "playTile", {x:10, y:8}));
-console.log(game.updateGame(games[updateID], 3, "chooseNewChain", {newChainChoice: 'l'}));
-console.log(game.updateGame(games[updateID], 3, "purchaseShares", {endGame: false, purchase: {}}));
+console.log(game.updateGame(games[updateID], 2, "playTile", {x:9, y:8}, true));
+console.log(game.updateGame(games[updateID], 2, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 3, "playTile", {x:10, y:8}, true));
+console.log(game.updateGame(games[updateID], 3, "chooseNewChain", {newChainChoice: 'l'}, true));
+console.log(game.updateGame(games[updateID], 3, "purchaseShares", {endGame: false, purchase: {}}, true));
 
 
-console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:5}));
-console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {}}));
-console.log(game.updateGame(games[updateID], 0, "playTile", {x:5, y:6}));
-console.log(game.updateGame(games[updateID], 0, "chooseNewChain", {newChainChoice: 'f'}));
-console.log(game.updateGame(games[updateID], 0, "purchaseShares", {endGame: false, purchase: {}}));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:5, y:5}, true));
+console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {}}, true));
+console.log(game.updateGame(games[updateID], 0, "playTile", {x:5, y:6}, true));
+console.log(game.updateGame(games[updateID], 0, "chooseNewChain", {newChainChoice: 'f'}, true));
+console.log(game.updateGame(games[updateID], 0, "purchaseShares", {endGame: false, purchase: {}}, true));
 
-console.log(game.updateGame(games[updateID], 1, "playTile", {x:11, y:0}));
-console.log(game.updateGame(games[updateID], 1, "purchaseShares", {endGame: false, purchase: {f: 2, a: 1}}));
-console.log(game.updateGame(games[updateID], 2, "playTile", {x:11, y:2}));
-console.log(game.updateGame(games[updateID], 2, "purchaseShares", {endGame: false, purchase: {w: 1, i: 2}}));
-console.log(game.updateGame(games[updateID], 3, "playTile", {x:11, y:4}));
-console.log(game.updateGame(games[updateID], 3, "purchaseShares", {endGame: false, purchase: {i: 3}}));
-console.log(game.updateGame(games[updateID], 4, "playTile", {x:11, y:6}));
-console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: true, purchase: {a: 1}}));
-
+console.log(game.updateGame(games[updateID], 1, "playTile", {x:11, y:0}, true));
+console.log(game.updateGame(games[updateID], 1, "purchaseShares", {endGame: false, purchase: {f: 2, a: 1}}, true));
+console.log(game.updateGame(games[updateID], 2, "playTile", {x:11, y:2}, true));
+console.log(game.updateGame(games[updateID], 2, "purchaseShares", {endGame: false, purchase: {w: 1, i: 2}}, true));
+console.log(game.updateGame(games[updateID], 3, "playTile", {x:11, y:4}, true));
+console.log(game.updateGame(games[updateID], 3, "purchaseShares", {endGame: false, purchase: {i: 3}}, true));
+console.log(game.updateGame(games[updateID], 4, "playTile", {x:11, y:6}, true));
+console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: true, purchase: {a: 1}}, true));
+*/
 
 console.log(games[updateID].state.player_states[4]);
 console.log(games[updateID].state.bank_shares);

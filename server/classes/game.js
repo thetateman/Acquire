@@ -16,6 +16,24 @@ class game {
         return id;
     };
 
+    static shuffleArray(arr) { // Fisher-Yates random shuffle.
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+    };
+
+    static genTileBank(){
+        let tileBank = [];
+        for(let i = 0; i < 12; i++){
+            for(let j = 0; j < 9; j++){
+                tileBank.push({x: i, y: j});
+            }
+        }
+        this.shuffleArray(tileBank);
+        return tileBank;
+    }
+
     //------------------Game Update Helper Functions------------------------
     
     static tilePlacer(board, chains, share_prices, active_merger, x, y){
@@ -141,6 +159,7 @@ class game {
                 }
             }
             newTile = {'x': currentTile.x+1, 'y': currentTile.y};
+            console.log(`currentTile: ${JSON.stringify(currentTile)}`);
             if(board[newTile.y][newTile.x] === 's'){
                 if(!connectingSingles.find((tile) => tile.x === newTile.x && tile.y === newTile.y)){
                     connectingSingles.push(JSON.parse(JSON.stringify(newTile)));
@@ -321,34 +340,21 @@ class game {
         }
     };
     
-    static createGame(games, numPlayers, creator = ""){
-        let playerStates = new Array(numPlayers);
-        for(let i = 0; i < numPlayers; i++){
-            playerStates[i] = {
-                tiles: [],
-                cash: 6000,
-                i: 0,
-                c: 0,
-                a: 0, 
-                w: 0,
-                f: 0, 
-                l: 0,
-                t: 0
-                };
-        }
-        let users = new Array(numPlayers).fill("");
-        users[0] = creator;
+    static createGame(games, maxPlayers, creator){
         let id = this.genNewGameID(games)
         let newGame = {
             id: id,
-            num_players: numPlayers,
-            user_ids: users,
+            num_players: 0,
+            max_players: maxPlayers,
+            user_uuids: [],
             state: {
-                inPlay: true,
+                game_started: false,
+                game_ended: false,
                 turn: 0,
                 play_count: 0,
                 expectedNextAction: 'playTile',
                 lastPlayedTile: {},
+                tile_bank: this.genTileBank(),
                 board: [
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
@@ -390,10 +396,10 @@ class game {
                     l: 0,
                     t: 0
                 },
-                player_states: playerStates
+                player_states: []
             }
-
         };
+        this.updateGame(newGame, creator, 'joinGame', {});
         games[id] = newGame;
         return id;
     };
@@ -403,12 +409,54 @@ class game {
         * Called after receiving game updating websocket message, updates in-memory game object.
         * @param {object} game - the game to be updated.
         * @param {int} userID - the id of the user who initiated the action.
-        * @param {string} updateType - updateType should be in: ['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares'].
+        * @param {string} updateType - updateType should be in: ['joinGame', 'startGame', 'playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares'].
         * @param {object} updateData - action details, e.g., coordinates of tile played.
         * @param {boolean} admin - updater is using administrator privilages to override game rules.
         * @returns {string} 'Success' or error string
         */
-        //const actions = ['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares']
+
+        // Handle metagame update types
+        if(updateType === 'joinGame'){
+            if(game.state.game_started){
+                return "gameAlreadyStarted";
+            }
+            if(game.max_players === game.user_uuids.length){
+                return "gameFull";
+            }
+            else{
+                game.num_players++;
+                game.user_uuids.push(userID);
+                game.state.player_states.push({
+                    tiles: [],
+                    cash: 6000,
+                    i: 0,
+                    c: 0,
+                    a: 0, 
+                    w: 0,
+                    f: 0, 
+                    l: 0,
+                    t: 0
+                    });
+                return "success";
+            }
+        }
+        else if(updateType === 'startGame'){
+            if(userID !== game.users[0]){
+                return "onlyCreatorMayStartGame";
+            }
+            else{
+                game.state.game_started = true;
+                return "success";
+            }
+        }
+
+        //userID is passed in as a UUID, here we convert it to the
+        //player number that represents that user in this game.
+        userID = game.user_uuids.indexOf(userID);
+        console.log(userID);
+        if(userID === -1){
+            return "userNotInGame";
+        }
         
         console.log(`Player ${game.state.turn}'s turn to ${game.state.expectedNextAction}.`);
         if(userID !== game.state.turn && !admin){
@@ -427,10 +475,14 @@ class game {
                 if(game.state.board[updateData.y][updateData.x] !== 'e'){
                     return "tileAlreadyPlayed";
                 }
-                //TODO: check for dead/asleep tiles
+                if(!admin && null == game.state.player_states[userID].tiles.find((tile) => updateData.x === tile.x && updateData.y === tile.y)){
+                    return "userLacksTile";
+                }
                 if(['z', 'd'].includes(this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, updateData.x, updateData.y))){
                     return "tileDeadOrAsleep";
                 }
+                // Remove tile from player hand
+                game.state.player_states[userID].tiles = game.state.player_states[userID].tiles.filter((tile) => !(updateData.x === tile.x && updateData.y === tile.y));
                 //update the game
                 switch(this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, updateData.x, updateData.y)){
                     case 'normal':
@@ -570,9 +622,11 @@ class game {
 
                     //award prizes
                     this.awardPrizes(game, "endGame");
-                    game.state.inPlay = false;
+                    game.state.game_ended = true;
                 }
                 else {
+                    game.state.player_states[userID].tiles.push(game.state.tile_bank.pop()) // Draws new tile.
+                    //TODO: handle empty tile bank ------- NOTE: test for/handle other exceptions like this.
                     game.state.expectedNextAction = 'playTile';
                     game.state.play_count++;
                     game.state.turn = game.state.play_count % game.num_players;
