@@ -265,6 +265,7 @@ class game {
         let id = this.genNewGameID(games)
         let newGame = {
             id: id,
+            num_players: numPlayers,
             user_ids: users,
             state: {
                 inPlay: true,
@@ -402,6 +403,7 @@ class game {
                         return "notLargestChainInMerger";
                     }
                 }
+                
                 game.state.expectedNextAction = 'disposeShares'
 
                 break;
@@ -429,6 +431,10 @@ class game {
                     game.state.active_merger.merging_chains.forEach((chain) => {
                         this.updatePrice(chain, game.state.chains, game.state.share_prices)
                     });
+                    
+                    //merger operations complete, clear active_merger object
+                    game.state.active_merger = {};
+
                     console.log("merging tiles")
                     console.log(mergingChainTiles);
                     
@@ -448,7 +454,7 @@ class game {
                 let numTotalShares = 0;
                 let totalPurchasePrice = 0;
                 for (const [key, value] of Object.entries(updateData.purchase)) {
-                    let purchasePricePerShare = game.state.share_prices[key]; //TODO: handle prices
+                    let purchasePricePerShare = game.state.share_prices[key];
                     let purchasePrice = purchasePricePerShare * value;
 
                     numTotalShares += value;
@@ -488,7 +494,50 @@ class game {
             default:
                 console.log("Not a valid updateType.")
                 return "invalidUpdateType";
+                break;
         }
+
+
+        if(JSON.stringify(game.state.active_merger) !== '{}'){ // merger is active.
+            console.log("the merger is active,,, checking if we can give prizes yet");
+            if(game.state.active_merger.remaining_chain !== 'p'){ // remaining chain has been selected.
+                //pay prizes
+                let elimChains = game.state.active_merger.merging_chains.filter((chain) => chain !== game.state.active_merger.remaining_chain);
+                for(let i = 0; i < elimChains.length; i++){
+                    let firstPlace = -1;
+                    let secondPlace = -1;
+                    let firstShareNum = 0;
+                    let secondShareNum = 0;
+                    for(let j = 0; j < game.num_players; j++){
+                        if(game.state.player_states[j][elimChains[i]] > firstShareNum){
+                            firstPlace = j;
+                            firstShareNum = game.state.player_states[j][elimChains[i]];
+                        }
+                    }
+                    for(let j = 0; j < game.num_players; j++){
+                        if(j === firstPlace){
+                            continue;
+                        }
+                        if(game.state.player_states[j][elimChains[i]] > secondShareNum){
+                            secondPlace = j;
+                            secondShareNum = game.state.player_states[j][elimChains[i]];
+                        }
+                    }
+                    if(secondPlace === -1){
+                        secondPlace = firstPlace;
+                    }
+                    if(firstPlace === -1){
+                        console.log("No shares, skipping prizes. (should only happen in debug).");
+                        break;
+                    }
+                    game.state.player_states[firstPlace].cash += 10 * game.state.share_prices[elimChains[i]];
+                    game.state.player_states[secondPlace].cash += 5 * game.state.share_prices[elimChains[i]];
+
+
+                }
+            }
+        }
+
         return "success";
     };
 }
