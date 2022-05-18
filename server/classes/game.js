@@ -248,8 +248,15 @@ class game {
         share_prices[chain] = finalPrice;
     };
 
-    static awardPrizes(game){
-        let elimChains = game.state.active_merger.merging_chains.filter((chain) => chain !== game.state.active_merger.remaining_chain);
+    static awardPrizes(game, reason='merger'){
+        let elimChains = [];
+        if(reason === 'merger'){
+            elimChains = elimChains.concat(game.state.active_merger.merging_chains.filter((chain) => chain !== game.state.active_merger.remaining_chain));
+        }
+        else if(reason === "endGame"){
+            elimChains = elimChains.concat(['i', 'c', 'a', 'w', 'f', 'l', 't'].filter((chain) => !game.state.available_chains.includes(chain)));
+        }
+        console.log(elimChains);
         for(let i = 0; i < elimChains.length; i++){
             let firstPlace = -1;
             let secondPlace = -1;
@@ -275,25 +282,31 @@ class game {
             }
             if(firstPlace === -1){
                 console.log("No shares, skipping prizes. (should only happen in debug).");
-                break;
+                continue;
             }
+            console.log(`awarding ${10 * game.state.share_prices[elimChains[i]]} to ` + 
+                `player ${firstPlace} and ${5 * game.state.share_prices[elimChains[i]]} to player ` +
+                `${secondPlace} for ${elimChains[i]}.`);
             game.state.player_states[firstPlace].cash += 10 * game.state.share_prices[elimChains[i]];
             game.state.player_states[secondPlace].cash += 5 * game.state.share_prices[elimChains[i]];
         }
     };
     
     static createGame(games, numPlayers, creator = ""){
-        let playerStates = new Array(numPlayers).fill({
-            tiles: [],
-            cash: 6000,
-            i: 0,
-            c: 0,
-            a: 0, 
-            w: 0,
-            f: 0, 
-            l: 0,
-            t: 0
-            });
+        let playerStates = new Array(numPlayers);
+        for(let i = 0; i < numPlayers; i++){
+            playerStates[i] = {
+                tiles: [],
+                cash: 6000,
+                i: 0,
+                c: 0,
+                a: 0, 
+                w: 0,
+                f: 0, 
+                l: 0,
+                t: 0
+                };
+        }
         let users = new Array(numPlayers).fill("");
         users[0] = creator;
         let id = this.genNewGameID(games)
@@ -518,6 +531,10 @@ class game {
                   
 
                 if(updateData.endGame === true){
+                    //TODO: check that player is allowed to end game.
+
+                    //award prizes
+                    this.awardPrizes(game, "endGame");
                     game.state.inPlay = false;
                 }
                 else {

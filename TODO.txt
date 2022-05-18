@@ -8,7 +8,8 @@
 
     UpdateGame method
         1. playTile
-            1. Tile Placer - search 
+            1. Tile Placer - search (done) 
+        2. End Game
 6. Connect frontend to game logic.
 7. Document client js
 8. Disaster recovery

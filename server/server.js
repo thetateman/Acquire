@@ -181,9 +181,10 @@ console.log(game.updateGame(games[updateID], 4, "chooseNewChain", {newChainChoic
 console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {f: 2, a: 1}}));
 console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {w: 1, i: 2}}));
 console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {i: 3}}));
-console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: false, purchase: {a: 1}}));
+console.log(game.updateGame(games[updateID], 4, "purchaseShares", {endGame: true, purchase: {a: 1}}));
 
 
 console.log(games[updateID].state.player_states[4]);
 console.log(games[updateID].state.bank_shares);
 console.log(games[updateID].state.share_prices);
+console.log(games[updateID].state.player_states[0]);
