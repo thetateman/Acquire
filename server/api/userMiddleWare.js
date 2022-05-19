@@ -76,6 +76,7 @@ class UserMiddleware{
     } else {
         req.session.isAuth = true;
         req.session.username = user.username;
+        req.session.userID = user._id.toHexString();
         responseObj.user = user;
         responseObj.user.password = "";
         return res.json(responseObj);

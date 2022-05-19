@@ -115,16 +115,20 @@ io.on('connection', (sock) => {
     sock.on('newGame', ({numPlayers, creator}) => {
         // creator arg no longer used, left in place for demonstration
         //TODO: fix this (creator/UUID stuff)
-        const newGameID = game.createGame(games, parseInt(numPlayers, 10), sock.request.session.username);
+        const newGameID = game.createGame(games, parseInt(numPlayers, 10), sock.request.session.userID);
         updateObject = {
             "action": "addGame",
             "game": games[newGameID],
         }
+        console.log(games[newGameID].user_uuids);
         io.emit('gameListUpdate', updateObject);
          
     });
-    sock.on('gameAction', ({game, userID, updateType, updateData}) => {
-        const updateResult = game.updateGame(game, userID, updateType, updateData);
+    sock.on('gameAction', ({game_id, updateType, updateData}) => {
+        console.log(`Game update: game: ${game_id}, updateType: ${updateType}, updateData: ${updateData}`);
+        const updateResult = game.updateGame(games[game_id], sock.request.session.userID, updateType, updateData);
+        console.log(updateResult);
+        console.log(games);
     });
 });
 

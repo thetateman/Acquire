@@ -1,31 +1,33 @@
-const loadGames = (games) => {
-
+const loadGames = (sock) => (games) => {
+    console.log(games);
     for (const [key, value] of Object.entries(games)) {
         const gameElements = 
             `<li>Game #${key}
                 <a href="/game?gameid=${key}">
-                    <button>Watch</button>
+                    <button id="watch${key}">Watch</button>
                 </a>
                 <a href="/game?gameid=${key}">
-                    <button>Join</button>
+                    <button id="join${key}">Join</button>
                 </a>
             </li>`;
-        document.querySelector('#games').innerHTML += gameElements;
+        document.querySelector('#games').insertAdjacentHTML("beforeend", gameElements);
+        document.querySelector(`#join${key}`).addEventListener('click', onJoinGame(key, sock));
     }
 };
-const updateGames = (update) => {
+const updateGames = (sock) => (update) => {
     if(update.action === "addGame"){
         const id = update.game.id;
         const gameElements = 
             `<li>Game #${id}
                 <a href="/game?gameid=${id}">
-                    <button>Watch</button>
+                    <button id="watch${id}">Watch</button>
                 </a>
                 <a href="/game?gameid=${id}">
-                    <button>Join</button>
+                    <button id="join${id}">Join</button>
                 </a>
             </li>`;
-        document.querySelector('#games').innerHTML += gameElements;
+        document.querySelector('#games').insertAdjacentHTML("beforeend", gameElements);
+        document.querySelector(`#join${id}`).addEventListener('click', onJoinGame(id, sock));
     }
 }
 const onNewGame = (creator) => (sock) => (e) => {
@@ -37,12 +39,20 @@ const onNewGame = (creator) => (sock) => (e) => {
     // creator arg no longer used by server, left in place for demonstration
 };
 
+const onJoinGame = (game, sock) => (e) => {
+    e.preventDefault();
+    console.log("hello?")
+    sock.emit('gameAction', {game_id: game, updateType: 'joinGame', updateData: {}});
+    console.log("sending game action ......");
+    location.href = `/game?gameid=${game}`;
+};
+
 
 
 (() => {
     const sock = io();
-    sock.on('gameResponse', loadGames);
-    sock.on('gameListUpdate', updateGames);
+    sock.on('gameResponse', loadGames(sock));
+    sock.on('gameListUpdate', updateGames(sock));
     
     
     sock.emit('gameRequest', "all");
@@ -51,6 +61,11 @@ const onNewGame = (creator) => (sock) => (e) => {
     document
     .querySelector('#new-game-form')
     .addEventListener('submit', onNewGame(currentUser)(sock));
+    /*
+    document
+    .querySelector('#join1')
+    .addEventListener('click', onJoinGame(1, sock));
+    */
 
 
 
