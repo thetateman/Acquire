@@ -52,6 +52,19 @@ canvas {
     display: block;
     margin: 10px auto;
 }
+table {
+    margin: 10px auto;
+    width: 75%;
+    aspect-ratio: 4/3;
+}
+
+th, td {
+    border-style: inset;
+    text-align: center;
+    font-size: 2vw;
+    font-weight: bold;
+    width: 8.333333%;
+}
 
 .controls-wrapper {
     background-color: rgb(255, 255, 255);

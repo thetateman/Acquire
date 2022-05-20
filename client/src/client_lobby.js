@@ -1,4 +1,5 @@
 const loadGames = (sock) => (games) => {
+    //TODO: Currently receiving entire games object from server. For scalability this data structure should be paired down.
     console.log(games);
     for (const [key, value] of Object.entries(games)) {
         const gameElements = 
