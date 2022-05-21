@@ -1,3 +1,6 @@
+:root {
+    --main-bg-color: white;
+}
 body {
     font-family: "Helvetica Neue", sans-serif;
     margin: 0;
@@ -52,23 +55,79 @@ canvas {
     display: block;
     margin: 10px auto;
 }
-table {
+
+.game-board {
     margin: 10px auto;
-    width: 75%;
+    width: 95%;
     aspect-ratio: 4/3;
 }
 
-th, td {
+.game-board td {
     border-style: inset;
     text-align: center;
-    font-size: 2vw;
+    font-size: 1.5vw;
     font-weight: bold;
     width: 8.333333%;
+    background-color: #f8f8bc;
+}
+
+.stats-board {
+    margin: 10px auto;
+    width: 95%;
+    border: 2px solid var(--main-bg-color);
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.stats-board th, .stats-board td {
+    border: 2px solid var(--main-bg-color);
+    border-collapse: collapse;
+    background-color: lightgray;
+    font-size: 1.25vw;
+    font-weight: bold;
+    overflow: hidden;
+}
+
+.chain-table-header {
+    width: 7%;
+}
+
+.player-table-header {
+    width: 25%;
+}
+
+.cash-table-header {
+    width: 13%;
+}
+
+.net-table-header {
+    width: 13%;
+}
+
+#stats-placeholder-row {
+    background-color: var(--main-bg-color);
+    color: var(--main-bg-color);
+    font-size: 0.5vw; /* control height of space between player and bank rows*/
+}
+
+/* Left column */
+.game-column {   
+    flex-basis: 55%;
+}
+  
+/* Right column */
+.stats-column{
+    flex-basis: 45%;
+}
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
 }
 
 .controls-wrapper {
     background-color: rgb(255, 255, 255);
-    width: 400px;
+    width: 95%;
     margin: 20px auto;
     border: 1px solid lightgrey;
 }

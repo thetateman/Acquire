@@ -346,7 +346,7 @@ class game {
             id: id,
             num_players: 0,
             max_players: maxPlayers,
-            user_uuids: [],
+            usernames:[],
             state: {
                 game_started: false,
                 game_ended: false,
@@ -404,11 +404,11 @@ class game {
         return id;
     };
 
-    static updateGame(game, userUUID, updateType, updateData, admin=false){
+    static updateGame(game, username, updateType, updateData, admin=false){
         /**
         * Called after receiving game updating websocket message, updates in-memory game object.
         * @param {object} game - the game to be updated.
-        * @param {string} userUUID - the id of the user who initiated the action.
+        * @param {string} username - the username of the user who initiated the action.
         * @param {string} updateType - updateType should be in: ['joinGame', 'startGame', 'playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares'].
         * @param {object} updateData - action details, e.g., coordinates of tile played.
         * @param {boolean} admin - updater is using administrator privilages to override game rules.
@@ -420,31 +420,31 @@ class game {
             if(game.state.game_started){
                 return "gameAlreadyStarted";
             }
-            if(game.user_uuids.includes(userUUID)){
+            if(game.usernames.includes(username)){
                 return "userAlreadyInGame";
             }
-            if(game.max_players === game.user_uuids.length){
+            if(game.max_players === game.usernames.length){
                 return "gameFull";
             }
             else{
                 game.num_players++;
-                game.user_uuids.push(userUUID);
+                game.usernames.push(username);
                 game.state.player_states.push({
                     tiles: [],
                     cash: 6000,
                     i: 0,
                     c: 0,
+                    w: 0, 
+                    f: 0,
                     a: 0, 
-                    w: 0,
-                    f: 0, 
-                    l: 0,
-                    t: 0
+                    t: 0,
+                    l: 0
                     });
                 return "success";
             }
         }
         else if(updateType === 'startGame'){
-            if(userUUID !== game.users[0]){
+            if(username !== game.usernames[0]){
                 return "onlyCreatorMayStartGame";
             }
             else{
@@ -453,9 +453,9 @@ class game {
             }
         }
 
-        //userUUID is passed in as a string, here we convert it to the
+        //username is passed in as a string, here we convert it to the
         //player number that represents that user in this game.
-        let userID = game.user_uuids.indexOf(userUUID);
+        let userID = game.usernames.indexOf(username);
         console.log(userID);
         if(userID === -1){
             return "userNotInGame";

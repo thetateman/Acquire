@@ -17,19 +17,39 @@
             </div>
         </div>
         <!-- old board implementation <canvas height="600" width="800"></canvas> -->
-        
+        <div class="flex-container">
+            <div class="game-column">
+                <table class="game-board"></table>
+            </div>
+            <div class="stats-column">
+                <table class="stats-board">
+                    <tr id="stats-table-header-row">
+                        <th class="player-table-header">Player</th>
+                        <th class="chain-table-header">I</th>
+                        <th class="chain-table-header">C</th>
+                        <th class="chain-table-header">W</th>
+                        <th class="chain-table-header">F</th>
+                        <th class="chain-table-header">A</th>
+                        <th class="chain-table-header">T</th>
+                        <th class="chain-table-header">L</th>
+                        <th class="cash-table-header">Cash</th>
+                        <th class="net-table-header">Net</th>
+                    </tr>
+                    <tr id="stats-placeholder-row-parent">
+                        <td id="stats-placeholder-row">.</td>
+                    </tr>
+                </table>
 
-        <table id="game-board">
-        </table>
-
-        <div class="controls-wrapper">
-            <ul id="events"></ul>
-            <div class="controls">
-                <div class="chat-wrapper">
-                    <form id="chat-form">
-                        <input id="chat" autocomplete="off" title="chat" />
-                        <button id="send">Send</button>
-                    </form>
+                <div class="controls-wrapper">
+                    <ul id="events"></ul>
+                    <div class="controls">
+                        <div class="chat-wrapper">
+                            <form id="chat-form">
+                                <input id="chat" autocomplete="off" title="chat" />
+                                <button id="send">Send</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

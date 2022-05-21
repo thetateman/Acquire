@@ -14,3 +14,4 @@
 7. Document client js
 8. Disaster recovery
 9. Create and store UUIDs for users
+10. Maintain net worth calculation.

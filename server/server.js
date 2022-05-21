@@ -30,7 +30,7 @@ const sessionStore = new MongoStore({
 });
 
 const sessionMiddleware = session({
-    secret: 'some secret',
+    secret: 'some secret', //TODO: CHANGE THIS
     resave: false,
     saveUninitialized: true,
     store: sessionStore,
@@ -99,34 +99,51 @@ io.on('connection', (sock) => {
         console.log(JSON.stringify({x, y}));
     });
     sock.on('gameRequest', gameID => {
+        let requestingUser = sock.request.session.username;
         if(gameID === "all"){
-            sock.emit('gameResponse', games);
+            //TODO: add additional game data to summaries
+            let gameSummaries = {};
+            for (const [key, value] of Object.entries(games)) {
+                gameSummaries[key] = {
+                    usernames: value.usernames
+                };
+            }
+            sock.emit('gameResponse', gameSummaries);
         }else{
-            requestedGame = games[parseInt(gameID, 10)];
-            if(requestedGame){
-                sock.emit('gameResponse', requestedGame);
-            } else {
+            if(!Object.keys(games).includes(gameID)){
                 console.log("Requested a game that does not exist!");
                 sock.emit('gameResponse', "none");
+            }
+            else{
+                //We send a modified copy of the game object to the client, after removing secret data.
+                let requestedGameCopy = JSON.parse(JSON.stringify(games[parseInt(gameID, 10)])); 
+                const requestingUsersPlayerID = requestedGameCopy.usernames.indexOf(requestingUser);
+                for(let i=0; i<requestedGameCopy.num_players; i++){
+                    if(i === requestingUsersPlayerID){
+                        continue;
+                    }
+                    requestedGameCopy.state.player_states[i].tiles = [];
+                }
+                requestedGameCopy.state.tile_bank = [];
+                sock.emit('gameResponse', requestedGameCopy);
             }
         }
         
     });
     sock.on('newGame', ({numPlayers, creator}) => {
         // creator arg no longer used, left in place for demonstration
-        //TODO: fix this (creator/UUID stuff)
-        const newGameID = game.createGame(games, parseInt(numPlayers, 10), sock.request.session.userID);
+        const newGameID = game.createGame(games, parseInt(numPlayers, 10), sock.request.session.username);
         updateObject = {
             "action": "addGame",
             "game": games[newGameID],
         }
-        console.log(games[newGameID].user_uuids);
+        console.log(games[newGameID].usernames);
         io.emit('gameListUpdate', updateObject);
          
     });
     sock.on('gameAction', ({game_id, updateType, updateData}) => {
         console.log(`Game update: game: ${game_id}, updateType: ${updateType}, updateData: ${updateData}`);
-        const updateResult = game.updateGame(games[game_id], sock.request.session.userID, updateType, updateData);
+        const updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData);
         console.log(updateResult);
         console.log(games);
     });
@@ -149,14 +166,14 @@ game.createGame(games, 5, 7655);
 console.log(game.updateGame(games[updateID], 7654, "joinGame", {}))
 console.log(game.updateGame(games[updateID], 7653, "joinGame", {}))
 console.log(game.updateGame(games[updateID], 7652, "joinGame", {}))
-console.log(games[updateID].user_uuids);
+console.log(games[updateID].usernames);
 console.log(game.updateGame(games[updateID], 7655, "playTile", {x:0, y:0}, true));
 console.log(game.updateGame(games[updateID], 7655, "purchaseShares", {endGame: false, purchase: {}}));
 console.log(game.updateGame(games[updateID], 7654, "playTile", {x:4, y:2}, true));
 console.log(game.updateGame(games[updateID], 7654, "purchaseShares", {endGame: false, purchase: {}}));
 console.log(game.updateGame(games[updateID], 7653, "playTile", {x:3, y:2}, true));
 console.log(game.updateGame(games[updateID], 7653, "chooseNewChain", {newChainChoice: 'i'}));
-console.log(game.updateGame(games[updateID], 7653, "purchaseShares", {endGame: false, purchase: {}}));
+console.log(game.updateGame(games[updateID], 7653, "purchaseShares", {endGame: false, purchase: {i: 3}}));
 console.log(games[updateID].state.player_states[0]);
 console.log(game.updateGame(games[updateID], 7652, "playTile", {x:6, y:2}, true));
 console.log(game.updateGame(games[updateID], 7652, "purchaseShares", {endGame: false, purchase: {}}));
