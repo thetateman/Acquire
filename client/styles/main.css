@@ -81,13 +81,13 @@ canvas {
 .stats-board {
     margin: 10px auto;
     width: 95%;
-    border: 2px solid var(--main-bg-color);
+    border: 3px solid var(--main-bg-color);
     border-collapse: collapse;
     table-layout: fixed;
 }
 
 .stats-board th, .stats-board td {
-    border: 2px solid var(--main-bg-color);
+    border: 3px solid var(--main-bg-color);
     border-collapse: collapse;
     background-color: lightgray;
     font-size: 1.25vw;
@@ -111,38 +111,43 @@ canvas {
     width: 13%;
 }
 
-#ihead {
+#ihead, #ibutton {
     background-color: var(--imperial-color);
 }
 
-#chead {
+#chead, #cbutton {
     background-color: var(--continental-color);
 }
 
-#whead {
+#whead, #wbutton {
     background-color: var(--worldwide-color);
 }
 
-#fhead {
+#fhead, #fbutton {
     background-color: var(--festival-color);
 }
 
-#ahead {
+#ahead, #abutton {
     background-color: var(--american-color);
 }
 
-#thead {
+#thead, #tbutton {
     background-color: var(--tower-color);
 }
 
-#lhead {
+#lhead, #lbutton {
     background-color: var(--luxor-color);
 }
 
-#stats-placeholder-row {
+#stats-placeholder-row, #button-buffer-row{
     background-color: var(--main-bg-color);
     color: var(--main-bg-color);
-    font-size: 0.5vw; /* control height of space between player and bank rows*/
+    font-size: 0.4vw; /* control height of space between player and bank rows*/
+}
+
+#button-row-placeholder {
+    font-size: 2.2vw;
+    background-color: var(--main-bg-color);
 }
 
 /* Left column */

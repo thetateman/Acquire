@@ -78,15 +78,24 @@ const tileClickHandler = (e, sock) => {
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'playTile', updateData: {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)}})
 };
 
+const chainSelectHandler = (e, sock) => {
+    const chainSelection = e.id.charAt(0);
+    //different behavior depending on next expected action
+    if(localStorage.getItem('expected_next_action') === 'chooseNewChain'){
+        sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseNewChain', updateData: {newChainChoice: chainSelection}});
+    }
+    //sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'selectChain', updateData: {chain_selection: chainSelection}});
+};
+
 const populateGame = (game) => {
     generateStatsTable(game);
-
-    
+    updateGameBoard(game);
 };
 
 const updateGame = (gameUpdate) => {
     const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
-    if(gameUpdate.type === 'playTile'){
+    localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
+    if(gameUpdate.type === 'playTile' || gameUpdate.type === 'chooseNewChain'){
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
     } 
@@ -167,6 +176,9 @@ const updateStatsTable = (game) => {
     
     document.querySelectorAll('.game-board td')
     .forEach(e => e.addEventListener('click', function() {tileClickHandler(e, sock);}));
+
+    document.querySelectorAll('#chain-button-row td')
+    .forEach(e => e.addEventListener('click', function() {chainSelectHandler(e, sock);}));
     
     document
     .querySelector('#chat-form')
