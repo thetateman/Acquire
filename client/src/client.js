@@ -45,17 +45,36 @@ const addBoard = () => {
     document.querySelector(".game-board").insertAdjacentHTML("beforeend", spaces);
 };
 
-const updateTile = (x, y, color) => {
+const updateGameBoard = (game) => {
+    for(let x=0; x<12; x++){
+        for(let y=0; y<9; y++){
+            if(game.state.board[y][x] !== 'e'){
+                updateTile(x, y, game.state.board[y][x]);
+            }
+        }
+    }
+};
+
+const updateTile = (x, y, tileType) => {
+    const tileColors = {'i': "var(--imperial-color)",
+    'c': "var(--continental-color)",
+    'w': "var(--worldwide-color)",
+    'f': "var(--festival-color)",
+    'a': "var(--american-color)",
+    't': "var(--tower-color)",
+    'l': "var(--luxor-color)",
+    'p': "gray",
+    's': "black"
+    };
     let tile = document.querySelector(`[x="${x}"][y="${y}"]`);
     console.log(tile);
-    tile.style["background-color"] = color;
-    tile.style["border-color"] = color;
+    tile.style["background-color"] = tileColors[tileType];
+    tile.style["border-color"] = tileColors[tileType];
     tile.style["border-style"] = "outset";
 };
 
 const tileClickHandler = (e, sock) => {
     console.log(`clicked x:${e.getAttribute('x')} y:${e.getAttribute('y')}`);
-    sock.emit('turn', {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)});
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'playTile', updateData: {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)}})
 };
 
@@ -68,7 +87,8 @@ const populateGame = (game) => {
 const updateGame = (gameUpdate) => {
     const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
     if(gameUpdate.type === 'playTile'){
-
+        updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
+        updateGameBoard(gameUpdate.game);
     } 
     else if(gameUpdate.type === 'joinGame'){
         if(gameUpdate.joining_player !== localStorage.getItem('username')){ // if joining player != current user. (Data will have been added already.)
@@ -116,15 +136,33 @@ const generateStatsTable = (game) => {
     let miscStats = "<tr>" + bankShareRow + "</tr><tr>" + chainSizeRow + "</tr><tr>" + priceRow + "</tr>";
 
     document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("afterend", miscStats);
+};
+
+const updateStatsTable = (game) => {
+    const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
+    for(let i=0; i<game.num_players; i++){
+        chains.forEach((chain) => {
+            document.querySelector(`[row="${i}"][column="${chain}"]`).innerHTML = game.state.player_states[i][chain];
+        });
+        document.querySelector(`[row="${i}"][column="cash"]`).innerHTML = game.state.player_states[i]["cash"];
+        document.querySelector(`[row="${i}"][column="net"]`).innerHTML = game.state.player_states[i]["net_worth"];
+    }
+    chains.forEach((chain) => {
+        document.querySelector(`[row="bank-shares"][column="${chain}"]`).innerHTML = game.state.bank_shares[chain];
+    });
+    chains.forEach((chain) => {
+        document.querySelector(`[row="chain-size"][column="${chain}"]`).innerHTML = game.state.chains[chain].length;
+    });
+    chains.forEach((chain) => {
+        document.querySelector(`[row="price"][column="${chain}"]`).innerHTML = game.state.share_prices[chain];
+    });
 }
 
 (() => {
     const sock = io();
-    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'joinGame', updateData: {}});
     addBoard();
     sock.on('message', log);
     sock.on('gameResponse', populateGame);
-    sock.on('turn', ({ x, y, color}) => updateTile(x, y, color));
     sock.on('gameUpdate', updateGame);
     
     document.querySelectorAll('.game-board td')

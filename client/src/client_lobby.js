@@ -43,6 +43,7 @@ const onNewGame = (creator) => (sock) => (e) => {
 const onJoinGame = (game, sock) => (e) => {
     e.preventDefault();
     localStorage.setItem('current_game_id', game);
+    sock.emit('gameAction', {game_id: game, updateType: 'joinGame', updateData: {}});
     location.href = `/game?gameid=${game}`;
 };
 
