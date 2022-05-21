@@ -65,8 +65,29 @@ const populateGame = (game) => {
     
 };
 
-const updateGame = (game) => {
-    updateStatsTable(game); //similar to game board
+const updateGame = (gameUpdate) => {
+    const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
+    if(gameUpdate.type === 'playTile'){
+
+    } 
+    else if(gameUpdate.type === 'joinGame'){
+        if(gameUpdate.joining_player !== localStorage.getItem('username')){ // if joining player != current user. (Data will have been added already.)
+            // Add a new player to the stats table.
+            let chainData = "";
+            const i = gameUpdate.player_num;
+            // build player data row, setting row and column attributes for easy access when updating.
+            chains.forEach((chain) => {chainData += `<td row="${i}" column="${chain}">${gameUpdate.player_data[chain]}</td>`});
+            let newPlayerRow = `<tr><td row="${i}" column="username">${gameUpdate.joining_player}</td>`+ chainData +
+            `<td row="${i}" column="cash">${gameUpdate.player_data['cash']}</td>` +
+            `<td row="${i}" column="net">${gameUpdate.player_data['net_worth']}</td></tr>`;
+    
+            document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("beforebegin", newPlayerRow);
+        }
+    }
+    else {
+        console.log("Got unrecognized game update...")
+    }
+    //updateStatsTable(game); //similar to game board
     console.log("got messagedddddddddddddddddddd");
 };
 
@@ -76,20 +97,22 @@ const generateStatsTable = (game) => {
     for(let i=0; i<game.num_players; i++){
         let playerState = game.state.player_states[i];
         let chainData = "";
-        chains.forEach((chain) => {chainData += `<td>${playerState[chain]}</td>`});
-        playerRows += `<tr><td>${game.usernames[i]}</td>`+ chainData +
-        `<td>${playerState['cash']}</td></tr>`;
+        // build player data row, setting row and column attributes for easy access when updating.
+        chains.forEach((chain) => {chainData += `<td row="${i}" column="${chain}">${playerState[chain]}</td>`});
+        playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}</td>`+ chainData +
+        `<td row="${i}" column="cash">${playerState['cash']}</td>` +
+        `<td row="${i}" column="net">${playerState['net_worth']}</td></tr>`;
         
     }
     document.querySelector("#stats-table-header-row").insertAdjacentHTML("afterend", playerRows);
 
     // Build and add the table rows for misc stats
     let bankShareRow = "<td>Bank Shares</td>";
-    chains.forEach((chain) => {bankShareRow += `<td>${game.state.bank_shares[chain]}</td>`});
+    chains.forEach((chain) => {bankShareRow += `<td row="bank-shares" column="${chain}">${game.state.bank_shares[chain]}</td>`});
     let chainSizeRow = "<td>Chain Size</td>";
-    chains.forEach((chain) => {chainSizeRow += `<td>${game.state.chains[chain].length}</td>`});
+    chains.forEach((chain) => {chainSizeRow += `<td row="chain-size" column="${chain}">${game.state.chains[chain].length}</td>`});
     let priceRow = "<td>Price</td>";
-    chains.forEach((chain) => {priceRow += `<td>${game.state.share_prices[chain]}</td>`});
+    chains.forEach((chain) => {priceRow += `<td row="price" column="${chain}">${game.state.share_prices[chain]}</td>`});
     let miscStats = "<tr>" + bankShareRow + "</tr><tr>" + chainSizeRow + "</tr><tr>" + priceRow + "</tr>";
 
     document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("afterend", miscStats);
@@ -97,9 +120,10 @@ const generateStatsTable = (game) => {
 
 (() => {
     const sock = io();
+    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'joinGame', updateData: {}});
     addBoard();
     sock.on('message', log);
-    sock.on('gameResponse', populateGame); //TODO: populate game with this.
+    sock.on('gameResponse', populateGame);
     sock.on('turn', ({ x, y, color}) => updateTile(x, y, color));
     sock.on('gameUpdate', updateGame);
     

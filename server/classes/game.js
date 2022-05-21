@@ -432,6 +432,7 @@ class game {
                 game.state.player_states.push({
                     tiles: [],
                     cash: 6000,
+                    net_worth: 6000,
                     i: 0,
                     c: 0,
                     w: 0, 

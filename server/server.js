@@ -148,9 +148,31 @@ io.on('connection', (sock) => {
          
     });
     sock.on('gameAction', ({game_id, updateType, updateData}) => {
+        if(!Object.keys(games).includes(game_id)){
+            console.log("Requested a game that does not exist!");
+            sock.emit('error', "none"); //TODO: add catch-all error listener to client.
+            return false;
+        }
         console.log(`Game update: game: ${game_id}, updateType: ${updateType}, updateData: ${updateData}`);
         const updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData, true);
-        if(updateType !== "joinGame"){
+        if(updateResult !== "success"){
+            console.log(`Failed to update game because: ${updateResult}.`);
+            return false;
+        }
+        if(updateType === "joinGame"){
+            const playerNum = games[game_id].usernames.indexOf(sock.request.session.username);
+            const gameUpdate = {
+                type: "joinGame",
+                joining_player: sock.request.session.username,
+                player_num: playerNum,
+                player_data: games[game_id].state.player_states[playerNum],
+                // Not sure if we need to send player data or not,
+                // is there any case where we could not infer all the data on the client-side?
+            };
+            io.in(game_id.toString()).emit('gameUpdate', gameUpdate);
+        }
+        else{
+            // TODO: break this up into more specific cases, so we can send more specific data, instead of the whole game object.
             io.in(game_id.toString()).emit('gameUpdate', getSendableGame(games[game_id], sock.request.session.username));
         }
         console.log(updateResult);

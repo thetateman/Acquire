@@ -42,9 +42,6 @@ const onNewGame = (creator) => (sock) => (e) => {
 
 const onJoinGame = (game, sock) => (e) => {
     e.preventDefault();
-    console.log("hello?")
-    sock.emit('gameAction', {game_id: game, updateType: 'joinGame', updateData: {}});
-    console.log("sending game action ......");
     localStorage.setItem('current_game_id', game);
     location.href = `/game?gameid=${game}`;
 };
@@ -59,7 +56,6 @@ const onJoinGame = (game, sock) => (e) => {
     
     sock.emit('gameRequest', "all");
     let currentUser = localStorage.getItem('username'); //There has to be a better way to do this
-    console.log(currentUser);
     document
     .querySelector('#new-game-form')
     .addEventListener('submit', onNewGame(currentUser)(sock));
