@@ -96,22 +96,13 @@ io.use(function(socket, next) {
 });
 
 io.on('connection', (sock) => {
-   
-    current_player_id = player_id;
-    player_id++;
-    colors = ["red", "orange", "yellow", "green", "blue", "purple", "black"]
-    color = colors[current_player_id % colors.length];
     sock.emit('message', 'You are connected');
-    //console.log(sock.request.session);
 
     sock.on('message', (text) => {
         io.emit('message', text);
         console.log(`got the message: ${text}.`);
     });
-    sock.on('turn', ({x, y}) => {
-        io.emit('turn', {x, y, color});
-        console.log(JSON.stringify({x, y}));
-    });
+
     sock.on('gameRequest', gameID => {
         let requestingUser = sock.request.session.username;
         if(gameID === "all"){
@@ -154,7 +145,13 @@ io.on('connection', (sock) => {
             return false;
         }
         console.log(`Game update: game: ${game_id}, updateType: ${updateType}, updateData: ${updateData}`);
-        const updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData, true);
+        let updateResult;
+        try{
+            updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData, true);
+        } 
+        catch(err){
+            console.log(err);
+        }
         if(updateResult !== "success"){
             console.log(`Failed to update game because: ${updateResult}.`);
             return false;
@@ -171,9 +168,12 @@ io.on('connection', (sock) => {
             };
             io.in(game_id.toString()).emit('gameUpdate', gameUpdate);
         }
+        else if(updateType === "playTile"){
+            io.in(game_id.toString()).emit('gameUpdate', {type: "playTile", game: getSendableGame(games[game_id], sock.request.session.username)});
+        }
         else{
             // TODO: break this up into more specific cases, so we can send more specific data, instead of the whole game object.
-            io.in(game_id.toString()).emit('gameUpdate', getSendableGame(games[game_id], sock.request.session.username));
+            io.in(game_id.toString()).emit('gameUpdate', {type: "missing", game: getSendableGame(games[game_id], sock.request.session.username)});
         }
         console.log(updateResult);
     });
@@ -192,7 +192,7 @@ server.listen(8080, () => {
 //TODO: updateGame unit tests
 let updateID = 2;
 game.createGame(games, 4, 4);
-game.createGame(games, 5, 7655);
+game.createGame(games, 6, 7655);
 console.log(game.updateGame(games[updateID], 7654, "joinGame", {}))
 console.log(game.updateGame(games[updateID], 7653, "joinGame", {}))
 console.log(game.updateGame(games[updateID], 7652, "joinGame", {}))
