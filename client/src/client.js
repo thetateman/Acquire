@@ -56,10 +56,21 @@ const updateTile = (x, y, color) => {
 const tileClickHandler = (e, sock) => {
     console.log(`clicked x:${e.getAttribute('x')} y:${e.getAttribute('y')}`);
     sock.emit('turn', {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)});
+    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'playTile', updateData: {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)}})
 };
 
 const populateGame = (game) => {
-    // Start by populating the stats table.
+    generateStatsTable(game);
+
+    
+};
+
+const updateGame = (game) => {
+    updateStatsTable(game); //similar to game board
+    console.log("got messagedddddddddddddddddddd");
+};
+
+const generateStatsTable = (game) => {
     const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
     let playerRows = ""; // Populate player data: usernames, chains, cash.
     for(let i=0; i<game.num_players; i++){
@@ -68,6 +79,7 @@ const populateGame = (game) => {
         chains.forEach((chain) => {chainData += `<td>${playerState[chain]}</td>`});
         playerRows += `<tr><td>${game.usernames[i]}</td>`+ chainData +
         `<td>${playerState['cash']}</td></tr>`;
+        
     }
     document.querySelector("#stats-table-header-row").insertAdjacentHTML("afterend", playerRows);
 
@@ -79,7 +91,7 @@ const populateGame = (game) => {
     let priceRow = "<td>Price</td>";
     chains.forEach((chain) => {priceRow += `<td>${game.state.share_prices[chain]}</td>`});
     let miscStats = "<tr>" + bankShareRow + "</tr><tr>" + chainSizeRow + "</tr><tr>" + priceRow + "</tr>";
-    
+
     document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("afterend", miscStats);
 }
 
@@ -89,6 +101,7 @@ const populateGame = (game) => {
     sock.on('message', log);
     sock.on('gameResponse', populateGame); //TODO: populate game with this.
     sock.on('turn', ({ x, y, color}) => updateTile(x, y, color));
+    sock.on('gameUpdate', updateGame);
     
     document.querySelectorAll('.game-board td')
     .forEach(e => e.addEventListener('click', function() {tileClickHandler(e, sock);}));

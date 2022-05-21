@@ -1,5 +1,12 @@
 :root {
     --main-bg-color: white;
+    --imperial-color: #ff00ff;
+    --continental-color: #00ffff;
+    --worldwide-color: #9e4104;
+    --festival-color: #00ff00;
+    --american-color: #0000ff;
+    --tower-color: #ffff00;
+    --luxor-color: #ff0000;
 }
 body {
     font-family: "Helvetica Neue", sans-serif;
@@ -102,6 +109,34 @@ canvas {
 
 .net-table-header {
     width: 13%;
+}
+
+#ihead {
+    background-color: var(--imperial-color);
+}
+
+#chead {
+    background-color: var(--continental-color);
+}
+
+#whead {
+    background-color: var(--worldwide-color);
+}
+
+#fhead {
+    background-color: var(--festival-color);
+}
+
+#ahead {
+    background-color: var(--american-color);
+}
+
+#thead {
+    background-color: var(--tower-color);
+}
+
+#lhead {
+    background-color: var(--luxor-color);
 }
 
 #stats-placeholder-row {

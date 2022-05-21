@@ -45,6 +45,7 @@ const onJoinGame = (game, sock) => (e) => {
     console.log("hello?")
     sock.emit('gameAction', {game_id: game, updateType: 'joinGame', updateData: {}});
     console.log("sending game action ......");
+    localStorage.setItem('current_game_id', game);
     location.href = `/game?gameid=${game}`;
 };
 

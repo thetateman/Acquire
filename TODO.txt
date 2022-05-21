@@ -15,3 +15,4 @@
 8. Disaster recovery
 9. Create and store UUIDs for users
 10. Maintain net worth calculation.
+11. Allow multiple active sessions?

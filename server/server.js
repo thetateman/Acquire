@@ -57,6 +57,20 @@ function authLogic(req, res, next) {
     }
 }
 
+function getSendableGame(game, requestingUser){
+     //We send a modified copy of the game object to the client, after removing secret data.
+     let requestedGameCopy = JSON.parse(JSON.stringify(game)); 
+     const requestingUsersPlayerID = requestedGameCopy.usernames.indexOf(requestingUser);
+     for(let i=0; i<requestedGameCopy.num_players; i++){
+         if(i === requestingUsersPlayerID){
+             continue;
+         }
+         requestedGameCopy.state.player_states[i].tiles = [];
+     }
+     requestedGameCopy.state.tile_bank = [];
+     return requestedGameCopy;
+}
+
 app.use(authLogic, express.static(`${__dirname}/../client`));
 
 app.use('/login', (req, res) => {
@@ -115,17 +129,9 @@ io.on('connection', (sock) => {
                 sock.emit('gameResponse', "none");
             }
             else{
-                //We send a modified copy of the game object to the client, after removing secret data.
-                let requestedGameCopy = JSON.parse(JSON.stringify(games[parseInt(gameID, 10)])); 
-                const requestingUsersPlayerID = requestedGameCopy.usernames.indexOf(requestingUser);
-                for(let i=0; i<requestedGameCopy.num_players; i++){
-                    if(i === requestingUsersPlayerID){
-                        continue;
-                    }
-                    requestedGameCopy.state.player_states[i].tiles = [];
-                }
-                requestedGameCopy.state.tile_bank = [];
+                const requestedGameCopy = getSendableGame(games[parseInt(gameID, 10)], requestingUser);
                 sock.emit('gameResponse', requestedGameCopy);
+                sock.join(gameID);
             }
         }
         
@@ -143,9 +149,11 @@ io.on('connection', (sock) => {
     });
     sock.on('gameAction', ({game_id, updateType, updateData}) => {
         console.log(`Game update: game: ${game_id}, updateType: ${updateType}, updateData: ${updateData}`);
-        const updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData);
+        const updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData, true);
+        if(updateType !== "joinGame"){
+            io.in(game_id.toString()).emit('gameUpdate', getSendableGame(games[game_id], sock.request.session.username));
+        }
         console.log(updateResult);
-        console.log(games);
     });
 });
 
