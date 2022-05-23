@@ -1,4 +1,6 @@
+const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
 const logout = () => {
+    localStorage.clear();
     fetch('/api/logoutUser', {
         method: 'DELETE',
         headers: {
@@ -67,7 +69,6 @@ const updateTile = (x, y, tileType) => {
     's': "black"
     };
     let tile = document.querySelector(`[x="${x}"][y="${y}"]`);
-    console.log(tile);
     tile.style["background-color"] = tileColors[tileType];
     tile.style["border-color"] = tileColors[tileType];
     tile.style["border-style"] = "outset";
@@ -84,20 +85,36 @@ const chainSelectHandler = (e, sock) => {
     if(localStorage.getItem('expected_next_action') === 'chooseNewChain'){
         sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseNewChain', updateData: {newChainChoice: chainSelection}});
     }
+    else if(localStorage.getItem('expected_next_action') === 'purchaseShares'){
+        let numSharesInCart = 0;
+        chains.forEach((chain) => numSharesInCart+=parseInt(localStorage[`${chain}InCart`], 10));
+        if(numSharesInCart >= 3){
+            console.log("You may buy a maximum of 3 shares.");
+        }
+        else{
+            localStorage[`${chainSelection}InCart`]++; //TODO: FIX THIS
+        }
+    }
+    else if(localStorage.getItem('expected_next_action') === 'chooseRemainingChain'){
+        sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseRemainingChain', updateData: {remainingChainChoice: chainSelection}});
+    }
     //sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'selectChain', updateData: {chain_selection: chainSelection}});
 };
 
 const populateGame = (game) => {
+    chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0"));
     generateStatsTable(game);
     updateGameBoard(game);
 };
 
 const updateGame = (gameUpdate) => {
-    const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
     localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
-    if(gameUpdate.type === 'playTile' || gameUpdate.type === 'chooseNewChain'){
+    if(['playTile', 'chooseNewChain', 'chooseRemainingChain'].includes(gameUpdate.type)){
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
+        if(gameUpdate.type === 'chooseRemainingChain'){
+            document.querySelector(".dispose-shares-table").style.display = 'table';
+        }
     } 
     else if(gameUpdate.type === 'joinGame'){
         if(gameUpdate.joining_player !== localStorage.getItem('username')){ // if joining player != current user. (Data will have been added already.)
@@ -121,7 +138,6 @@ const updateGame = (gameUpdate) => {
 };
 
 const generateStatsTable = (game) => {
-    const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
     let playerRows = ""; // Populate player data: usernames, chains, cash.
     for(let i=0; i<game.num_players; i++){
         let playerState = game.state.player_states[i];
@@ -148,7 +164,6 @@ const generateStatsTable = (game) => {
 };
 
 const updateStatsTable = (game) => {
-    const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
     for(let i=0; i<game.num_players; i++){
         chains.forEach((chain) => {
             document.querySelector(`[row="${i}"][column="${chain}"]`).innerHTML = game.state.player_states[i][chain];

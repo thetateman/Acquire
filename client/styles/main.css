@@ -150,6 +150,22 @@ canvas {
     background-color: var(--main-bg-color);
 }
 
+.dispose-shares-table {
+    margin: 10px auto;
+    width: 50%;
+    border: 1px solid black;
+    border-collapse: collapse;
+    display: none;
+}
+
+.dispose-shares-table th, .dispose-shares-table td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    background-color: white;
+    font-size: 1.25vw;
+    font-weight: bold;
+}
+
 /* Left column */
 .game-column {   
     flex-basis: 55%;

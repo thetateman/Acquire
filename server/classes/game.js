@@ -548,7 +548,7 @@ class game {
             case 'disposeShares':
                 let shareDisposalComplete = false;
 
-                shareDisposalComplete = true;
+                shareDisposalComplete = true; //TODO, FIX THIS.
                 if(shareDisposalComplete){
                     let mergingTile = game.state.lastPlayedTile;
                     let mergingChainTiles = [mergingTile];
