@@ -150,12 +150,15 @@ canvas {
     background-color: var(--main-bg-color);
 }
 
+#dispose-shares-container, #buy-shares-container {
+    display: none;
+}
+
 .dispose-shares-table {
     margin: 10px auto;
-    width: 50%;
+    width: 95%;
     border: 1px solid black;
     border-collapse: collapse;
-    display: none;
 }
 
 .dispose-shares-table th, .dispose-shares-table td {
@@ -164,6 +167,22 @@ canvas {
     background-color: white;
     font-size: 1.25vw;
     font-weight: bold;
+}
+
+#dispose-shares-button-row td {
+    width: 11.111111%;
+}
+
+.share-action-button {
+    margin: 10px auto;
+}
+
+.dynamic-share-info-column {
+    flex-basis: 70%;
+}
+
+.dynamic-share-action-column {
+    flex-basis: 30%;
 }
 
 /* Left column */

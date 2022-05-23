@@ -52,15 +52,40 @@
                         <td class="chain-button" id="lbutton">L</td>
                     </tr>
                 </table>
-                <table class="dispose-shares-table">
-                    <tr>
-                        <th>Keep</th>
-                        <th>Trade</th>
-                        <th>Sell</th>
-                    </tr>
-                    <tr id="dispose-shares-row"></tr>
-                </table>
-
+                <div class="flex-container" id="buy-shares-container">
+                    <div class="dynamic-share-info-column">
+                        
+                    </div>
+                    <div class="dynamic-share-action-column">
+                        <button class="share-action-button" id="buy-shares-button">Buy</button>
+                    </div>
+                </div>
+                <div class="flex-container" id="dispose-shares-container">
+                    <div class="dynamic-share-info-column">
+                        <table class="dispose-shares-table">
+                            <tr>
+                                <td colspan="3">Keep</td>
+                                <td colspan="3">Trade</td>
+                                <td colspan="3">Sell</td>
+                            </tr>
+                            <tr id="dispose-shares-button-row">
+                                <td id="-keep-button">-</td>
+                                <td id="+keep-button">+</td>
+                                <td id="all-keep-button">All</td>
+                                <td id="-trade-button">-</td>
+                                <td id="+trade-button">+</td>
+                                <td id="max-trade-button">Max</td>
+                                <td id="-sell-button">-</td>
+                                <td id="+sell-button">+</td>
+                                <td id="all-sell-button">All</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="dynamic-share-action-column">
+                        <button class="share-action-button" id="dispose-shares-button">OK</button>
+                    </div>
+                </div>
+                
                 <div class="controls-wrapper">
                     <ul id="events"></ul>
                     <div class="controls">

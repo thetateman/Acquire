@@ -101,19 +101,28 @@ const chainSelectHandler = (e, sock) => {
     //sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'selectChain', updateData: {chain_selection: chainSelection}});
 };
 
+const purchaseShares = (e, sock) => {
+    //TODO: fix
+    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'purchaseShares', updateData: {remainingChainChoice: chainSelection}});
+};
+const disposeShares = (e, sock) => {
+    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'disposeShares', updateData: {}});
+};
+
 const populateGame = (game) => {
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0"));
     generateStatsTable(game);
     updateGameBoard(game);
+    //TODO: Reveal hidden elements if necessary (dispose-shares-table).
 };
 
 const updateGame = (gameUpdate) => {
     localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
-    if(['playTile', 'chooseNewChain', 'chooseRemainingChain'].includes(gameUpdate.type)){
+    if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares'].includes(gameUpdate.type)){
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
-        if(gameUpdate.type === 'chooseRemainingChain'){
-            document.querySelector(".dispose-shares-table").style.display = 'table';
+        if(gameUpdate.game.state.expectedNextAction === 'disposeShares'){
+            document.querySelector("#dispose-shares-container").style.display = 'flex';
         }
     } 
     else if(gameUpdate.type === 'joinGame'){
@@ -194,6 +203,12 @@ const updateStatsTable = (game) => {
 
     document.querySelectorAll('#chain-button-row td')
     .forEach(e => e.addEventListener('click', function() {chainSelectHandler(e, sock);}));
+
+    document.querySelectorAll('#dispose-shares-button')
+    .forEach(e => e.addEventListener('click', function() {disposeShares(e, sock);}));
+
+    document.querySelectorAll('#buy-shares-button')
+    .forEach(e => e.addEventListener('click', function() {purchaseShares(e, sock);}));
     
     document
     .querySelector('#chat-form')
