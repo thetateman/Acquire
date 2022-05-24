@@ -92,7 +92,7 @@ const chainSelectHandler = (e, sock) => {
             console.log("You may buy a maximum of 3 shares.");
         }
         else{
-            localStorage[`${chainSelection}InCart`]++; //TODO: FIX THIS
+            localStorage[`${chainSelection}InCart`]++;
         }
     }
     else if(localStorage.getItem('expected_next_action') === 'chooseRemainingChain'){
@@ -102,11 +102,21 @@ const chainSelectHandler = (e, sock) => {
 };
 
 const purchaseShares = (e, sock) => {
-    //TODO: fix
-    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'purchaseShares', updateData: {remainingChainChoice: chainSelection}});
+    // Generate purchase from localStorage cart
+    let purchase = {};
+    chains.forEach((chain) => {
+        if(localStorage[`${chain}InCart`] !== '0'){
+            purchase[chain] = parseInt(localStorage[`${chain}InCart`], 10);
+        }
+    });
+    console.log(purchase);
+    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'purchaseShares', updateData: {'endGame': false, 'purchase': purchase}});
+    chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0")); // Reset cart to 0's
+    document.querySelector("#buy-shares-container").style.display = 'none';
 };
 const disposeShares = (e, sock) => {
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'disposeShares', updateData: {}});
+    document.querySelector("#dispose-shares-container").style.display = 'none';
 };
 
 const populateGame = (game) => {
@@ -118,11 +128,14 @@ const populateGame = (game) => {
 
 const updateGame = (gameUpdate) => {
     localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
-    if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares'].includes(gameUpdate.type)){
+    if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares'].includes(gameUpdate.type)){
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
         if(gameUpdate.game.state.expectedNextAction === 'disposeShares'){
             document.querySelector("#dispose-shares-container").style.display = 'flex';
+        }
+        else if(gameUpdate.game.state.expectedNextAction === 'purchaseShares'){
+            document.querySelector("#buy-shares-container").style.display = 'flex';
         }
     } 
     else if(gameUpdate.type === 'joinGame'){

@@ -180,6 +180,9 @@ io.on('connection', (sock) => {
         else if(updateType === "disposeShares"){ //TODO: decide if these cases should send different data.
             io.in(game_id.toString()).emit('gameUpdate', {type: "disposeShares", game: getSendableGame(games[game_id], sock.request.session.username)});
         }
+        else if(updateType === "purchaseShares"){ //TODO: decide if these cases should send different data.
+            io.in(game_id.toString()).emit('gameUpdate', {type: "disposeShares", game: getSendableGame(games[game_id], sock.request.session.username)});
+        }
         else{
             // TODO: break this up into more specific cases, so we can send more specific data, instead of the whole game object.
             io.in(game_id.toString()).emit('gameUpdate', {type: "missing", game: getSendableGame(games[game_id], sock.request.session.username)});
