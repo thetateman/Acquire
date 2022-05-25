@@ -7,6 +7,10 @@
     --american-color: #0000ff;
     --tower-color: #ffff00;
     --luxor-color: #ff0000;
+    --pending-tile-color: gray;
+    --single-tile-color: black;
+    --single-tile-border-color: dimgray;
+    --standard-empty-tile-color: #f8f8bc;
 }
 body {
     font-family: "Helvetica Neue", sans-serif;
@@ -75,7 +79,43 @@ canvas {
     font-size: 1.5vw;
     font-weight: bold;
     width: 8.333333%;
-    background-color: #f8f8bc;
+    background-color: var(--standard-empty-tile-color);
+}
+
+#tile-bank {
+    margin: 10px auto;
+    width: 70%;
+    justify-content: space-around;
+}
+
+#tile-bank span {
+    border-style: outset;
+    font-size: 1.5vw;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 10.9%; 
+    background-color: var(--single-tile-color);
+    border-color: var(--single-tile-border-color);
+    color: white;
+    aspect-ratio: 1/1;
+}
+
+#chain-selector-row {
+    margin: 10px auto;
+    width: 80%;
+    justify-content: space-around;
+}
+
+#chain-selector-row span {
+    font-size: 1.5vw;
+    font-weight: bold;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 10.9%; 
+    aspect-ratio: 1/1;
 }
 
 .stats-board {

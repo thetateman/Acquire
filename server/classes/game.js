@@ -64,7 +64,7 @@ class game {
                     let mergingChains = [];
                     let largestChains = [connectingTrueChains[0]];
                     for(let i = 1; i < connectingTrueChains.length; i++){
-                        if(connectingTrueChains[i].length > largestChains[0].length){
+                        if(chains[connectingTrueChains[i]].length > chains[largestChains[0]].length){
                             largestChains.length = 0;
                             largestChains.push(connectingTrueChains[i]);
                         }
@@ -73,7 +73,7 @@ class game {
                         }
                     }
                     console.log("testing......");
-                    console.log(largestChains);
+                    console.log(`largestChains: ${largestChains}`);
                     let remainingChain = 'p'; //pending, should change with next action
                     if(largestChains.length === 1){
                         remainingChain = largestChains[0];
@@ -553,14 +553,16 @@ class game {
                     let mergingTile = game.state.lastPlayedTile;
                     let mergingChainTiles = [mergingTile];
                     console.log(game.state.active_merger);
-                    game.state.active_merger.merging_chains.forEach((chain) => {
+                    let elimChains = game.state.active_merger.merging_chains.filter((chain) => chain !== game.state.active_merger.remaining_chain);
+                    elimChains.forEach((chain) => {
                         mergingChainTiles = mergingChainTiles.concat(JSON.parse(JSON.stringify(game.state.chains[chain])));
                         game.state.chains[chain] = [];
                         game.state.available_chains.push(chain);
+                        console.log(`merging off: ${chain}`);
                     });
                     mergingChainTiles = mergingChainTiles.concat(
                         this.getConnectingSingles(game.state.board, mergingTile.x, mergingTile.y));
-                    game.state.chains[game.state.active_merger.remaining_chain] = mergingChainTiles;
+                    game.state.chains[game.state.active_merger.remaining_chain] = game.state.chains[game.state.active_merger.remaining_chain].concat(mergingChainTiles);
                     //mergingChainTiles.forEach((tile) => {game.state.board[tile.y][tile.x] = game.state.active_merger.remaining_chain;});
                     for(let i = 0; i < mergingChainTiles.length; i++){
                         let currentTile = mergingChainTiles[i];

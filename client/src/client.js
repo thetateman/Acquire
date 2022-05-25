@@ -57,6 +57,30 @@ const updateGameBoard = (game) => {
     }
 };
 
+const updateChainSelectorRow = (game) => { //TODO: only call this when it is this player's turn
+    let visibleChainSelectors = [];
+    if(game.state.expectedNextAction === 'purchaseShares'){
+        chains.forEach((chain) => {
+            if(game.state.bank_shares[chain] > 0 && !game.state.available_chains.includes(chain)){
+                visibleChainSelectors.push(chain);
+            }
+        });
+    } else if(game.state.expectedNextAction === 'chooseNewChain'){
+        chains.forEach((chain) => {
+            if(game.state.available_chains.includes(chain)){
+                visibleChainSelectors.push(chain);
+            }
+        });
+    } else if(game.state.expectedNextAction === 'chooseRemainingChain'){
+        chains.forEach((chain) => {
+            if(game.state.active_merger.largest_chains.includes(chain)){
+                visibleChainSelectors.push(chain);
+            }
+        });
+    }
+    visibleChainSelectors.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'inline-flex');
+}
+
 const updateTile = (x, y, tileType) => {
     const tileColors = {'i': "var(--imperial-color)",
     'c': "var(--continental-color)",
@@ -65,13 +89,17 @@ const updateTile = (x, y, tileType) => {
     'a': "var(--american-color)",
     't': "var(--tower-color)",
     'l': "var(--luxor-color)",
-    'p': "gray",
-    's': "black"
+    'p': "var(--pending-tile-color)",
+    's': "var(--single-tile-color)"
     };
     let tile = document.querySelector(`[x="${x}"][y="${y}"]`);
     tile.style["background-color"] = tileColors[tileType];
     tile.style["border-color"] = tileColors[tileType];
     tile.style["border-style"] = "outset";
+    if(tileType === 's'){
+        tile.style["color"] = "white";
+        tile.style["border-color"] = "var(--single-tile-border-color)";
+    }
 };
 
 const tileClickHandler = (e, sock) => {
@@ -84,6 +112,7 @@ const chainSelectHandler = (e, sock) => {
     //different behavior depending on next expected action
     if(localStorage.getItem('expected_next_action') === 'chooseNewChain'){
         sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseNewChain', updateData: {newChainChoice: chainSelection}});
+        chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
     }
     else if(localStorage.getItem('expected_next_action') === 'purchaseShares'){
         let numSharesInCart = 0;
@@ -97,6 +126,7 @@ const chainSelectHandler = (e, sock) => {
     }
     else if(localStorage.getItem('expected_next_action') === 'chooseRemainingChain'){
         sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseRemainingChain', updateData: {remainingChainChoice: chainSelection}});
+        chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
     }
     //sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'selectChain', updateData: {chain_selection: chainSelection}});
 };
@@ -113,6 +143,7 @@ const purchaseShares = (e, sock) => {
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'purchaseShares', updateData: {'endGame': false, 'purchase': purchase}});
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0")); // Reset cart to 0's
     document.querySelector("#buy-shares-container").style.display = 'none';
+    chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
 };
 const disposeShares = (e, sock) => {
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'disposeShares', updateData: {}});
@@ -136,6 +167,9 @@ const updateGame = (gameUpdate) => {
         }
         else if(gameUpdate.game.state.expectedNextAction === 'purchaseShares'){
             document.querySelector("#buy-shares-container").style.display = 'flex';
+        }
+        if(['chooseNewChain', 'chooseRemainingChain', 'purchaseShares'].includes(gameUpdate.game.state.expectedNextAction)){
+            updateChainSelectorRow(gameUpdate.game);
         }
     } 
     else if(gameUpdate.type === 'joinGame'){
@@ -214,7 +248,7 @@ const updateStatsTable = (game) => {
     document.querySelectorAll('.game-board td')
     .forEach(e => e.addEventListener('click', function() {tileClickHandler(e, sock);}));
 
-    document.querySelectorAll('#chain-button-row td')
+    document.querySelectorAll('#chain-selector-row span')
     .forEach(e => e.addEventListener('click', function() {chainSelectHandler(e, sock);}));
 
     document.querySelectorAll('#dispose-shares-button')
