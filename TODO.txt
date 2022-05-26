@@ -16,3 +16,12 @@
 9. Create and store UUIDs for users
 10. Maintain net worth calculation.
 11. Allow multiple active sessions?
+
+12. Limit client actions to correct turn
+13. Initial tile distribution X
+14. networth/endgame
+15. Limit Share buying by cash and bank shares
+16. Tile bank clicking and modification X
+17. Fix price stats after mergers
+18. Share disposal - server
+19. Share disposal - client

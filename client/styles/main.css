@@ -190,6 +190,17 @@ canvas {
     background-color: var(--main-bg-color);
 }
 
+#share-cart span {
+    font-size: 1.5vw;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 10.9%; 
+    aspect-ratio: 1/1;
+    background-color: gray;
+}
+
 #dispose-shares-container, #buy-shares-container {
     display: none;
 }

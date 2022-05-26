@@ -183,6 +183,9 @@ io.on('connection', (sock) => {
         else if(updateType === "purchaseShares"){ //TODO: decide if these cases should send different data.
             io.in(game_id.toString()).emit('gameUpdate', {type: "disposeShares", game: getSendableGame(games[game_id], sock.request.session.username)});
         }
+        else if(updateType === "startGame"){
+            io.in(game_id.toString()).emit('gameUpdate', {type: "startGame", game: getSendableGame(games[game_id], sock.request.session.username)});
+        }
         else{
             // TODO: break this up into more specific cases, so we can send more specific data, instead of the whole game object.
             io.in(game_id.toString()).emit('gameUpdate', {type: "missing", game: getSendableGame(games[game_id], sock.request.session.username)});
@@ -204,11 +207,14 @@ server.listen(8080, () => {
 //TODO: updateGame unit tests
 let updateID = 2;
 game.createGame(games, 4, 4);
-game.createGame(games, 6, 7655);
+game.createGame(games, 6, 'tate');
 console.log(game.updateGame(games[updateID], 7654, "joinGame", {}))
 console.log(game.updateGame(games[updateID], 7653, "joinGame", {}))
 console.log(game.updateGame(games[updateID], 7652, "joinGame", {}))
+/*
+console.log(game.updateGame(games[updateID], 'tate', "joinGame", {}))
 console.log(games[updateID].usernames);
+console.log(game.updateGame(games[updateID], 7655, "startGame", {}));
 console.log(game.updateGame(games[updateID], 7655, "playTile", {x:0, y:0}, true));
 console.log(game.updateGame(games[updateID], 7655, "purchaseShares", {endGame: false, purchase: {}}));
 console.log(game.updateGame(games[updateID], 7654, "playTile", {x:4, y:2}, true));
@@ -222,7 +228,7 @@ console.log(game.updateGame(games[updateID], 7652, "purchaseShares", {endGame: f
 console.log(game.updateGame(games[updateID], 7655, "playTile", {x:7, y:2}, true));
 console.log(game.updateGame(games[updateID], 7655, "chooseNewChain", {newChainChoice: 't'}));
 console.log(game.updateGame(games[updateID], 7655, "purchaseShares", {endGame: false, purchase: {t: 3}}));
-/*
+
 console.log(game.updateGame(games[updateID], 0, "playTile", {x:5, y:3}, true));
 console.log(game.updateGame(games[updateID], 0, "purchaseShares", {endGame: false, purchase: {t: 1}}, true));
 console.log(game.updateGame(games[updateID], 1, "playTile", {x:5, y:2}, true));

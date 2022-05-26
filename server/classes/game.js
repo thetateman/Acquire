@@ -36,10 +36,14 @@ class game {
 
     //------------------Game Update Helper Functions------------------------
     
-    static tilePlacer(board, chains, share_prices, active_merger, x, y){
+    static tilePlacer(board, chains, share_prices, active_merger, x, y, gameStarted=true){
         //updates board with new tile, returns string in ["normal", "newChain", "merger"]
         let placementType = 'normal';
         let tileChain = 's';
+        if(!gameStarted){ // Placing turn-order tiles.
+            board[y][x] = tileChain;
+            return placementType;
+        }
         let connectingChains = this.getNeighbors(board, x, y); // List of unique chains adjacent to new tile
 
         if(connectingChains.length > 0){
@@ -449,7 +453,48 @@ class game {
                 return "onlyCreatorMayStartGame";
             }
             else{
+                // Draw first tiles to determine turn order
+                let firstTiles = [];
+                for(let i=0; i<game.num_players; i++){
+                    firstTiles.push(game.state.tile_bank.pop());
+                }
+                let tileIndicies = Object.keys(firstTiles);
+                console.log(tileIndicies);
+                tileIndicies.sort((a, b) => {
+                    if(firstTiles[a].x > firstTiles[b].x){
+                        return 1;
+                    }
+                    else if(firstTiles[a].x < firstTiles[b].x){
+                        return -1;
+                    } 
+                    else{
+                        if(firstTiles[a].y > firstTiles[b].y){
+                            return 1;
+                        } 
+                        else if(firstTiles[a].y < firstTiles[b].y){
+                            return -1;
+                        }
+                        else{
+                            console.log("Something went wrong, and we tried to compare the same tile!");
+                            return 0;
+                        }
+                    }
+                });
+                // Map the usernames to sorted tileIndicies, so the usernames are sorted by the tile they played.
+                game.usernames = tileIndicies.map((index) => {
+                    return game.usernames[index];
+                });
+
+                firstTiles.forEach((tile) => {
+                    this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, tile.x, tile.y, game.state.game_started);
+                });
                 game.state.game_started = true;
+                // Draw initial six tiles
+                for(let i=0; i<game.num_players; i++){
+                    for(let j=0; j<6; j++){
+                        game.state.player_states[i].tiles.push(game.state.tile_bank.pop());
+                    }
+                }
                 return "success";
             }
         }

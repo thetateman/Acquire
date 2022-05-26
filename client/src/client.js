@@ -57,6 +57,17 @@ const updateGameBoard = (game) => {
     }
 };
 
+const updateTileBank = (game, sock) => {
+    document.querySelector('#tile-bank').innerHTML = "";
+    game.state.player_states[game.usernames.indexOf(localStorage.username)].tiles
+    .forEach((tile) => {
+        let tileHTML = `<span x="${tile.x}" y="${tile.y}">${tile.x+1}${String.fromCharCode(tile.y+65)}</span>`;
+        document.querySelector('#tile-bank').insertAdjacentHTML('beforeend', tileHTML);
+    });
+    document.querySelectorAll('#tile-bank span')
+    .forEach(e => e.addEventListener('click', function() {tileClickHandler(e, sock);}));
+};
+
 const updateChainSelectorRow = (game) => { //TODO: only call this when it is this player's turn
     let visibleChainSelectors = [];
     if(game.state.expectedNextAction === 'purchaseShares'){
@@ -114,7 +125,7 @@ const chainSelectHandler = (e, sock) => {
         sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseNewChain', updateData: {newChainChoice: chainSelection}});
         chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
     }
-    else if(localStorage.getItem('expected_next_action') === 'purchaseShares'){
+    else if(localStorage.getItem('expected_next_action') === 'purchaseShares'){ //TODO: limit to bank shares, limit to cash
         let numSharesInCart = 0;
         chains.forEach((chain) => numSharesInCart+=parseInt(localStorage[`${chain}InCart`], 10));
         if(numSharesInCart >= 3){
@@ -122,6 +133,8 @@ const chainSelectHandler = (e, sock) => {
         }
         else{
             localStorage[`${chainSelection}InCart`]++;
+            let cartShare = `<span class="cart-share" id="${chainSelection}-cart-share">${chainSelection}</span>`;
+            document.querySelector('#share-cart').insertAdjacentHTML('afterbegin', cartShare);
         }
     }
     else if(localStorage.getItem('expected_next_action') === 'chooseRemainingChain'){
@@ -142,6 +155,7 @@ const purchaseShares = (e, sock) => {
     console.log(purchase);
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'purchaseShares', updateData: {'endGame': false, 'purchase': purchase}});
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0")); // Reset cart to 0's
+    document.querySelectorAll(".cart-share").forEach((cartShare) => cartShare.remove());
     document.querySelector("#buy-shares-container").style.display = 'none';
     chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
 };
@@ -150,6 +164,12 @@ const disposeShares = (e, sock) => {
     document.querySelector("#dispose-shares-container").style.display = 'none';
 };
 
+const startGame = (sock) => (e) => {
+    e.preventDefault();
+    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'startGame', updateData: {}});
+    document.querySelector("#start-game").style.display = 'none';
+}
+
 const populateGame = (game) => {
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0"));
     generateStatsTable(game);
@@ -157,9 +177,10 @@ const populateGame = (game) => {
     //TODO: Reveal hidden elements if necessary (dispose-shares-table).
 };
 
-const updateGame = (gameUpdate) => {
+const updateGame = (sock) => (gameUpdate) => {
     localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
-    if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares'].includes(gameUpdate.type)){
+    updateTileBank(gameUpdate.game, sock);
+    if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares', 'startGame'].includes(gameUpdate.type)){
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
         if(gameUpdate.game.state.expectedNextAction === 'disposeShares'){
@@ -185,6 +206,10 @@ const updateGame = (gameUpdate) => {
     
             document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("beforebegin", newPlayerRow);
         }
+    }
+    else if(gameUpdate.type === 'startGame'){
+        updateGameBoard();
+        updateStatsTable();
     }
     else {
         console.log("Got unrecognized game update...")
@@ -221,6 +246,7 @@ const generateStatsTable = (game) => {
 
 const updateStatsTable = (game) => {
     for(let i=0; i<game.num_players; i++){
+        document.querySelector(`[row="${i}"][column="username"]`).innerHTML = game.usernames[i];
         chains.forEach((chain) => {
             document.querySelector(`[row="${i}"][column="${chain}"]`).innerHTML = game.state.player_states[i][chain];
         });
@@ -243,7 +269,7 @@ const updateStatsTable = (game) => {
     addBoard();
     sock.on('message', log);
     sock.on('gameResponse', populateGame);
-    sock.on('gameUpdate', updateGame);
+    sock.on('gameUpdate', updateGame(sock));
     
     document.querySelectorAll('.game-board td')
     .forEach(e => e.addEventListener('click', function() {tileClickHandler(e, sock);}));
@@ -257,6 +283,10 @@ const updateStatsTable = (game) => {
     document.querySelectorAll('#buy-shares-button')
     .forEach(e => e.addEventListener('click', function() {purchaseShares(e, sock);}));
     
+    document
+    .querySelector('#start-game')
+    .addEventListener('click', startGame(sock));
+
     document
     .querySelector('#chat-form')
     .addEventListener('submit', onChatSubmitted(sock));
