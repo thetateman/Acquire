@@ -17,11 +17,16 @@
 10. Maintain net worth calculation.
 11. Allow multiple active sessions?
 
+
 12. Limit client actions to correct turn
 13. Initial tile distribution X
 14. networth/endgame
 15. Limit Share buying by cash and bank shares
 16. Tile bank clicking and modification X
 17. Fix price stats after mergers
-18. Share disposal - server
+18. Share disposal - server X
 19. Share disposal - client
+20. In the event of a >=3-way merger where >=2 eliminated chains are of equal size, merging player should choose order of eliminations.
+21. Advanced test cases
+
+
