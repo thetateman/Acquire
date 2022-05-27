@@ -36,7 +36,7 @@ class game {
 
     //------------------Game Update Helper Functions------------------------
     
-    static tilePlacer(board, chains, share_prices, active_merger, x, y, gameStarted=true){
+    static tilePlacer(board, chains, share_prices, active_merger, x, y, game, gameStarted=true){
         //updates board with new tile, returns string in ["normal", "newChain", "merger"]
         let placementType = 'normal';
         let tileChain = 's';
@@ -82,10 +82,61 @@ class game {
                     if(largestChains.length === 1){
                         remainingChain = largestChains[0];
                     }
-                    //connectingTrueChains.forEach((chain) => mergingChains.push(chains[chain]));
+                    // Build active_merger object for use in later game actions.
+                    let elimChains = connectingTrueChains.filter((chain) => chain !== remainingChain);
+                    // Sort eliminated chains by size, largest to smallest.
+                    elimChains.sort((a, b) => {
+                        if(chains[a].length < chains[b].length){
+                            return 1;
+                        } 
+                        else if(chains[a].length > chains[b].length) {
+                            return -1;
+                        }
+                        else{
+                            return 0;
+                        }
+                    });
+                    let playersDisposing = {};
+                    /**
+                     * The playersDisposing object holds the data representing which players 
+                     * need to dispose which shares, and in what order. Each key-value
+                     * pair is a eliminated chain, and an array of players who hold 
+                     * shares in that chain (in order of disposal turn). Example:
+                     * {
+                     *     'i': [0, 2, 3, 5],
+                     *     't': [1],
+                     *     'f': [5, 1, 3]
+                     * }
+                     * 
+                     */
+                    
+                    elimChains.forEach((chain) => {
+                        playersDisposing[chain] = [];
+                        for(let playerIndex=0; playerIndex<game.state.player_states.length; playerIndex++){
+                            if(game.state.player_states[playerIndex][chain] > 0){
+                                playersDisposing[chain].push(playerIndex);
+                            }
+                        }
+                        
+                        // Find first player with shares, including or after merging player
+                        let firstDisposingPlayer = playersDisposing[chain].find((player) => {player >= game.state.turn});
+                        if(firstDisposingPlayer === undefined){
+                            firstDisposingPlayer = 0;
+                        }
+                        // Re-order player array, starting with merging player or next player with shares
+                        let tempPlayerArr = playersDisposing[chain].splice(firstDisposingPlayer);
+                        playersDisposing[chain] = tempPlayerArr.concat(playersDisposing[chain]);
+                        
+                    });
+                    active_merger.players_disposing = playersDisposing; // May be updated by chooseRemainingChain action.
                     active_merger.merging_chains = connectingTrueChains;
                     active_merger.largest_chains = largestChains;
                     active_merger.remaining_chain = remainingChain;
+                    active_merger.elim_chains = elimChains; // May be updated by chooseRemainingChain action.
+                    active_merger.disposing_chain_index = 0;
+                    active_merger.player_disposing_index = 0;
+                    active_merger.merging_player = game.state.turn;
+                    
                     placementType = 'merger';
                     tileChain = 'p'; //pending, should change with next action
                 }
@@ -486,7 +537,7 @@ class game {
                 });
 
                 firstTiles.forEach((tile) => {
-                    this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, tile.x, tile.y, game.state.game_started);
+                    this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, tile.x, tile.y, game, game.state.game_started);
                 });
                 game.state.game_started = true;
                 // Draw initial six tiles
@@ -533,7 +584,7 @@ class game {
                 // Remove tile from player hand
                 game.state.player_states[userID].tiles = game.state.player_states[userID].tiles.filter((tile) => !(updateData.x === tile.x && updateData.y === tile.y));
                 //update the game
-                switch(this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, updateData.x, updateData.y)){
+                switch(this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, updateData.x, updateData.y, game)){
                     case 'normal':
                         game.state.expectedNextAction = 'purchaseShares'; //should we wait for a pass if player has no cash?
                         console.log("ok, now we're waiting to purchase shares...")
@@ -548,6 +599,12 @@ class game {
                             game.state.expectedNextAction = 'chooseRemainingChain';
                         }
                         else{
+                            this.awardPrizes(game);
+
+                            // Update turn to first player to dispose shares.
+                            let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
+                            game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+
                             game.state.expectedNextAction = 'disposeShares'
                         }
                         game.state.lastPlayedTile = updateData;
@@ -580,53 +637,102 @@ class game {
             case 'chooseRemainingChain':
                 if(game.state.active_merger.remaining_chain === 'p'){
                     if(game.state.active_merger.largest_chains.includes(updateData.remainingChainChoice)){
+                        //Update active_merger object based on chain choice.
                         game.state.active_merger.remaining_chain = updateData.remainingChainChoice;
+                        game.state.active_merger.elim_chains = game.state.active_merger.elim_chains.filter((chain) => chain !== game.state.active_merger.remaining_chain);
+                        delete game.state.active_merger.players_disposing[game.state.active_merger.remaining_chain];
+
+                        this.awardPrizes(game);
+                        console.log(game.state.active_merger);
+                        // Update turn to first player to dispose shares.
+                        let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
+                        game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+                        
+                        game.state.expectedNextAction = 'disposeShares';
                     }
                     else {
                         return "notLargestChainInMerger";
                     }
                 }
-                
-                game.state.expectedNextAction = 'disposeShares'
-
                 break;
             case 'disposeShares':
-                let shareDisposalComplete = false;
-
-                shareDisposalComplete = true; //TODO, FIX THIS.
-                if(shareDisposalComplete){
-                    let mergingTile = game.state.lastPlayedTile;
-                    let mergingChainTiles = [mergingTile];
-                    console.log(game.state.active_merger);
-                    let elimChains = game.state.active_merger.merging_chains.filter((chain) => chain !== game.state.active_merger.remaining_chain);
-                    elimChains.forEach((chain) => {
-                        mergingChainTiles = mergingChainTiles.concat(JSON.parse(JSON.stringify(game.state.chains[chain])));
-                        game.state.chains[chain] = [];
-                        game.state.available_chains.push(chain);
-                        console.log(`merging off: ${chain}`);
-                    });
-                    mergingChainTiles = mergingChainTiles.concat(
-                        this.getConnectingSingles(game.state.board, mergingTile.x, mergingTile.y));
-                    game.state.chains[game.state.active_merger.remaining_chain] = game.state.chains[game.state.active_merger.remaining_chain].concat(mergingChainTiles);
-                    //mergingChainTiles.forEach((tile) => {game.state.board[tile.y][tile.x] = game.state.active_merger.remaining_chain;});
-                    for(let i = 0; i < mergingChainTiles.length; i++){
-                        let currentTile = mergingChainTiles[i];
-                        game.state.board[currentTile.y][currentTile.x] = game.state.active_merger.remaining_chain;
-                    }
-                    game.state.active_merger.merging_chains.forEach((chain) => {
-                        this.updatePrice(chain, game.state.chains, game.state.share_prices)
-                    });
-                    
-                    //merger operations complete, clear active_merger object
-                    game.state.active_merger = {};
-
-                    console.log("merging tiles")
-                    console.log(mergingChainTiles);
-                    
-                }
+                let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
                 
+                // Check that disposal is allowed
+                let sumShareDisposal = updateData.sell + updateData.trade + updateData.keep;
+                if(sumShareDisposal !== game.state.player_states[game.state.turn][disposingChain]){
+                    return 'disposedIncorrectNumberOfShares';
+                }
+                if(updateData.trade % 2 !== 0){
+                    return 'mayOnlyTradeIncrementsOfTwoShares';
+                }
+                if(game.state.bank_shares[game.state.active_merger.remaining_chain] < updateData.trade / 2){
+                    return 'notEnoughSharesToTradeFor';
+                }
 
-                game.state.expectedNextAction = 'purchaseShares'
+                // Dispose the shares
+                // Trade Shares:
+                game.state.player_states[userID][disposingChain] -= updateData.trade;
+                game.state.player_states[userID][game.state.active_merger.remaining_chain] += updateData.trade / 2;
+                game.state.bank_shares[disposingChain] += updateData.trade;
+                game.state.bank_shares[game.state.active_merger.remaining_chain] -= updateData.trade / 2;
+
+                // Sell shares:
+                game.state.player_states[userID][disposingChain] -= updateData.sell;
+                game.state.player_states[userID].cash += updateData.sell * game.state.share_prices[disposingChain];
+                game.state.bank_shares[disposingChain] += updateData.sell;
+
+
+                // Increment expected disposal
+                game.state.active_merger.player_disposing_index++;
+                if(game.state.active_merger.player_disposing_index === game.state.active_merger.players_disposing[disposingChain].length){ //All shares of current chain disposed
+                    game.state.active_merger.player_disposing_index = 0;
+                    game.state.active_merger.disposing_chain_index++;
+                    if(game.state.active_merger.disposing_chain_index === game.state.active_merger.elim_chains.length){ // All shares disposed
+                        let mergingTile = game.state.lastPlayedTile;
+                        let mergingChainTiles = [mergingTile];
+                        console.log(game.state.active_merger);
+                        let elimChains = game.state.active_merger.elim_chains;
+                        elimChains.forEach((chain) => {
+                            mergingChainTiles = mergingChainTiles.concat(JSON.parse(JSON.stringify(game.state.chains[chain])));
+                            game.state.chains[chain] = [];
+                            game.state.available_chains.push(chain);
+                            console.log(`merging off: ${chain}`);
+                        });
+                        mergingChainTiles = mergingChainTiles.concat(
+                            this.getConnectingSingles(game.state.board, mergingTile.x, mergingTile.y));
+                        game.state.chains[game.state.active_merger.remaining_chain] = game.state.chains[game.state.active_merger.remaining_chain].concat(mergingChainTiles);
+                        //mergingChainTiles.forEach((tile) => {game.state.board[tile.y][tile.x] = game.state.active_merger.remaining_chain;});
+                        for(let i = 0; i < mergingChainTiles.length; i++){
+                            let currentTile = mergingChainTiles[i];
+                            game.state.board[currentTile.y][currentTile.x] = game.state.active_merger.remaining_chain;
+                        }
+                        game.state.active_merger.merging_chains.forEach((chain) => {
+                            this.updatePrice(chain, game.state.chains, game.state.share_prices)
+                        });
+                        
+                        // Reset turn to merging player
+                        game.state.turn = game.state.active_merger.merging_player;
+                        
+                        //merger operations complete, clear active_merger object
+                        game.state.active_merger = {};
+
+                        console.log("merging tiles")
+                        console.log(mergingChainTiles);
+                        game.state.expectedNextAction = 'purchaseShares';
+
+                    }
+                    else{
+                        // Update turn to next player expected to dispose shares
+                        game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+                        console.log(`turn: ${game.state.turn}`);
+                        game.expectedNextAction = 'disposeShares';
+                    }
+                }
+                else{
+                    // Update turn to next player expected to dispose shares
+                    game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+                }
                 break;
             case 'purchaseShares':
                 //validity checks:
@@ -689,7 +795,7 @@ class game {
                 break;
         }
 
-
+        /*
         if(JSON.stringify(game.state.active_merger) !== '{}'){ // merger is active.
             console.log("the merger is active,,, checking if we can give prizes yet");
             if(game.state.active_merger.remaining_chain !== 'p'){ // remaining chain has been selected.
@@ -697,6 +803,7 @@ class game {
                 this.awardPrizes(game);
             }
         }
+        */
 
         return "success";
     };
