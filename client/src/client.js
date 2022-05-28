@@ -144,6 +144,68 @@ const chainSelectHandler = (e, sock) => {
     //sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'selectChain', updateData: {chain_selection: chainSelection}});
 };
 
+const disposeSharesEditor = (e) => {
+    let disposingChain = localStorage.disposingChain;
+    let maxSharesToDispose = parseInt(localStorage.maxSharesToDispose, 10);
+    let remainingChain = localStorage.remainingChain;
+    let maxSharesToTradeFor = parseInt(localStorage.maxSharesToTradeFor);
+
+
+    const editAction = e.id.charAt(0);
+    const disposalType = e.id.charAt(1);
+    if(disposalType === 'k'){
+        if(editAction === '+'){
+            if(parseInt(localStorage.keep, 10) >= maxSharesToDispose){
+                return false;
+            }
+            localStorage.keep++;
+        }
+        else if(editAction === '-'){
+            if(parseInt(localStorage.keep, 10) <= 0){
+                return false;
+            }
+            localStorage.keep--;
+        }
+        else if(editAction === 'm'){
+            localStorage.keep = maxSharesToDispose;
+        }
+    } 
+    else if(disposalType === 't'){
+        if(editAction === '+'){
+            if(parseInt(localStorage.trade, 10) >= Math.min(maxSharesToDispose - (maxSharesToDispose % 2), maxSharesToTradeFor*2)){
+                return false;
+            }
+            localStorage.trade = parseInt(localStorage.trade, 10) + 2;
+        }
+        else if(editAction === '-'){
+            if(parseInt(localStorage.trade, 10) <= 0){
+                return false;
+            }
+            localStorage.trade = parseInt(localStorage.trade, 10) - 2;
+        }
+        else if(editAction === 'm'){
+            localStorage.trade = Math.min(maxSharesToDispose - (maxSharesToDispose % 2), maxSharesToTradeFor*2);
+        }
+    }
+    else if(disposalType === 's'){
+        if(editAction === '+'){
+            if(parseInt(localStorage.sell, 10) >= maxSharesToDispose){
+                return false;
+            }
+            localStorage.sell++;
+        }
+        else if(editAction === '-'){
+            if(parseInt(localStorage.sell, 10) <= 0){
+                return false;
+            }
+            localStorage.sell--;
+        }
+        else if(editAction === 'm'){
+            localStorage.sell = maxSharesToDispose;
+        }
+    }
+};
+
 const purchaseShares = (e, sock) => {
     // Generate purchase from localStorage cart
     let purchase = {};
@@ -175,6 +237,8 @@ const populateGame = (game) => {
     generateStatsTable(game);
     updateGameBoard(game);
     //TODO: Reveal hidden elements if necessary (dispose-shares-table).
+
+    //TODO: Think about what we have in local storage. How will that affect switching between games?
 };
 
 const updateGame = (sock) => (gameUpdate) => {
@@ -185,6 +249,17 @@ const updateGame = (sock) => (gameUpdate) => {
         updateGameBoard(gameUpdate.game);
         if(gameUpdate.game.state.expectedNextAction === 'disposeShares'){
             document.querySelector("#dispose-shares-container").style.display = 'flex';
+            let state = gameUpdate.game.state;
+            let disposingChain = state.active_merger.elim_chains[state.active_merger.disposing_chain_index];
+            localStorage.setItem('disposingChain', disposingChain);
+            localStorage.setItem('keep', state.player_states[state.turn][disposingChain]);
+            localStorage.setItem('trade', '0');
+            localStorage.setItem('sell', '0');
+
+            localStorage.setItem('maxSharesToDispose', state.player_states[state.turn][disposingChain]);
+            let remainingChain = state.active_merger.remaining_chain;
+            localStorage.setItem('remainingChain', remainingChain);
+            localStorage.setItem('maxSharesToTradeFor', state.bank_shares[remainingChain]);
         }
         else if(gameUpdate.game.state.expectedNextAction === 'purchaseShares'){
             document.querySelector("#buy-shares-container").style.display = 'flex';
@@ -282,6 +357,9 @@ const updateStatsTable = (game) => {
 
     document.querySelectorAll('#buy-shares-button')
     .forEach(e => e.addEventListener('click', function() {purchaseShares(e, sock);}));
+
+    document.querySelectorAll('#dispose-shares-button-row td')
+    .forEach(e => e.addEventListener('click', function() {disposeSharesEditor(e);}));
     
     document
     .querySelector('#start-game')

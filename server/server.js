@@ -207,7 +207,7 @@ server.listen(8080, () => {
 //TODO: updateGame unit tests
 let updateID = 2;
 game.createGame(games, 4, 4);
-game.createGame(games, 6, 7655);
+game.createGame(games, 6, 'tate');
 console.log(game.updateGame(games[updateID], 7654, "joinGame", {}))
 console.log(game.updateGame(games[updateID], 7653, "joinGame", {}))
 console.log(game.updateGame(games[updateID], 7652, "joinGame", {}))
@@ -218,6 +218,7 @@ console.log(game.updateGame(games[updateID], 7655, "playTile", {x:0, y:0}, true)
 console.log(game.updateGame(games[updateID], 7655, "purchaseShares", {endGame: false, purchase: {}}));
 console.log(game.updateGame(games[updateID], 7654, "playTile", {x:4, y:2}, true));
 console.log(game.updateGame(games[updateID], 7654, "purchaseShares", {endGame: false, purchase: {}}));
+/*
 console.log(game.updateGame(games[updateID], 7653, "playTile", {x:3, y:2}, true));
 console.log(game.updateGame(games[updateID], 7653, "chooseNewChain", {newChainChoice: 'i'}));
 console.log(game.updateGame(games[updateID], 7653, "purchaseShares", {endGame: false, purchase: {i: 3}}));
@@ -235,7 +236,7 @@ console.log(game.updateGame(games[updateID], 7653, "chooseRemainingChain", {rema
 console.log(game.updateGame(games[updateID], 7655, "disposeShares", {keep: 0, trade: 2, sell: 1}, true));
 console.log(game.updateGame(games[updateID], 7654, "disposeShares", {keep: 1, trade: 0, sell: 0}, true));
 
-/*
+
 console.log(game.updateGame(games[updateID], 1, "purchaseShares", {endGame: false, purchase: {}}, true));
 console.log(game.updateGame(games[updateID], 2, "playTile", {x:1, y:2}, true));
 console.log(game.updateGame(games[updateID], 2, "purchaseShares", {endGame: false, purchase: {}}, true));
