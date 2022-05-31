@@ -266,7 +266,8 @@ const purchaseShares = (e, sock) => {
         }
     });
     console.log(purchase);
-    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'purchaseShares', updateData: {'endGame': false, 'purchase': purchase}});
+    const endGame = document.querySelector('#end-game-selection').checked;
+    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'purchaseShares', updateData: {'endGame': endGame, 'purchase': purchase}});
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0")); // Reset cart to 0's
     localStorage.purchaseTotal = 0;
     document.querySelectorAll(".cart-share").forEach((cartShare) => cartShare.remove());

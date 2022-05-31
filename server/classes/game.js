@@ -397,6 +397,19 @@ class game {
             }
         }
     };
+
+    static updateNetWorths(game){
+        game.state.player_states.forEach((player) => {
+            let totalShareValue = 0;
+            ['i', 'c', 'w', 'f', 'a', 't', 'l'].forEach((chain) => {
+                totalShareValue += game.state.share_prices[chain] * player[chain];
+            });
+            if(game.state.game_ended){
+                totalShareValue = 0;
+            }
+            player.net_worth = player.cash + totalShareValue;
+        });
+    };
     
     static createGame(games, maxPlayers, creator){
         let id = this.genNewGameID(games)
@@ -619,6 +632,7 @@ class game {
                     default:
                         console.log("Not a valid placement type.")
                 }
+                this.updateNetWorths(game);
 
 
                 break;
@@ -642,6 +656,7 @@ class game {
                 // Bonus share for creating chain
                 game.state.bank_shares[updateData.newChainChoice]--;
                 game.state.player_states[game.state.turn][updateData.newChainChoice]++;
+                this.updateNetWorths(game);
 
                 game.state.expectedNextAction = 'purchaseShares';
                 break;
@@ -654,6 +669,7 @@ class game {
                         delete game.state.active_merger.players_disposing[game.state.active_merger.remaining_chain];
 
                         this.awardPrizes(game);
+                        this.updateNetWorths(game);
                         console.log(game.state.active_merger);
                         // Update turn to first player to dispose shares.
                         let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
@@ -744,6 +760,7 @@ class game {
                     // Update turn to next player expected to dispose shares
                     game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
                 }
+                this.updateNetWorths(game);
                 break;
             case 'purchaseShares':
                 //validity checks:
@@ -790,6 +807,7 @@ class game {
 
                     //award prizes
                     this.awardPrizes(game, "endGame");
+                    this.updateNetWorths(game);
                     game.state.game_ended = true;
                 }
                 else {
