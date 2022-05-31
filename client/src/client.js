@@ -68,23 +68,27 @@ const updateTileBank = (game, sock) => {
     .forEach(e => e.addEventListener('click', function() {tileClickHandler(e, sock);}));
 };
 
-const updateChainSelectorRow = (game) => { //TODO: only call this when it is this player's turn
+const updateChainSelectorRow = (gameState) => { //TODO: only call this when it is this player's turn
+    chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
     let visibleChainSelectors = [];
-    if(game.state.expectedNextAction === 'purchaseShares'){
+    if(gameState.expectedNextAction === 'purchaseShares'){
+        const cash = gameState.player_states[gameState.turn].cash;
         chains.forEach((chain) => {
-            if(game.state.bank_shares[chain] > 0 && !game.state.available_chains.includes(chain)){
+            if(gameState.bank_shares[chain] - localStorage[`${chain}InCart`] > 0 && !gameState.available_chains.includes(chain)){
+                if(parseInt(localStorage.purchaseTotal, 10) + gameState.share_prices[chain] <= cash){
+                    visibleChainSelectors.push(chain);
+                }
+            }
+        });
+    } else if(gameState.expectedNextAction === 'chooseNewChain'){
+        chains.forEach((chain) => {
+            if(gameState.available_chains.includes(chain)){
                 visibleChainSelectors.push(chain);
             }
         });
-    } else if(game.state.expectedNextAction === 'chooseNewChain'){
+    } else if(gameState.expectedNextAction === 'chooseRemainingChain'){
         chains.forEach((chain) => {
-            if(game.state.available_chains.includes(chain)){
-                visibleChainSelectors.push(chain);
-            }
-        });
-    } else if(game.state.expectedNextAction === 'chooseRemainingChain'){
-        chains.forEach((chain) => {
-            if(game.state.active_merger.largest_chains.includes(chain)){
+            if(gameState.active_merger.largest_chains.includes(chain)){
                 visibleChainSelectors.push(chain);
             }
         });
@@ -120,12 +124,13 @@ const tileClickHandler = (e, sock) => {
 
 const chainSelectHandler = (e, sock) => {
     const chainSelection = e.id.charAt(0);
+    const currentGameState = JSON.parse(localStorage.gameState);
     //different behavior depending on next expected action
     if(localStorage.getItem('expected_next_action') === 'chooseNewChain'){
         sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseNewChain', updateData: {newChainChoice: chainSelection}});
         chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
     }
-    else if(localStorage.getItem('expected_next_action') === 'purchaseShares'){ //TODO: limit to bank shares, limit to cash
+    else if(localStorage.getItem('expected_next_action') === 'purchaseShares'){
         let numSharesInCart = 0;
         chains.forEach((chain) => numSharesInCart+=parseInt(localStorage[`${chain}InCart`], 10));
         if(numSharesInCart >= 3){
@@ -133,8 +138,11 @@ const chainSelectHandler = (e, sock) => {
         }
         else{
             localStorage[`${chainSelection}InCart`]++;
+            localStorage.purchaseTotal = parseInt(localStorage.purchaseTotal, 10) + currentGameState.share_prices[chainSelection];
+            document.querySelector('#share-purchase-total').textContent = `Total: ${localStorage.purchaseTotal}`;
             let cartShare = `<span class="cart-share" id="${chainSelection}-cart-share">${chainSelection}</span>`;
             document.querySelector('#share-cart').insertAdjacentHTML('afterbegin', cartShare);
+            updateChainSelectorRow(currentGameState);
         }
     }
     else if(localStorage.getItem('expected_next_action') === 'chooseRemainingChain'){
@@ -260,6 +268,7 @@ const purchaseShares = (e, sock) => {
     console.log(purchase);
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'purchaseShares', updateData: {'endGame': false, 'purchase': purchase}});
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0")); // Reset cart to 0's
+    localStorage.purchaseTotal = 0;
     document.querySelectorAll(".cart-share").forEach((cartShare) => cartShare.remove());
     document.querySelector("#buy-shares-container").style.display = 'none';
     chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
@@ -277,6 +286,7 @@ const startGame = (sock) => (e) => {
 }
 
 const populateGame = (game) => {
+    localStorage.setItem('gameState', JSON.stringify(game.state));
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0"));
     generateStatsTable(game);
     updateGameBoard(game);
@@ -288,6 +298,7 @@ const populateGame = (game) => {
 };
 
 const updateGame = (sock) => (gameUpdate) => {
+    localStorage.setItem('gameState', JSON.stringify(gameUpdate.game.state));
     localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
     updateTileBank(gameUpdate.game, sock);
     if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares', 'startGame'].includes(gameUpdate.type)){
@@ -314,9 +325,11 @@ const updateGame = (sock) => (gameUpdate) => {
         }
         else if(gameUpdate.game.state.expectedNextAction === 'purchaseShares'){
             document.querySelector("#buy-shares-container").style.display = 'flex';
+            localStorage.purchaseTotal = 0;
+            document.querySelector('#share-purchase-total').textContent = 'Total: 0';
         }
         if(['chooseNewChain', 'chooseRemainingChain', 'purchaseShares'].includes(gameUpdate.game.state.expectedNextAction)){
-            updateChainSelectorRow(gameUpdate.game);
+            updateChainSelectorRow(gameUpdate.game.state);
         }
     } 
     else if(gameUpdate.type === 'joinGame'){
