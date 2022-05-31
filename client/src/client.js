@@ -159,15 +159,28 @@ const disposeSharesEditor = (e) => {
                 return false;
             }
             localStorage.keep++;
+            if(parseInt(localStorage.sell, 10) > 0){
+                localStorage.sell--;
+            }
+            else if(parseInt(localStorage.trade, 10) > 0){
+                localStorage.trade = parseInt(localStorage.trade, 10) - 2;
+                localStorage.keep++;
+            }
+            else{
+                console.error("this shouldn't happen.");
+            }
         }
         else if(editAction === '-'){
             if(parseInt(localStorage.keep, 10) <= 0){
                 return false;
             }
             localStorage.keep--;
+            localStorage.sell++;
         }
         else if(editAction === 'm'){
             localStorage.keep = maxSharesToDispose;
+            localStorage.trade = 0;
+            localStorage.sell = 0;
         }
     } 
     else if(disposalType === 't'){
@@ -176,15 +189,28 @@ const disposeSharesEditor = (e) => {
                 return false;
             }
             localStorage.trade = parseInt(localStorage.trade, 10) + 2;
+            if(parseInt(localStorage.sell, 10) > 1){
+                localStorage.sell = parseInt(localStorage.sell, 10) - 2;
+            }
+            else if(parseInt(localStorage.keep, 10) > 1){
+                localStorage.keep = parseInt(localStorage.keep, 10) - 2;
+            }
+            else{
+                console.error("this shouldn't happen.");
+            }
         }
         else if(editAction === '-'){
             if(parseInt(localStorage.trade, 10) <= 0){
                 return false;
             }
             localStorage.trade = parseInt(localStorage.trade, 10) - 2;
+            localStorage.keep = parseInt(localStorage.keep, 10) + 2;
         }
         else if(editAction === 'm'){
-            localStorage.trade = Math.min(maxSharesToDispose - (maxSharesToDispose % 2), maxSharesToTradeFor*2);
+            const tradeMax = Math.min(maxSharesToDispose - (maxSharesToDispose % 2), maxSharesToTradeFor*2);
+            localStorage.trade = tradeMax;
+            localStorage.keep = maxSharesToDispose - tradeMax;
+            localStorage.sell = 0;
         }
     }
     else if(disposalType === 's'){
@@ -193,17 +219,34 @@ const disposeSharesEditor = (e) => {
                 return false;
             }
             localStorage.sell++;
+            if(parseInt(localStorage.keep, 10) > 0){
+                localStorage.keep--;
+            }
+            else if(parseInt(localStorage.trade, 10) > 0){
+                localStorage.trade = parseInt(localStorage.trade, 10) - 2;
+                localStorage.sell++;
+            }
+            else{
+                console.error("this shouldn't happen.");
+            }
         }
         else if(editAction === '-'){
             if(parseInt(localStorage.sell, 10) <= 0){
                 return false;
             }
             localStorage.sell--;
+            localStorage.keep++;
         }
         else if(editAction === 'm'){
             localStorage.sell = maxSharesToDispose;
+            localStorage.trade = 0;
+            localStorage.keep = 0;
         }
     }
+    // Update disposal editor display
+    document.querySelector('#keep-head').textContent = `Keep: ${parseInt(localStorage.keep, 10)}`;
+    document.querySelector('#trade-head').textContent = `Trade: ${parseInt(localStorage.trade, 10)}`;
+    document.querySelector('#sell-head').textContent = `Sell: ${parseInt(localStorage.sell, 10)}`;
 };
 
 const purchaseShares = (e, sock) => {
@@ -222,7 +265,8 @@ const purchaseShares = (e, sock) => {
     chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
 };
 const disposeShares = (e, sock) => {
-    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'disposeShares', updateData: {}});
+    const shareDisposal = {'keep': parseInt(localStorage.keep, 10), 'trade': parseInt(localStorage.trade, 10), 'sell': parseInt(localStorage.sell, 10)};
+    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'disposeShares', updateData: shareDisposal});
     document.querySelector("#dispose-shares-container").style.display = 'none';
 };
 
@@ -237,6 +281,8 @@ const populateGame = (game) => {
     generateStatsTable(game);
     updateGameBoard(game);
     //TODO: Reveal hidden elements if necessary (dispose-shares-table).
+    // Normally this state is updated on updateGame calls, but we should update in the same way on page load.
+    // updateClientState(game.state.expectedNextAction, game.state.turn)
 
     //TODO: Think about what we have in local storage. How will that affect switching between games?
 };
@@ -255,6 +301,11 @@ const updateGame = (sock) => (gameUpdate) => {
             localStorage.setItem('keep', state.player_states[state.turn][disposingChain]);
             localStorage.setItem('trade', '0');
             localStorage.setItem('sell', '0');
+
+            // Update disposal editor display
+            document.querySelector('#keep-head').textContent = `Keep: ${parseInt(localStorage.keep, 10)}`;
+            document.querySelector('#trade-head').textContent = `Trade: ${parseInt(localStorage.trade, 10)}`;
+            document.querySelector('#sell-head').textContent = `Sell: ${parseInt(localStorage.sell, 10)}`;
 
             localStorage.setItem('maxSharesToDispose', state.player_states[state.turn][disposingChain]);
             let remainingChain = state.active_merger.remaining_chain;
@@ -289,8 +340,6 @@ const updateGame = (sock) => (gameUpdate) => {
     else {
         console.log("Got unrecognized game update...")
     }
-    //updateStatsTable(game); //similar to game board
-    console.log("got messagedddddddddddddddddddd");
 };
 
 const generateStatsTable = (game) => {

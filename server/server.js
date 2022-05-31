@@ -144,7 +144,7 @@ io.on('connection', (sock) => {
             sock.emit('error', "none"); //TODO: add catch-all error listener to client.
             return false;
         }
-        console.log(`Game update: game: ${game_id}, updateType: ${updateType}, updateData: ${updateData}`);
+        console.log(`Game update: game: ${game_id}, updateType: ${updateType}, updateData: ${JSON.stringify(updateData)}`);
         let updateResult;
         try{
             updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData, true);

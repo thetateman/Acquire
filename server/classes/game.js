@@ -301,7 +301,10 @@ class game {
                 return "notValidChain";
                 break;
         }
-        if(chains[chain].length <= 6){
+        if(chains[chain].length <= 0){
+            finalPrice = 0;
+        }
+        else if(chains[chain].length <= 6){
             finalPrice = basePrice + 100 * chains[chain].length;
         }
         else if(chains[chain].length <= 10){
@@ -503,6 +506,9 @@ class game {
             if(username !== game.usernames[0]){
                 return "onlyCreatorMayStartGame";
             }
+            if(game.state.game_started){
+                return "gameAlreadyStarted";
+            }
             else{
                 // Draw first tiles to determine turn order
                 let firstTiles = [];
@@ -632,6 +638,11 @@ class game {
                 game.state.chains[updateData.newChainChoice] = connectedSingleTiles;
                 connectedSingleTiles.forEach((tile) => {game.state.board[tile.y][tile.x] = updateData.newChainChoice;});
                 this.updatePrice(updateData.newChainChoice, game.state.chains, game.state.share_prices);
+
+                // Bonus share for creating chain
+                game.state.bank_shares[updateData.newChainChoice]--;
+                game.state.player_states[game.state.turn][updateData.newChainChoice]++;
+
                 game.state.expectedNextAction = 'purchaseShares';
                 break;
             case 'chooseRemainingChain':
