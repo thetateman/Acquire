@@ -55,7 +55,6 @@ class game {
                 let connectingTrueChains = connectingChains.filter((f) => f !== 's');
                 if(connectingTrueChains.length === 1){
                     tileChain = connectingTrueChains[0];
-                    console.log(connectingTrueChains);
                     chains[tileChain].push({'x': x, 'y': y});
                     let connectedSingleTiles = this.getConnectingSingles(board, x, y);
                     chains[tileChain] = chains[tileChain].concat(connectedSingleTiles);
@@ -76,8 +75,6 @@ class game {
                             largestChains.push(connectingTrueChains[i]);
                         }
                     }
-                    console.log("testing......");
-                    console.log(`largestChains: ${largestChains}`);
                     let remainingChain = 'p'; //pending, should change with next action
                     if(largestChains.length === 1){
                         remainingChain = largestChains[0];
@@ -143,8 +140,6 @@ class game {
             }
         }
         board[y][x] = tileChain; //maybe change for non-normal cases
-        console.log(connectingChains);
-        console.log(placementType);
         return placementType;
 
         
@@ -214,7 +209,6 @@ class game {
                 }
             }
             newTile = {'x': currentTile.x+1, 'y': currentTile.y};
-            console.log(`currentTile: ${JSON.stringify(currentTile)}`);
             if(board[newTile.y][newTile.x] === 's'){
                 if(!connectingSingles.find((tile) => tile.x === newTile.x && tile.y === newTile.y)){
                     connectingSingles.push(JSON.parse(JSON.stringify(newTile)));
@@ -333,7 +327,6 @@ class game {
         else if(reason === "endGame"){
             elimChains = elimChains.concat(['i', 'c', 'a', 'w', 'f', 'l', 't'].filter((chain) => !game.state.available_chains.includes(chain)));
         }
-        console.log(elimChains);
         for(let i = 0; i < elimChains.length; i++){
             let firstPlaces = [];
             let secondPlaces = [];
@@ -356,7 +349,7 @@ class game {
                 splitReward += (100 - (splitReward % 100)) //Rounding up to 100th place.
                 for(let k = 0; k < firstPlaces.length; k++){
                     game.state.player_states[firstPlaces[k]].cash += splitReward;
-                    console.log(`Player ${firstPlaces[k]} tied for first and receives ${splitReward} for ${elimChains[i]}`);
+                    //console.log(`Player ${firstPlaces[k]} tied for first and receives ${splitReward} for ${elimChains[i]}`);
                 }
             }
             else{ // no tie for first
@@ -378,20 +371,22 @@ class game {
                     splitReward += (100 - (splitReward % 100)) //Rounding up to 100th place.
                     for(let k = 0; k < secondPlaces.length; k++){
                         game.state.player_states[secondPlaces[k]].cash += splitReward;
-                        console.log(`Player ${firstPlaces[k]} tied for second and receives ${splitReward} for ${elimChains[i]}`);
+                        //console.log(`Player ${firstPlaces[k]} tied for second and receives ${splitReward} for ${elimChains[i]}`);
                     }
                 }
                 if(firstPlaces.length === 0){
-                    console.log(`No ${elimChains[i]} shares, skipping prizes. (should only happen in debug).`);
+                    //console.log(`No ${elimChains[i]} shares, skipping prizes. (should only happen in debug).`);
                     continue;
                 }
                 if(secondPlaces.length === 0){
                     secondPlaces.push(firstPlaces[0]);
-                    console.log(`No one had second in ${elimChains[i]}, giving second place prize to ${firstPlaces[0]}`);
+                    //console.log(`No one had second in ${elimChains[i]}, giving second place prize to ${firstPlaces[0]}`);
                 }
+                /*
                 console.log(`No ties: awarding ${10 * game.state.share_prices[elimChains[i]]} to ` + 
                     `player ${firstPlaces[0]} and ${5 * game.state.share_prices[elimChains[i]]} to player ` +
                     `${secondPlaces[0]} for ${elimChains[i]}.`);
+                */
                 game.state.player_states[firstPlaces[0]].cash += 10 * game.state.share_prices[elimChains[i]];
                 game.state.player_states[secondPlaces[0]].cash += 5 * game.state.share_prices[elimChains[i]];
             }
@@ -475,7 +470,7 @@ class game {
         return id;
     };
 
-    static updateGame(game, username, updateType, updateData, admin=false){
+    static updateGame(game, username, updateType, updateData, {admin=false, verbose=false}={}){
         /**
         * Called after receiving game updating websocket message, updates in-memory game object.
         * @param {object} game - the game to be updated.
@@ -483,6 +478,7 @@ class game {
         * @param {string} updateType - updateType should be in: ['joinGame', 'startGame', 'playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares'].
         * @param {object} updateData - action details, e.g., coordinates of tile played.
         * @param {boolean} admin - updater is using administrator privilages to override game rules.
+        * @param {boolean} verbose - enables verbose logging
         * @returns {string} 'Success' or error string
         */
 
@@ -529,7 +525,6 @@ class game {
                     firstTiles.push(game.state.tile_bank.pop());
                 }
                 let tileIndicies = Object.keys(firstTiles);
-                console.log(tileIndicies);
                 tileIndicies.sort((a, b) => {
                     if(firstTiles[a].x > firstTiles[b].x){
                         return 1;
@@ -545,7 +540,7 @@ class game {
                             return -1;
                         }
                         else{
-                            console.log("Something went wrong, and we tried to compare the same tile!");
+                            if(verbose){console.log("Something went wrong, and we tried to compare the same tile!");}
                             return 0;
                         }
                     }
@@ -572,12 +567,12 @@ class game {
         //username is passed in as a string, here we convert it to the
         //player number that represents that user in this game.
         let userID = game.usernames.indexOf(username);
-        console.log(userID);
+        if(verbose){console.log(userID);}
         if(userID === -1){
             return "userNotInGame";
         }
         
-        console.log(`Player ${game.state.turn}'s turn to ${game.state.expectedNextAction}.`);
+        if(verbose){console.log(`Player ${game.state.turn}'s turn to ${game.state.expectedNextAction}.`);}
         if(userID !== game.state.turn && !admin){
             return 'notPlayersTurn';
         }
@@ -606,12 +601,10 @@ class game {
                 switch(this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, updateData.x, updateData.y, game)){
                     case 'normal':
                         game.state.expectedNextAction = 'purchaseShares'; //should we wait for a pass if player has no cash?
-                        console.log("ok, now we're waiting to purchase shares...")
                         break;
                     case 'newChain':
                         game.state.expectedNextAction = 'chooseNewChain';
                         game.state.lastPlayedTile = updateData;
-                        console.log("waiting to choose chain...")
                         break;
                     case 'merger':
                         if(game.state.active_merger.remaining_chain === 'p'){ // If waiting on chain choice
@@ -627,10 +620,10 @@ class game {
                             game.state.expectedNextAction = 'disposeShares'
                         }
                         game.state.lastPlayedTile = updateData;
-                        console.log(game.state.active_merger)
+                        if(verbose){console.log(game.state.active_merger);}
                         break;
                     default:
-                        console.log("Not a valid placement type.")
+                        if(verbose){console.log("Not a valid placement type.");}
                 }
                 this.updateNetWorths(game);
 
@@ -670,7 +663,6 @@ class game {
 
                         this.awardPrizes(game);
                         this.updateNetWorths(game);
-                        console.log(game.state.active_merger);
                         // Update turn to first player to dispose shares.
                         let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
                         game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
@@ -718,13 +710,12 @@ class game {
                     if(game.state.active_merger.disposing_chain_index === game.state.active_merger.elim_chains.length){ // All shares disposed
                         let mergingTile = game.state.lastPlayedTile;
                         let mergingChainTiles = [mergingTile];
-                        console.log(game.state.active_merger);
                         let elimChains = game.state.active_merger.elim_chains;
                         elimChains.forEach((chain) => {
                             mergingChainTiles = mergingChainTiles.concat(JSON.parse(JSON.stringify(game.state.chains[chain])));
                             game.state.chains[chain] = [];
                             game.state.available_chains.push(chain);
-                            console.log(`merging off: ${chain}`);
+                            if(verbose){console.log(`merging off: ${chain}`);}
                         });
                         mergingChainTiles = mergingChainTiles.concat(
                             this.getConnectingSingles(game.state.board, mergingTile.x, mergingTile.y));
@@ -744,15 +735,12 @@ class game {
                         //merger operations complete, clear active_merger object
                         game.state.active_merger = {};
 
-                        console.log("merging tiles")
-                        console.log(mergingChainTiles);
                         game.state.expectedNextAction = 'purchaseShares';
 
                     }
                     else{
                         // Update turn to next player expected to dispose shares
                         game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
-                        console.log(`turn: ${game.state.turn}`);
                         game.expectedNextAction = 'disposeShares';
                     }
                 }
@@ -819,21 +807,10 @@ class game {
                 }
                 break;
             default:
-                console.log("Not a valid updateType.")
+                if(verbose){console.log("Not a valid updateType.");}
                 return "invalidUpdateType";
                 break;
         }
-
-        /*
-        if(JSON.stringify(game.state.active_merger) !== '{}'){ // merger is active.
-            console.log("the merger is active,,, checking if we can give prizes yet");
-            if(game.state.active_merger.remaining_chain !== 'p'){ // remaining chain has been selected.
-                //pay prizes
-                this.awardPrizes(game);
-            }
-        }
-        */
-
         return "success";
     };
 }

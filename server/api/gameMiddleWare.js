@@ -8,13 +8,8 @@ class GameMiddleware{
   static async retrieveAllActiveGames(req, res, next) {
       require('dotenv').config();
       const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
-      .then(()=>console.log('connected'))
-      .catch(e=>console.log(e));
-
-
-    
-      console.log(JSON.stringify(req.body));
-      console.log(req.body.password);
+      .then(()=>{})
+      .catch(e=>console.error(e));
 
       const { username, email, password } = req.body;
       const hashedPassword = await bcrypt.hash(password, 12);
@@ -41,11 +36,10 @@ class GameMiddleware{
       return res.json({ result: "" });
   };
   static async loginUserMiddleware(req, res, next){
-      console.log("hit");
       require('dotenv').config();
       const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
-      .then(()=>console.log('connected'))
-      .catch(e=>console.log(e));
+      .then(()=>{})
+      .catch(e=>console.error(e));
 
     const {loginID, password} = req.body;
     let loginType;
