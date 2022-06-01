@@ -283,7 +283,7 @@ const disposeShares = (e, sock) => {
 const startGame = (sock) => (e) => {
     e.preventDefault();
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'startGame', updateData: {}});
-    document.querySelector("#start-game").style.display = 'none';
+    document.querySelector("#start-game-button").style.display = 'none';
 }
 
 const populateGame = (game) => {
@@ -291,6 +291,9 @@ const populateGame = (game) => {
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0"));
     generateStatsTable(game);
     updateGameBoard(game);
+    if(!game.state.game_started && game.usernames[0] === localStorage.username){
+        document.querySelector('#start-game-button').style.display = 'block';
+    }
     //TODO: Reveal hidden elements if necessary (dispose-shares-table).
     // Normally this state is updated on updateGame calls, but we should update in the same way on page load.
     // updateClientState(game.state.expectedNextAction, game.state.turn)
@@ -305,32 +308,34 @@ const updateGame = (sock) => (gameUpdate) => {
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
         updateTileBank(gameUpdate.game, sock);
-        if(gameUpdate.game.state.expectedNextAction === 'disposeShares'){
-            document.querySelector("#dispose-shares-container").style.display = 'flex';
-            let state = gameUpdate.game.state;
-            let disposingChain = state.active_merger.elim_chains[state.active_merger.disposing_chain_index];
-            localStorage.setItem('disposingChain', disposingChain);
-            localStorage.setItem('keep', state.player_states[state.turn][disposingChain]);
-            localStorage.setItem('trade', '0');
-            localStorage.setItem('sell', '0');
+        if(gameUpdate.game.usernames[gameUpdate.game.state.turn] === localStorage.username){ // Only do these updates on player's turn.
+            if(gameUpdate.game.state.expectedNextAction === 'disposeShares'){
+                document.querySelector("#dispose-shares-container").style.display = 'flex';
+                let state = gameUpdate.game.state;
+                let disposingChain = state.active_merger.elim_chains[state.active_merger.disposing_chain_index];
+                localStorage.setItem('disposingChain', disposingChain);
+                localStorage.setItem('keep', state.player_states[state.turn][disposingChain]);
+                localStorage.setItem('trade', '0');
+                localStorage.setItem('sell', '0');
 
-            // Update disposal editor display
-            document.querySelector('#keep-head').textContent = `Keep: ${parseInt(localStorage.keep, 10)}`;
-            document.querySelector('#trade-head').textContent = `Trade: ${parseInt(localStorage.trade, 10)}`;
-            document.querySelector('#sell-head').textContent = `Sell: ${parseInt(localStorage.sell, 10)}`;
+                // Update disposal editor display
+                document.querySelector('#keep-head').textContent = `Keep: ${parseInt(localStorage.keep, 10)}`;
+                document.querySelector('#trade-head').textContent = `Trade: ${parseInt(localStorage.trade, 10)}`;
+                document.querySelector('#sell-head').textContent = `Sell: ${parseInt(localStorage.sell, 10)}`;
 
-            localStorage.setItem('maxSharesToDispose', state.player_states[state.turn][disposingChain]);
-            let remainingChain = state.active_merger.remaining_chain;
-            localStorage.setItem('remainingChain', remainingChain);
-            localStorage.setItem('maxSharesToTradeFor', state.bank_shares[remainingChain]);
-        }
-        else if(gameUpdate.game.state.expectedNextAction === 'purchaseShares'){
-            document.querySelector("#buy-shares-container").style.display = 'flex';
-            localStorage.purchaseTotal = 0;
-            document.querySelector('#share-purchase-total').textContent = 'Total: 0';
-        }
-        if(['chooseNewChain', 'chooseRemainingChain', 'purchaseShares'].includes(gameUpdate.game.state.expectedNextAction)){
-            updateChainSelectorRow(gameUpdate.game.state);
+                localStorage.setItem('maxSharesToDispose', state.player_states[state.turn][disposingChain]);
+                let remainingChain = state.active_merger.remaining_chain;
+                localStorage.setItem('remainingChain', remainingChain);
+                localStorage.setItem('maxSharesToTradeFor', state.bank_shares[remainingChain]);
+            }
+            else if(gameUpdate.game.state.expectedNextAction === 'purchaseShares'){
+                document.querySelector("#buy-shares-container").style.display = 'flex';
+                localStorage.purchaseTotal = 0;
+                document.querySelector('#share-purchase-total').textContent = 'Total: 0';
+            }
+            if(['chooseNewChain', 'chooseRemainingChain', 'purchaseShares'].includes(gameUpdate.game.state.expectedNextAction)){
+                updateChainSelectorRow(gameUpdate.game.state);
+            }
         }
     } 
     else if(gameUpdate.type === 'joinGame'){
@@ -350,6 +355,7 @@ const updateGame = (sock) => (gameUpdate) => {
     else if(gameUpdate.type === 'startGame'){
         updateGameBoard();
         updateStatsTable();
+        updateTileBank(gameUpdate.game, sock);
     }
     else {
         console.log("Got unrecognized game update...")
@@ -425,7 +431,7 @@ const updateStatsTable = (game) => {
     .forEach(e => e.addEventListener('click', function() {disposeSharesEditor(e);}));
     
     document
-    .querySelector('#start-game')
+    .querySelector('#start-game-button')
     .addEventListener('click', startGame(sock));
 
     document

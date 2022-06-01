@@ -228,6 +228,10 @@ canvas {
     margin: 10px auto;
 }
 
+#start-game-button {
+    display: none;
+}
+
 .dynamic-share-info-column {
     flex-basis: 70%;
 }

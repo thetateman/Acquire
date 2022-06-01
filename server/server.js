@@ -122,6 +122,7 @@ io.on('connection', (sock) => {
             else{
                 const requestedGameCopy = getSendableGame(games[parseInt(gameID, 10)], requestingUser);
                 sock.emit('gameResponse', requestedGameCopy);
+                sock.data.username = requestingUser;
                 sock.join(gameID);
             }
         }
@@ -140,7 +141,6 @@ io.on('connection', (sock) => {
     });
     sock.on('gameAction', ({game_id, updateType, updateData}) => {
         if(!Object.keys(games).includes(game_id.toString())){
-            console.log(`Requesting game: ${game_id}`);
             console.log("Requested a game that does not exist!");
             sock.emit('error', "none"); //TODO: add catch-all error listener to client.
             return false;
@@ -148,7 +148,7 @@ io.on('connection', (sock) => {
         console.log(`Game update: game: ${game_id}, updateType: ${updateType}, updateData: ${JSON.stringify(updateData)}`);
         let updateResult;
         try{
-            updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData, true);
+            updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData);
         } 
         catch(err){
             console.log(err);
@@ -169,27 +169,14 @@ io.on('connection', (sock) => {
             };
             io.in(game_id.toString()).emit('gameUpdate', gameUpdate);
         }
-        else if(updateType === "playTile"){
-            io.in(game_id.toString()).emit('gameUpdate', {type: "playTile", game: getSendableGame(games[game_id], sock.request.session.username)});
-        }
-        else if(updateType === "chooseNewChain"){ //TODO: decide if these cases should send different data.
-            io.in(game_id.toString()).emit('gameUpdate', {type: "chooseNewChain", game: getSendableGame(games[game_id], sock.request.session.username)});
-        }
-        else if(updateType === "chooseRemainingChain"){ //TODO: decide if these cases should send different data.
-            io.in(game_id.toString()).emit('gameUpdate', {type: "chooseRemainingChain", game: getSendableGame(games[game_id], sock.request.session.username)});
-        }
-        else if(updateType === "disposeShares"){ //TODO: decide if these cases should send different data.
-            io.in(game_id.toString()).emit('gameUpdate', {type: "disposeShares", game: getSendableGame(games[game_id], sock.request.session.username)});
-        }
-        else if(updateType === "purchaseShares"){ //TODO: decide if these cases should send different data.
-            io.in(game_id.toString()).emit('gameUpdate', {type: "disposeShares", game: getSendableGame(games[game_id], sock.request.session.username)});
-        }
-        else if(updateType === "startGame"){
-            io.in(game_id.toString()).emit('gameUpdate', {type: "startGame", game: getSendableGame(games[game_id], sock.request.session.username)});
-        }
         else{
-            // TODO: break this up into more specific cases, so we can send more specific data, instead of the whole game object.
-            io.in(game_id.toString()).emit('gameUpdate', {type: "missing", game: getSendableGame(games[game_id], sock.request.session.username)});
+            io.in(game_id.toString()).fetchSockets()
+            .then((sockets) => {
+                sockets.forEach((playerSocket) => {
+                    console.log(playerSocket.data.username);
+                    playerSocket.emit('gameUpdate', {type: updateType, game: getSendableGame(games[game_id], playerSocket.data.username)});
+                });
+            });
         }
         console.log(updateResult);
     });
@@ -294,7 +281,4 @@ console.log(games[updateID].state.player_states[1]);
 console.log(games[updateID].state.player_states[2]);
 console.log(games[updateID].state.player_states[3]);
 console.log(games[updateID].state.bank_shares);
-let testThing = {
-    '0': 'adsf',
-    'b': 'diid'
-};
+
