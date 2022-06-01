@@ -102,9 +102,10 @@ const onSignUp = (e) => {
         })
         .then(function(response){
             response.json().then(function(json){
-                let success = displaySignupError(json.result);
+                let success = displaySignupError(json.error);
                 console.log('Success:', json);
                 if(success){
+                    localStorage.setItem('username', json.user.username);
                     location.href = "/";
                 }
             })

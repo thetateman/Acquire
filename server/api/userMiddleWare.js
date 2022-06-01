@@ -19,17 +19,21 @@ class UserMiddleware{
       const { username, email, password } = req.body;
       const hashedPassword = await bcrypt.hash(password, 12);
 
-      
+      let responseObj = {error: "none", user: {}};
+
       let user = await UserModel.findOne({email})
       if(user) {
-        return res.json({ result: "dupEmail" });
+        responseObj.error = "dupEmail";
+        return res.json(responseObj);
       }
       user = await UserModel.findOne({username})
       if(user) {
-        return res.json({ result: "dupUsername" });
+        responseObj.error = "dupUsername";
+        return res.json(responseObj);
       } 
       req.session.isAuth = true;
       req.session.username = username;
+      
       
       user = new UserModel({
         username,
@@ -38,6 +42,9 @@ class UserMiddleware{
       });
       
       await user.save();
+      responseObj.user = user;
+      responseObj.user.password = "";
+      return res.json(responseObj);
       return res.json({ result: "" });
   };
   static async loginUserMiddleware(req, res, next){
@@ -76,7 +83,6 @@ class UserMiddleware{
     } else {
         req.session.isAuth = true;
         req.session.username = user.username;
-        req.session.userID = user._id.toHexString();
         responseObj.user = user;
         responseObj.user.password = "";
         return res.json(responseObj);
