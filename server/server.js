@@ -139,7 +139,8 @@ io.on('connection', (sock) => {
          
     });
     sock.on('gameAction', ({game_id, updateType, updateData}) => {
-        if(!Object.keys(games).includes(game_id)){
+        if(!Object.keys(games).includes(game_id.toString())){
+            console.log(`Requesting game: ${game_id}`);
             console.log("Requested a game that does not exist!");
             sock.emit('error', "none"); //TODO: add catch-all error listener to client.
             return false;
@@ -214,8 +215,8 @@ console.log(game.updateGame(games[updateID], 7652, "joinGame", {}))
 
 console.log(games[updateID].usernames);
 //console.log(game.updateGame(games[updateID], 7655, "startGame", {}));
-console.log(game.updateGame(games[updateID], 7655, "playTile", {x:0, y:0}, true));
-console.log(game.updateGame(games[updateID], 7655, "purchaseShares", {endGame: false, purchase: {}}));
+console.log(game.updateGame(games[updateID], 'tate', "playTile", {x:0, y:0}, true));
+console.log(game.updateGame(games[updateID], 'tate', "purchaseShares", {endGame: false, purchase: {}}));
 console.log(game.updateGame(games[updateID], 7654, "playTile", {x:4, y:2}, true));
 console.log(game.updateGame(games[updateID], 7654, "purchaseShares", {endGame: false, purchase: {}}));
 /*
@@ -293,4 +294,7 @@ console.log(games[updateID].state.player_states[1]);
 console.log(games[updateID].state.player_states[2]);
 console.log(games[updateID].state.player_states[3]);
 console.log(games[updateID].state.bank_shares);
-
+let testThing = {
+    '0': 'adsf',
+    'b': 'diid'
+};

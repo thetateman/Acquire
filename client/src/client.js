@@ -299,12 +299,12 @@ const populateGame = (game) => {
 };
 
 const updateGame = (sock) => (gameUpdate) => {
-    localStorage.setItem('gameState', JSON.stringify(gameUpdate.game.state));
-    localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
-    updateTileBank(gameUpdate.game, sock);
     if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares', 'startGame'].includes(gameUpdate.type)){
+        localStorage.setItem('gameState', JSON.stringify(gameUpdate.game.state));
+        localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
+        updateTileBank(gameUpdate.game, sock);
         if(gameUpdate.game.state.expectedNextAction === 'disposeShares'){
             document.querySelector("#dispose-shares-container").style.display = 'flex';
             let state = gameUpdate.game.state;
