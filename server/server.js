@@ -4,6 +4,7 @@ const express = require('express');
 const socketio = require('socket.io');
 const mongoose = require('mongoose');
 const session = require('express-session');
+const helmet = require('helmet');
 
 const apiRouter = require("./api/api.router.js");
 const game = require("./classes/game.js");
@@ -21,6 +22,7 @@ const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 let games = {};
 
 const app = express();
+app.use(helmet());
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
