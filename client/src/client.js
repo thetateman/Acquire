@@ -1,20 +1,4 @@
 const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
-const logout = () => {
-    localStorage.clear();
-    fetch('/api/logoutUser', {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(function(response){
-        location.href = "/";
-    })
-    .catch((error) => {
-    console.error('Error:', error);
-    });
-    
-};
 
 const log = (text) => {
     const parent = document.querySelector('#events');
@@ -437,10 +421,6 @@ const updateStatsTable = (game) => {
     document
     .querySelector('#chat-form')
     .addEventListener('submit', onChatSubmitted(sock));
-
-    document
-    .querySelector('#logout-button')
-    .addEventListener('click', logout);
 
     //canvas.addEventListener('click', onClick);
     sock.emit('gameRequest', window.location.href.split("gameid=").at(-1));
