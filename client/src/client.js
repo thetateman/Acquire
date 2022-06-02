@@ -52,7 +52,7 @@ const updateTileBank = (game, sock) => {
     .forEach(e => e.addEventListener('click', function() {tileClickHandler(e, sock);}));
 };
 
-const updateChainSelectorRow = (gameState) => { //TODO: only call this when it is this player's turn
+const updateChainSelectorRow = (gameState) => {
     chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
     let visibleChainSelectors = [];
     if(gameState.expectedNextAction === 'purchaseShares'){
@@ -76,6 +76,8 @@ const updateChainSelectorRow = (gameState) => { //TODO: only call this when it i
                 visibleChainSelectors.push(chain);
             }
         });
+    } else { // Not a state where we want to display chain selectors.
+
     }
     visibleChainSelectors.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'inline-flex');
 }
@@ -268,9 +270,9 @@ const startGame = (sock) => (e) => {
     e.preventDefault();
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'startGame', updateData: {}});
     document.querySelector("#start-game-button").style.display = 'none';
-}
+};
 
-const populateGame = (game) => {
+const populateGame = (sock) => (game) => {
     localStorage.setItem('gameState', JSON.stringify(game.state));
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0"));
     generateStatsTable(game);
@@ -278,11 +280,67 @@ const populateGame = (game) => {
     if(!game.state.game_started && game.usernames[0] === localStorage.username){
         document.querySelector('#start-game-button').style.display = 'block';
     }
+    if(game.state.game_started){
+        updateTileBank(game, sock);
+        myTurnStateUpdater(game);
+    }
     //TODO: Reveal hidden elements if necessary (dispose-shares-table).
     // Normally this state is updated on updateGame calls, but we should update in the same way on page load.
     // updateClientState(game.state.expectedNextAction, game.state.turn)
 
     //TODO: Think about what we have in local storage. How will that affect switching between games?
+};
+
+const prepareToPurchaseShares = (game) => {
+    /**
+     * To be called whenever we are expecting this user to purchase shares.
+     * Puts UI and localStorage variables in correct state for share purchace interaction.
+     */
+     document.querySelector("#buy-shares-container").style.display = 'flex';
+     localStorage.purchaseTotal = 0;
+     document.querySelector('#share-purchase-total').textContent = 'Total: 0';
+     updateChainSelectorRow(game.state);
+};
+
+const prepareToDisposeShares = (game) => {
+     /**
+     * To be called whenever we are expecting this user to dispose shares.
+     * Puts UI and localStorage variables in correct state for share disposal interaction.
+     */
+      document.querySelector("#dispose-shares-container").style.display = 'flex';
+      let state = game.state;
+      let disposingChain = state.active_merger.elim_chains[state.active_merger.disposing_chain_index];
+      localStorage.setItem('disposingChain', disposingChain);
+      localStorage.setItem('keep', state.player_states[state.turn][disposingChain]);
+      localStorage.setItem('trade', '0');
+      localStorage.setItem('sell', '0');
+
+      // Update disposal editor display
+      document.querySelector('#keep-head').textContent = `Keep: ${parseInt(localStorage.keep, 10)}`;
+      document.querySelector('#trade-head').textContent = `Trade: ${parseInt(localStorage.trade, 10)}`;
+      document.querySelector('#sell-head').textContent = `Sell: ${parseInt(localStorage.sell, 10)}`;
+
+      localStorage.setItem('maxSharesToDispose', state.player_states[state.turn][disposingChain]);
+      let remainingChain = state.active_merger.remaining_chain;
+      localStorage.setItem('remainingChain', remainingChain);
+      localStorage.setItem('maxSharesToTradeFor', state.bank_shares[remainingChain]);
+};
+
+const myTurnStateUpdater = (game) => {
+    /**
+     * If it is this user's turn, updates client state based on expected next action.
+     */
+    if(game.usernames[game.state.turn] === localStorage.username){
+        if(game.state.expectedNextAction === 'disposeShares'){
+            prepareToDisposeShares(game);
+        }
+        else if(game.state.expectedNextAction === 'purchaseShares'){
+            prepareToPurchaseShares(game);
+        }
+        else if(['chooseNewChain', 'chooseRemainingChain'].includes(game.state.expectedNextAction)){
+            updateChainSelectorRow(game.state);
+        }
+    }
 };
 
 const updateGame = (sock) => (gameUpdate) => {
@@ -292,35 +350,7 @@ const updateGame = (sock) => (gameUpdate) => {
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
         updateTileBank(gameUpdate.game, sock);
-        if(gameUpdate.game.usernames[gameUpdate.game.state.turn] === localStorage.username){ // Only do these updates on player's turn.
-            if(gameUpdate.game.state.expectedNextAction === 'disposeShares'){
-                document.querySelector("#dispose-shares-container").style.display = 'flex';
-                let state = gameUpdate.game.state;
-                let disposingChain = state.active_merger.elim_chains[state.active_merger.disposing_chain_index];
-                localStorage.setItem('disposingChain', disposingChain);
-                localStorage.setItem('keep', state.player_states[state.turn][disposingChain]);
-                localStorage.setItem('trade', '0');
-                localStorage.setItem('sell', '0');
-
-                // Update disposal editor display
-                document.querySelector('#keep-head').textContent = `Keep: ${parseInt(localStorage.keep, 10)}`;
-                document.querySelector('#trade-head').textContent = `Trade: ${parseInt(localStorage.trade, 10)}`;
-                document.querySelector('#sell-head').textContent = `Sell: ${parseInt(localStorage.sell, 10)}`;
-
-                localStorage.setItem('maxSharesToDispose', state.player_states[state.turn][disposingChain]);
-                let remainingChain = state.active_merger.remaining_chain;
-                localStorage.setItem('remainingChain', remainingChain);
-                localStorage.setItem('maxSharesToTradeFor', state.bank_shares[remainingChain]);
-            }
-            else if(gameUpdate.game.state.expectedNextAction === 'purchaseShares'){
-                document.querySelector("#buy-shares-container").style.display = 'flex';
-                localStorage.purchaseTotal = 0;
-                document.querySelector('#share-purchase-total').textContent = 'Total: 0';
-            }
-            if(['chooseNewChain', 'chooseRemainingChain', 'purchaseShares'].includes(gameUpdate.game.state.expectedNextAction)){
-                updateChainSelectorRow(gameUpdate.game.state);
-            }
-        }
+        myTurnStateUpdater(gameUpdate.game);
     } 
     else if(gameUpdate.type === 'joinGame'){
         if(gameUpdate.joining_player !== localStorage.getItem('username')){ // if joining player != current user. (Data will have been added already.)
@@ -396,7 +426,7 @@ const updateStatsTable = (game) => {
     const sock = io();
     addBoard();
     sock.on('message', log);
-    sock.on('gameResponse', populateGame);
+    sock.on('gameResponse', populateGame(sock));
     sock.on('gameUpdate', updateGame(sock));
     
     document.querySelectorAll('.game-board td')
