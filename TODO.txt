@@ -1,4 +1,4 @@
-1. Make navbar and its js logic reusable components.
+1. Make navbar and its js logic reusable components. X
 2. Complete input validation for login and signup.
 3. Style the login page better. 
 4. Match express sessions with userIDs to better track across site.
@@ -13,6 +13,8 @@
 6. Connect frontend to game logic.
 7. Document client js
 8. Disaster recovery
+    A. Save games in database. (async)
+    B. On server start, load games from database
 10. Maintain net worth calculation.
 11. Allow multiple active sessions?
 

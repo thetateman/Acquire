@@ -50,7 +50,7 @@ app.use("/api", apiRouter);
 
 function authLogic(req, res, next) {
     //TODO: fix below
-    if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.jpg'){
+    if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.gif'){
          next();
     } else {
         res.status(401);
@@ -79,6 +79,9 @@ app.use('/login', (req, res) => {
 });
 app.use('/lobby', (req, res) => {
     res.sendFile(path.resolve(`${__dirname}/../client/lobby.html`));
+});
+app.use('/about', (req, res) => {
+    res.sendFile(path.resolve(`${__dirname}/../client/about.html`));
 });
 app.use('/game', (req, res) => {
     requestedGameID = req.query.gameid;

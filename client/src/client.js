@@ -97,6 +97,7 @@ const updateTile = (x, y, tileType) => {
     tile.style["background-color"] = tileColors[tileType];
     tile.style["border-color"] = tileColors[tileType];
     tile.style["border-style"] = "outset";
+    tile.style["color"] = "black";
     if(tileType === 's'){
         tile.style["color"] = "white";
         tile.style["border-color"] = "var(--single-tile-border-color)";
