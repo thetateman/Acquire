@@ -1,0 +1,19 @@
+body {
+    font-family: "Helvetica Neue", sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.content {
+    padding: 0px 10px;
+}
+
+.bitcoin {
+    color: #F7931A;
+    word-wrap: break-word;
+}
+
+.monero {
+    color: #f33900;
+    word-wrap: break-word;
+}
