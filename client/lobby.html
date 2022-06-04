@@ -2,8 +2,8 @@
 <html>
     <head>
         <title>Acquire Lobby</title>
-        <link rel='stylesheet' href='styles/main.css'>
         <link rel="stylesheet" href="styles/topnav.css">
+        <link rel='stylesheet' href='styles/lobby.css'>
     </head>
     <body>
         <div class="topnav">
@@ -14,32 +14,54 @@
                 <a href="#" id="logout-button">Logout</a>
             </div>
         </div>
-        <div class="controls-wrapper">
-            <ul id="games">
-                <!-- template game
-                <li>Game #98765
-                    <button>Watch</button>
-                    <button>Join</button>
-                </li>
-                -->
-            </ul>
-            <div class="controls">
-                <div class="chat-wrapper">
-                    <form id="new-game-form">
-                        <span class="input-label">No. of Players:</span>
-                        <select id="num-players">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                        </select>
-                        <button id="new-game-button">New Game</button>
+        <div class="lobby-content">
+            <div class="flex-container">
+                <div class="rooms-column">
+                    <div class="controls-wrapper">
+                        <div class="controls">
+                            <form id="new-game-form">
+                                <button id="new-game-button">New Game</button>
+                                <span class="input-label">No. of Players:</span>
+                                <select id="num-players">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                </select>
+                            </form>
+                        </div>
+                        <ul id="games">
+                            <!-- template game
+                            <li>Game #98765
+                                <button>Watch</button>
+                                <button>Join</button>
+                            </li>
+                            -->
+                        </ul>
+                    </div>
+                </div>
+                <div class="chat-column">
+                    <ul id="messages"></ul>
+                    <form id="chat-form">
+                        <input id="chat-input" autocomplete="off" title="chat" placeholder="Send message..." />
                     </form>
+                </div>
+                <div class="leaderboard-column">
+                    <h2>Leader Board</h2>
+                    <p>(coming soon)</p>
                 </div>
             </div>
         </div>
+
+
+
+
+
+
+
+            
         <script src="/socket.io/socket.io.js"></script>
         <script src="src/client_lobby.js"></script>
         <script src="src/common/navbar.js"></script>

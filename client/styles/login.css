@@ -80,6 +80,16 @@ button.turn:hover {
     padding-bottom: 35px;
 }
 
+.mini-controls {
+    display: flex;
+}
+
+.mini-control {
+    color: -webkit-link;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
 #image{
     height: 100vh;
     display: flex;

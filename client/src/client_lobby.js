@@ -1,6 +1,20 @@
 const loadGames = (sock) => (games) => {
-    //TODO: Currently receiving entire games object from server. For scalability this data structure should be paired down.
     console.log(games);
+    /**
+     * Expecting to receive games object in the following format:
+     * {
+     * '1': {
+     *      usernames: ['abc', 'xyz',...],
+     *      max_players: 5,
+     *      game_started: true,
+     *      game_ended: false,
+     *    },
+     * '2': {...},
+     *  .
+     *  .
+     *  .
+     * }
+     */
     for (const [key, value] of Object.entries(games)) {
         const gameElements = 
             `<li>Game #${key}
@@ -15,6 +29,7 @@ const loadGames = (sock) => (games) => {
         document.querySelector(`#join${key}`).addEventListener('click', onJoinGame(key, sock));
     }
 };
+//TODO: Currently receiving entire game object from server. For scalability this data structure should be paired down.
 const updateGames = (sock) => (update) => {
     if(update.action === "addGame"){
         const id = update.game.id;

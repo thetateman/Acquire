@@ -102,6 +102,7 @@ io.on('connection', (sock) => {
     sock.emit('message', 'You are connected');
 
     sock.on('message', (text) => {
+        if(verbose){console.log(`Got message: ${text}`);}
         io.emit('message', text);
     });
 
@@ -112,7 +113,10 @@ io.on('connection', (sock) => {
             let gameSummaries = {};
             for (const [key, value] of Object.entries(games)) {
                 gameSummaries[key] = {
-                    usernames: value.usernames
+                    usernames: value.usernames,
+                    max_players: value.max_players,
+                    game_started: value.state.game_started,
+                    game_ended: value.state.game_ended
                 };
             }
             sock.emit('gameResponse', gameSummaries);
@@ -133,9 +137,16 @@ io.on('connection', (sock) => {
     sock.on('newGame', ({numPlayers, creator}) => {
         // creator arg no longer used, left in place for demonstration
         const newGameID = game.createGame(games, parseInt(numPlayers, 10), sock.request.session.username);
+        const gameSummary = {
+            id: newGameID,
+            usernames: games[newGameID].usernames,
+            max_players: games[newGameID].max_players,
+            game_started: games[newGameID].state.game_started,
+            game_ended: games[newGameID].state.game_ended
+        };
         updateObject = {
             "action": "addGame",
-            "game": games[newGameID],
+            "game": gameSummary
         }
         io.emit('gameListUpdate', updateObject);
          

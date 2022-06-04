@@ -29,5 +29,7 @@
 19. Share disposal - client X
 20. In the event of a >=3-way merger where >=2 eliminated chains are of equal size, merging player should choose order of eliminations.
 21. Advanced test cases
+22. Handle empty tile bank
+23. Handle all tiles dead or asleap
 
 
