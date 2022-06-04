@@ -62,15 +62,27 @@ const onJoinGame = (game, sock) => (e) => {
     location.href = `/game?gameid=${game}`;
 };
 
+const updateLobby = (connectedUsers) => {
+    const userListNode = document.querySelector('#lobby-user-list');
+    let userList = "";
+    connectedUsers.forEach((user) => {
+        userList += `<li>${user}</li>`;
+    });
+    userListNode.innerHTML = userList;
+}
+
 
 
 (() => {
     const sock = io();
+    window.active_socket_conn = sock;
     sock.on('gameResponse', loadGames(sock));
     sock.on('gameListUpdate', updateGames(sock));
+    sock.on('lobbyUpdate', updateLobby);
     
     
     sock.emit('gameRequest', "all");
+    sock.emit('lobbyRequest');
     let currentUser = localStorage.getItem('username'); //There has to be a better way to do this
     document
     .querySelector('#new-game-form')

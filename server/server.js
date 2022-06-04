@@ -20,6 +20,8 @@ const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 //The games object defines the state of all active games - need to do more research to determine if 
 //there is a better way to store this information.
 let games = {};
+let connectedUsers = [];
+let usersInLobby = [];
 
 const app = express();
 app.use(helmet());
@@ -99,12 +101,23 @@ io.use(function(socket, next) {
 });
 
 io.on('connection', (sock) => {
-    sock.emit('message', 'You are connected');
+    connectedUsers.push(sock.request.session.username);
+    io.emit('message', `${sock.request.session.username} joined the server.`);
+    sock.emit('lobbyUpdate', connectedUsers);
+
+    sock.on('disconnect', (reason) => {
+        console.log("disconnected");
+        connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
+    });
+    // :( this is so broken
+
 
     sock.on('message', (text) => {
         if(verbose){console.log(`Got message: ${text}`);}
-        io.emit('message', text);
+        io.emit('message', `${sock.request.session.username}: ${text}`);
     });
+
+    sock.on('lobbyRequest', () => io.emit('lobbyUpdate', connectedUsers));
 
     sock.on('gameRequest', gameID => {
         let requestingUser = sock.request.session.username;

@@ -3,7 +3,7 @@ const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
 const log = (text) => {
     const parent = document.querySelector('#events');
     const el = document.createElement('li');
-    el.innerHTML = text;
+    el.textContent = text;
 
     parent.appendChild(el);
     parent.scrollTop = parent.scrollHeight;

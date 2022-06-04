@@ -18,6 +18,13 @@
             <div class="flex-container">
                 <div class="rooms-column">
                     <div class="controls-wrapper">
+                        <div class="lobby-container">
+                            <div class="lobby-header-container">
+                                <h3 class="lobby-text" id="collapse-caret">></h3>
+                                <h3 class="lobby-text" id="lobby-header"> Lobby (16)</h3>
+                            </div>
+                            <ul id="lobby-user-list"></ul>
+                        </div>
                         <div class="controls">
                             <form id="new-game-form">
                                 <button id="new-game-button">New Game</button>
@@ -65,5 +72,6 @@
         <script src="/socket.io/socket.io.js"></script>
         <script src="src/client_lobby.js"></script>
         <script src="src/common/navbar.js"></script>
+        <script src="src/common/global_chat.js"></script>
     </body>
 </html>
