@@ -1,5 +1,6 @@
 :root {
   height: 100%;
+  user-select: none;
 }
 
 body {
@@ -13,7 +14,7 @@ button {
   padding: 3px 15px;
   color: white;
   line-height: 25px;
-  background-color: #00bcd4;
+  background-color: #4897ff;
   border: none;
   border-radius: 2px;
   cursor: pointer;
@@ -24,7 +25,7 @@ button {
 }
 
 button:hover {
-  background-color: #79d7e4;
+  background-color: #79b2fc;
 }
 
 button.turn:hover {
@@ -70,23 +71,39 @@ button.turn:hover {
 
 /* ----------Styles for elements within room-column--------------- */
 .lobby-container {
-  border-bottom: 1px solid lightgrey;
+  
 }
 .lobby-header-container {
   display: flex;
   flex-direction: row;
   flex-grow: 1;
+  box-sizing: border-box;
   height: 100%;
-  width: fit-content;
-  padding: 10px;
+  width: inherit;
+  margin: 5px;
+  padding: 5px;
+  border-radius: 2px;
+  cursor: pointer;
+  background-color: #4897ff;
+}
+
+.active, .lobby-header-container:hover {
+  background-color: #79b2fc;
 }
 
 #collapse-caret {
-  margin-right: 5px;
+  border: 1px solid lightskyblue;
 }
 
 .lobby-text {
-  margin: 0;
+  margin: 0px;
+  padding: 0px 5px;
+}
+
+#lobby-user-list {
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height .3s ease-out;
 }
 
 ul {
@@ -103,7 +120,7 @@ li {
 .controls-wrapper {
   background-color: rgb(255, 255, 255);
   width: 95%;
-  margin: 20px auto;
+  margin: 10px auto;
   border: 1px solid lightgrey;
 }
 

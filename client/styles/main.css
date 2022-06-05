@@ -1,4 +1,5 @@
 :root {
+    user-select: none;
     --main-bg-color: white;
     --imperial-color: #ff00ff;
     --continental-color: #00ffff;

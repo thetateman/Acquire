@@ -69,7 +69,24 @@ const updateLobby = (connectedUsers) => {
         userList += `<li>${user}</li>`;
     });
     userListNode.innerHTML = userList;
-}
+};
+
+const displayLobbyList = () => {
+    console.log("here");
+    document
+    .querySelector('.lobby-header-container')
+    .classList.toggle('active');
+    const caret = document.querySelector('#collapse-caret');
+    const lobbyList = document.querySelector('#lobby-user-list');
+    if(lobbyList.style.maxHeight){
+        lobbyList.style.maxHeight = null;
+        caret.textContent = '>';
+    }
+    else {
+        lobbyList.style.maxHeight = lobbyList.scrollHeight + "px";
+        caret.textContent = 'v';
+    }
+};
 
 
 
@@ -82,11 +99,15 @@ const updateLobby = (connectedUsers) => {
     
     
     sock.emit('gameRequest', "all");
-    sock.emit('lobbyRequest');
+    sock.emit('joinLobby');
     let currentUser = localStorage.getItem('username'); //There has to be a better way to do this
     document
     .querySelector('#new-game-form')
     .addEventListener('submit', onNewGame(currentUser)(sock));
+
+    document
+    .querySelector('.lobby-header-container')
+    .addEventListener('click', displayLobbyList);
     /*
     document
     .querySelector('#join1')

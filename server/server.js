@@ -102,14 +102,14 @@ io.use(function(socket, next) {
 
 io.on('connection', (sock) => {
     connectedUsers.push(sock.request.session.username);
-    io.emit('message', `${sock.request.session.username} joined the server.`);
-    sock.emit('lobbyUpdate', connectedUsers);
+    io.emit('message', `${sock.request.session.username} logged on.`);
 
     sock.on('disconnect', (reason) => {
         console.log("disconnected");
         connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
+        usersInLobby = usersInLobby.filter((user) => user !== sock.request.session.username);
+        io.emit('lobbyUpdate', usersInLobby);
     });
-    // :( this is so broken
 
 
     sock.on('message', (text) => {
@@ -117,7 +117,10 @@ io.on('connection', (sock) => {
         io.emit('message', `${sock.request.session.username}: ${text}`);
     });
 
-    sock.on('lobbyRequest', () => io.emit('lobbyUpdate', connectedUsers));
+    sock.on('joinLobby', () => {
+        usersInLobby.push(sock.request.session.username);
+        io.emit('lobbyUpdate', usersInLobby)
+    });
 
     sock.on('gameRequest', gameID => {
         let requestingUser = sock.request.session.username;
