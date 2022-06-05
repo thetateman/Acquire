@@ -52,7 +52,6 @@ app.use("/api", apiRouter);
 
 function authLogic(req, res, next) {
     //TODO: fix below
-    console.log(req.originalUrl);
     if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.gif'){
          next();
     } else {
@@ -75,8 +74,6 @@ function getSendableGame(game, requestingUser){
      return requestedGameCopy;
 }
 
-
-
 app.use(authLogic);
 
 app.use(express.static(path.resolve(`${__dirname}/../client`), {index: 'lobby.html'}));
@@ -94,9 +91,6 @@ app.use('/game', (req, res) => {
     requestedGameID = req.query.gameid;
     res.sendFile(path.resolve(`${__dirname}/../client/index.html`));
 });
-
-//app.use(express.static(path.resolve(`${__dirname}/../client`), {index: 'lobby.html'}));
-
 
 const server = http.createServer(app);
 const io = socketio(server);
