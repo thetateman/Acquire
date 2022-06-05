@@ -52,6 +52,7 @@ app.use("/api", apiRouter);
 
 function authLogic(req, res, next) {
     //TODO: fix below
+    console.log(req.originalUrl);
     if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.gif'){
          next();
     } else {
@@ -74,7 +75,11 @@ function getSendableGame(game, requestingUser){
      return requestedGameCopy;
 }
 
-app.use(authLogic, express.static(`${__dirname}/../client`));
+
+
+app.use(authLogic);
+
+app.use(express.static(path.resolve(`${__dirname}/../client`), {index: 'lobby.html'}));
 
 app.use('/login', (req, res) => {
     res.sendFile(path.resolve(`${__dirname}/../client/login.html`));
@@ -90,6 +95,7 @@ app.use('/game', (req, res) => {
     res.sendFile(path.resolve(`${__dirname}/../client/index.html`));
 });
 
+//app.use(express.static(path.resolve(`${__dirname}/../client`), {index: 'lobby.html'}));
 
 
 const server = http.createServer(app);
