@@ -58,7 +58,7 @@ const onLogin = (e) => {
                 console.log('Success:', json);
                 if(success){
                     localStorage.setItem('username', json.user.username);
-                    location.href = "/";
+                    location.href = "/lobby";
                 }
             })
         })
@@ -106,7 +106,7 @@ const onSignUp = (e) => {
                 console.log('Success:', json);
                 if(success){
                     localStorage.setItem('username', json.user.username);
-                    location.href = "/";
+                    location.href = "/lobby";
                 }
             })
         })
