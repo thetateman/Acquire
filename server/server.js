@@ -102,6 +102,29 @@ io.use(function(socket, next) {
 });
 
 io.on('connection', (sock) => {
+    /**
+     * Some user tracking objects (like userStatuses or sock.request.session.<some_user_tracking_variable>) can be
+     * undefined in weird circumstances (like authenticated client hits a game page without ever hitting the lobby page).
+     * Because these are hard to predict, I try to mitigate the issue by initializing the problematic objects on first
+     * socket connection.
+     */
+    if(sock.request.session.username === undefined){
+        console.error("Client attempted connection with undefined username.");
+        console.error(sock.request.session)
+        sock.request.session.username = "ERROR_MISSING_USER_NAME";
+    }
+    if(sock.request.session.isAuth !== true){
+        console.error("Unauthenticated client attempted connection.");
+        console.error(sock.request.session)
+        sock.request.session.destroy();
+    }
+    if(sock.request.session.lastKnownLocation === undefined){
+        sock.request.session.lastKnownLocation = 'unknown';
+    }
+    if(userStatuses[sock.request.session.username] === undefined){
+        userStatuses[sock.request.session.username] = 'unknown';
+    }
+
     connectedUsers.push(sock.request.session.username);
     io.emit('message', `${sock.request.session.username} logged on.`);
 
