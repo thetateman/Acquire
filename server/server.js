@@ -104,7 +104,8 @@ io.use(function(socket, next) {
 io.on('connection', (sock) => {
     /**
      * Some user tracking objects (like userStatuses or sock.request.session.<some_user_tracking_variable>) can be
-     * undefined in weird circumstances (like authenticated client hits a game page without ever hitting the lobby page).
+     * undefined in weird circumstances (Ex: authenticated client hits a game page without ever hitting the lobby page, 
+     * or the server restarts, wiping in-memory user-tracking, but maintaining sessions).
      * Because these are hard to predict, I try to mitigate the issue by initializing the problematic objects on first
      * socket connection.
      */
