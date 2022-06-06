@@ -10,10 +10,9 @@ body {
 }
 
 button {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   padding: 3px 15px;
   color: white;
-  line-height: 25px;
   background-color: #4897ff;
   border: none;
   border-radius: 2px;
@@ -21,7 +20,8 @@ button {
   box-shadow: rgba(0, 0, 0, 0.12) 0 1px 6px, rgba(0, 0, 0, 0.12) 0 1px 4px;
   transition: all 150ms ease-in;
   outline: none;
-  height: fit-content;
+  height: 25px;
+  white-space: nowrap;
 }
 
 button:hover {
@@ -71,7 +71,7 @@ button.turn:hover {
 
 /* ----------Styles for elements within room-column--------------- */
 .lobby-container {
-  
+  border-bottom: 1px solid lightgray;
 }
 .lobby-header-container {
   display: flex;
@@ -110,11 +110,22 @@ ul {
   list-style: none;
   margin: 0;
   padding: 0;
-  border-bottom: 1px solid lightgray;
 }
 
 li {
   padding: 10px 10px 10px 10px;
+}
+
+.game-label {
+  font-weight: bold;
+}
+
+.player-list li {
+  padding: 0px;
+}
+
+.player-list li[inGame="false"]{
+  font-style: italic;
 }
 
 .controls-wrapper {
@@ -143,7 +154,7 @@ li {
 }
 
 #new-game-button {
-  width: 85px;
+  width: 95px;
   padding: 3px 8px;
   margin: 0px 15px 0px 15px;
 }

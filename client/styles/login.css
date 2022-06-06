@@ -80,6 +80,10 @@ button.turn:hover {
     padding-bottom: 35px;
 }
 
+#password-form {
+    height: 37px;
+}
+
 .mini-controls {
     display: flex;
 }

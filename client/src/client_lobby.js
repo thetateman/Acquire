@@ -16,34 +16,58 @@ const loadGames = (sock) => (games) => {
      * }
      */
     for (const [key, value] of Object.entries(games)) {
-        const gameElements = 
-            `<li>Game #${key}
-                <a href="/game?gameid=${key}">
-                    <button id="watch${key}">Watch</button>
-                </a>
-                <a href="/game?gameid=${key}">
-                    <button id="join${key}">Join</button>
-                </a>
-            </li>`;
-        document.querySelector('#games').insertAdjacentHTML("beforeend", gameElements);
-        document.querySelector(`#join${key}`).addEventListener('click', onJoinGame(key, sock));
+        let gameSummary = value;
+        gameSummary.id = key;
+        const updateObject = {
+            'action': 'addGame',
+            'game': gameSummary
+        }
+        updateGames(sock)(updateObject);
     }
 };
-//TODO: Currently receiving entire game object from server. For scalability this data structure should be paired down.
+
 const updateGames = (sock) => (update) => {
-    if(update.action === "addGame"){
+    if(update.action === 'addGame'){
         const id = update.game.id;
+        let playerList = '<ul class="player-list">';
+        update.game.usernames.forEach((username) => {
+            playerList += `<li inGame="${update.game.playerDetails[username].inGame}" username="${username}">${username}</li>`;
+        });
+        playerList += '</ul>';
         const gameElements = 
-            `<li>Game #${id}
+            `<li gamenum="${id}">
+                <span class="game-label">Game #${id}</span>
                 <a href="/game?gameid=${id}">
                     <button id="watch${id}">Watch</button>
                 </a>
                 <a href="/game?gameid=${id}">
                     <button id="join${id}">Join</button>
                 </a>
+                ${playerList}
             </li>`;
         document.querySelector('#games').insertAdjacentHTML("beforeend", gameElements);
         document.querySelector(`#join${id}`).addEventListener('click', onJoinGame(id, sock));
+    }
+    else if(update.action === 'addPlayer'){ //add a username to a game
+        let usernameDOMElement = document.querySelector(`[gamenum="${update.game.id}"] [username="${update.username}"]`);
+        if(usernameDOMElement){ //user already in this player list: user is probably re-connecting
+            usernameDOMElement.setAttribute('inGame', 'true'); //Different styles for users in and out of games
+        }
+        else{ //user not in player list yet
+            let newPlayer = `<li username="${update.username}">${update.username}</li>`;
+            document.querySelector(`[gamenum="${update.game.id}"] .player-list`).insertAdjacentHTML('beforeend', newPlayer);
+        }
+    }
+    else if(update.action === 'removePlayer'){ //remove a username from a game
+        document.querySelector(`[gamenum="${update.game.id}"] [username="${update.username}"]`).remove();
+    }
+    else if(update.action === 'playerDisconnected'){ 
+        document.querySelector(`[gamenum="${update.game.id}"] [username="${update.username}"]`).setAttribute('inGame', 'false');
+        //TODO: This fires whenever a user leaves a game page, whether or not they were a game player
+        // should probably handle this case separately.
+    }
+    else{
+        console.log("Unexpected message, better look into this...");
     }
 }
 const onNewGame = (creator) => (sock) => (e) => {
@@ -62,17 +86,35 @@ const onJoinGame = (game, sock) => (e) => {
     location.href = `/game?gameid=${game}`;
 };
 
-const updateLobby = (connectedUsers) => {
+const updateLobby = (update) => {
     const userListNode = document.querySelector('#lobby-user-list');
-    let userList = "";
-    connectedUsers.forEach((user) => {
-        userList += `<li>${user}</li>`;
-    });
-    userListNode.innerHTML = userList;
+    const lobbyHeaderContainer = document.querySelector('.lobby-header-container');
+    if(update.action === 'add'){
+        update.users.forEach((username) => {
+            let usernameDOMElement = userListNode.querySelector(`[username="${username}"]`);
+            if(!usernameDOMElement){
+                userListNode.insertAdjacentHTML('beforeend', `<li username="${username}">${username}</li>`);
+            }
+        });
+        if(lobbyHeaderContainer.classList.contains('active')){ // Forgive me Abramov...
+            userListNode.style.maxHeight = userListNode.scrollHeight + "px";
+        }
+    }
+    else if(update.action === 'remove'){
+        update.users.forEach((username) => {
+            let usernameDOMElement = userListNode.querySelector(`[username="${username}"]`);
+            if(usernameDOMElement){
+                userListNode.style.height = userListNode.scrollHeight + "px";
+                if(lobbyHeaderContainer.classList.contains('active')){ // Forgive me Abramov...
+                    userListNode.style.maxHeight = (userListNode.scrollHeight - usernameDOMElement.clientHeight) + "px";
+                }
+                usernameDOMElement.remove();
+            }
+        });
+    }
 };
 
 const displayLobbyList = () => {
-    console.log("here");
     document
     .querySelector('.lobby-header-container')
     .classList.toggle('active');

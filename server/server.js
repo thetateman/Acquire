@@ -22,6 +22,7 @@ const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 let games = {};
 let connectedUsers = [];
 let usersInLobby = [];
+let userStatuses = {};
 
 const app = express();
 app.use(helmet());
@@ -105,10 +106,17 @@ io.on('connection', (sock) => {
     io.emit('message', `${sock.request.session.username} logged on.`);
 
     sock.on('disconnect', (reason) => {
-        console.log("disconnected");
+        if(sock.request.session.lastKnownLocation.includes('game')){ //User disconnected from a game
+            const gameDisconnectedFrom = sock.request.session.lastKnownLocation.split('game')[1];
+            io.emit('gameListUpdate', {action: 'playerDisconnected', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
+        }
+        else if(sock.request.session.lastKnownLocation === 'lobby'){
+            usersInLobby = usersInLobby.filter((user) => user !== sock.request.session.username);
+            io.emit('lobbyUpdate', {action: 'remove', users: [sock.request.session.username]});
+        }
+        sock.request.session.lastKnownLocation = 'disconnected';
+        userStatuses[sock.request.session.username] = 'disconnected';
         connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
-        usersInLobby = usersInLobby.filter((user) => user !== sock.request.session.username);
-        io.emit('lobbyUpdate', usersInLobby);
     });
 
 
@@ -118,8 +126,12 @@ io.on('connection', (sock) => {
     });
 
     sock.on('joinLobby', () => {
+        sock.emit('lobbyUpdate', {action: 'add', users: usersInLobby});
         usersInLobby.push(sock.request.session.username);
-        io.emit('lobbyUpdate', usersInLobby)
+        sock.request.session.lastKnownLocation = 'lobby';
+        userStatuses[sock.request.session.username] = 'lobby';
+        io.emit('lobbyUpdate', {action: 'add', users: [sock.request.session.username]});
+        
     });
 
     sock.on('gameRequest', gameID => {
@@ -127,9 +139,20 @@ io.on('connection', (sock) => {
         if(gameID === "all"){
             //TODO: add additional game data to summaries
             let gameSummaries = {};
+            let usernameDetails = {};
             for (const [key, value] of Object.entries(games)) {
+                value.usernames.forEach((username) => {
+                    usernameDetails[username] = {'username': username, admin: false};
+                    if(userStatuses[username].includes('game')){  //TODO: Could there be cases where userStatuses[username] is undefined?
+                        usernameDetails[username]['inGame'] = true;
+                    }
+                    else {
+                        usernameDetails[username]['inGame'] = false;
+                    }
+                });
                 gameSummaries[key] = {
                     usernames: value.usernames,
+                    playerDetails: usernameDetails,
                     max_players: value.max_players,
                     game_started: value.state.game_started,
                     game_ended: value.state.game_ended
@@ -141,10 +164,13 @@ io.on('connection', (sock) => {
                 if(verbose){console.log("Requested a game that does not exist!");}
                 sock.emit('gameResponse', "none");
             }
-            else{
+            else{ // Whenever a user hits a game page (for a game that exists). TODO: move this code somewhere more logical.
                 const requestedGameCopy = getSendableGame(games[parseInt(gameID, 10)], requestingUser);
                 sock.emit('gameResponse', requestedGameCopy);
                 sock.data.username = requestingUser;
+                sock.request.session.lastKnownLocation = `game${gameID}`;
+                userStatuses[sock.request.session.username] = `game${gameID}`;
+                io.emit('gameListUpdate', {action: 'addPlayer', game: {id: gameID}, username: sock.request.session.username});
                 sock.join(gameID);
             }
         }
@@ -153,14 +179,17 @@ io.on('connection', (sock) => {
     sock.on('newGame', ({numPlayers, creator}) => {
         // creator arg no longer used, left in place for demonstration
         const newGameID = game.createGame(games, parseInt(numPlayers, 10), sock.request.session.username);
+        let usernameDetails = {};
+        usernameDetails[games[newGameID].usernames[0]] = {username: games[newGameID].usernames[0], inGame: false, admin: false};
         const gameSummary = {
             id: newGameID,
             usernames: games[newGameID].usernames,
+            playerDetails: usernameDetails,
             max_players: games[newGameID].max_players,
             game_started: games[newGameID].state.game_started,
             game_ended: games[newGameID].state.game_ended
         };
-        updateObject = {
+        const updateObject = {
             "action": "addGame",
             "game": gameSummary
         }
@@ -220,12 +249,18 @@ server.listen(8080, () => {
 //Create and edit some placeholder games for testing
 //TODO: updateGame unit tests
 if(verbose){
+
     let updateID = 2;
     game.createGame(games, 4, 4);
+    userStatuses['4'] = 'game1';
     game.createGame(games, 6, 'tate');
-    console.log(game.updateGame(games[updateID], 7654, "joinGame", {}))
-    console.log(game.updateGame(games[updateID], 7653, "joinGame", {}))
-    console.log(game.updateGame(games[updateID], 7652, "joinGame", {}))
+    userStatuses['tate'] = 'game2';
+    console.log(game.updateGame(games[updateID], 7654, "joinGame", {}));
+    userStatuses['7654'] = 'game2';
+    console.log(game.updateGame(games[updateID], 7653, "joinGame", {}));
+    userStatuses['7653'] = 'game2';
+    console.log(game.updateGame(games[updateID], 7652, "joinGame", {}));
+    userStatuses['7652'] = 'game2';
 
     console.log(games[updateID].usernames);
     //console.log(game.updateGame(games[updateID], 7655, "startGame", {}));

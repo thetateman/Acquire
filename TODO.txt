@@ -32,4 +32,8 @@
 22. Handle empty tile bank
 23. Handle all tiles dead or asleap
 
+24. Better encapsulate server-side websocket logic
+
+25. Share disposal order bug
+
 

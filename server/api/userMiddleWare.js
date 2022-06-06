@@ -28,6 +28,7 @@ class UserMiddleware{
       } 
       req.session.isAuth = true;
       req.session.username = username;
+      req.session.lastKnownLocation = 'login';
       
       
       user = new UserModel({
@@ -77,6 +78,7 @@ class UserMiddleware{
     } else {
         req.session.isAuth = true;
         req.session.username = user.username;
+        req.session.lastKnownLocation = 'login';
         responseObj.user = user;
         responseObj.user.password = "";
         return res.json(responseObj);
