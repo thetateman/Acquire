@@ -2,13 +2,14 @@
 <html>
     <head>
         <title>Acquire Version Alpha2.0.0</title>
-        <link rel="stylesheet" href="styles/main.css">
-        <link rel="stylesheet" href="styles/topnav.css">
+        <link rel="stylesheet" href="styles/main.css" />
+        <link rel="stylesheet" href="styles/dark_mode_toggle.css" />
+        <link rel="stylesheet" href="styles/topnav.css" />
         <!--
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         -->
     </head>
-    <body>
+    <body class="dark-mode">
         <div class="topnav">
             <a class="active" href="/lobby">Lobby</a>
             <a href="#news">Game Stats</a>
@@ -117,6 +118,7 @@
                 </div>
             </div>
         </div>
+        <script src="/src/common/dark_mode_toggle.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="src/common/navbar.js"></script>
         <script src="src/client.js"></script>

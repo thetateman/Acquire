@@ -1,6 +1,7 @@
 :root {
     user-select: none;
     --main-bg-color: white;
+    --main-text-color: black;
     --imperial-color: #ff00ff;
     --continental-color: #00ffff;
     --worldwide-color: #9e4104;
@@ -70,6 +71,8 @@ canvas {
 }
 
 .game-board {
+    background-color: var(--standard-empty-tile-color);
+    border-spacing: 3px;
     margin: 10px auto;
     width: 95%;
     aspect-ratio: 4/3;
@@ -79,9 +82,10 @@ canvas {
     border-style: inset;
     text-align: center;
     font-size: 1.5vw;
-    font-weight: bold;
+    font-weight: 700;
     width: 8.333333%;
     background-color: var(--standard-empty-tile-color);
+    border-color: var(--standard-empty-tile-color);
 }
 
 #tile-bank {
@@ -300,3 +304,16 @@ canvas {
     padding: 3px 8px;
     margin: 0px 15px 0px 15px;
 }
+
+/*--------------- Dark mode styles-------------------*/
+body.dark-mode{
+    --main-bg-color: rgb(48, 48, 48);
+    --main-text-color: white;
+    --standard-box-shadow: rgba(0, 0, 0, 0.95) 1px 2px 6px;
+    --standard-border-color: rgb(92, 92, 92);
+    --standard-empty-tile-color: #adad72;
+  }
+  
+  .dark-mode button {
+  
+  }
