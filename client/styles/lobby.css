@@ -7,6 +7,7 @@
   --button-hover-bg-color: #79b2fc;
   --standard-box-shadow: rgba(0, 0, 0, 0.65) 1px 2px 6px;
   --standard-border-color: lightgray;
+  --column-scrollbar-width: 12px;
 }
 
 body {
@@ -48,38 +49,41 @@ button:hover {
   display: flex;
   flex-direction: row;
   flex-grow: 1;
-  height: 100%;
+  height: 99%;
 }
 
 .controls-wrapper {
   background-color: var(--main-bg-color);
   width: 97%;
-  height: 100%;
+  height: 98.3%; /*stop #messages from expanding. Not really sure why this works...*/
   margin: 6px auto;
   border: 1px solid var(--standard-border-color);
+  position: relative;
 }
 
-/* Left column */
+#rooms-controls-wrapper {
+  width: 98%;
+}
+
 .rooms-column {  
   box-sizing: border-box; 
   flex-basis: 40%;
   overflow-y: scroll;
+  margin-left: var(--column-scrollbar-width);   /*An attempt to make the columns look evenly spaced before the room column scroll bar appears*/
 }
 
-/* Center column */
 .chat-column {
-  flex-basis: 40%;
+  flex-basis: 30%;
   background-color: var(--main-bg-color);
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-x: hidden;
-  margin-right: 17px; /*An attempt to make the columns look evenly spaced before the room column scroll bar appears*/
+  max-height: 100%;
+  overflow: hidden;
 }
 
-/* Right Column */
 .leaderboard-column {
-  flex-basis: 20%;
+  flex-basis: 30%;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -180,7 +184,7 @@ a {
 
 /* ------------- Styles for elements within chat-column ------------ */
 #messages {
-  height: 97.4%;
+  height: 96.2%;
   overflow-y: scroll;
 }
 
@@ -189,7 +193,11 @@ a {
 }
 
 #chat-form {
-  height: auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  overflow: visible;
 }
 
 #chat-input {
@@ -212,11 +220,13 @@ a {
 
 /*--------------- Scroll bars -------------------*/
 body {
-  scrollbar-color: var(--main-bg-color);
+  scrollbar-color: #888 var(--main-bg-color);
+  scrollbar-width: var(--column-scrollbar-width);
 }
 
 ::-webkit-scrollbar {
   background-color: black;
+  width: var(--column-scrollbar-width);
 }
 
 /* Track */
