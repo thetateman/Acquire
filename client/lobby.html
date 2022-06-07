@@ -4,8 +4,9 @@
         <title>Acquire Lobby</title>
         <link rel="stylesheet" href="styles/topnav.css">
         <link rel='stylesheet' href='styles/lobby.css'>
+        <link rel="stylesheet" href="styles/dark_mode_toggle.css">
     </head>
-    <body>
+    <body class="dark-mode">
         <div class="topnav">
             <a class="active" href="#home">Lobby</a>
             <a href="#news">Game Stats</a>
@@ -17,7 +18,7 @@
         <div class="lobby-content">
             <div class="flex-container">
                 <div class="rooms-column">
-                    <div class="controls-wrapper">
+                    <div class="controls-wrapper" id="rooms-controls-wrapper">
                         <div class="lobby-container">
                             <div class="lobby-header-container">
                                 <h3 class="lobby-text" id="collapse-caret">></h3>
@@ -65,25 +66,28 @@
                     </div>
                 </div>
                 <div class="chat-column">
-                    <ul id="messages"></ul>
-                    <form id="chat-form">
-                        <input id="chat-input" autocomplete="off" title="chat" placeholder="Send message..." />
-                    </form>
+                    <div class="controls-wrapper">
+                        <ul id="messages"></ul>
+                        <form id="chat-form">
+                            <input id="chat-input" autocomplete="off" title="chat" placeholder="Send message..." />
+                        </form>
+                    </div>
                 </div>
                 <div class="leaderboard-column">
-                    <h2>Leader Board</h2>
-                    <p>(coming soon)</p>
+                    <div class="controls-wrapper">
+                        <h2>Leader Board</h2>
+                        <p>(coming soon)</p>
+                    </div>
                 </div>
             </div>
         </div>
-
-
-
-
-
-
-
-            
+        <label class="switch">
+            <input id="color-scheme-toggle" type="checkbox">
+            <span class="slider round"></span>
+            <span class="color-label" id="light-label">Light</span>
+            <span class="color-label" id="dark-label">Dark</span>
+        </label>
+        <script src="src/common/dark_mode_toggle.js"></script> <!--Put this up here attempting to avoid dark mode -> light mode flash on page load-->    
         <script src="/socket.io/socket.io.js"></script>
         <script src="src/client_lobby.js"></script>
         <script src="src/common/navbar.js"></script>

@@ -36,4 +36,6 @@
 
 25. Share disposal order bug
 
+26. Bug: users added to game list w/o joining game.
+
 

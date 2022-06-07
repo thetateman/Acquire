@@ -1,7 +1,13 @@
+:root {
+    --main-bg-color: white;
+    --main-text-color: black;
+}
 body {
     font-family: "Helvetica Neue", sans-serif;
     margin: 0;
     padding: 0;
+    color: var(--main-text-color);
+    background-color: var(--main-bg-color);
 }
 
 .content {
@@ -17,3 +23,9 @@ body {
     color: #f33900;
     word-wrap: break-word;
 }
+
+/*--------- Dark mode styles----------*/
+body.dark-mode{
+    --main-bg-color: rgb(48, 48, 48);
+    --main-text-color: white;
+  }

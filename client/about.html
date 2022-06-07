@@ -4,8 +4,9 @@
         <title>About the Site</title>
         <link rel="stylesheet" href="./styles/about.css" />
         <link rel="stylesheet" href="./styles/topnav.css" />
+        <link rel="stylesheet" href="./styles/dark_mode_toggle.css" />
     </head>
-    <body>
+    <body class="dark-mode">
         <div class="topnav">
             <a class="active" href="/lobby">Lobby</a>
             <a href="#news">Game Stats</a>
@@ -30,13 +31,20 @@
 
             <h3>Acknowledgements</h3>
             <ul>
-                <li>Thank you to my father, who, for some reason, taught me to play this obscure board game at 5 years old.</li>
+                <li>Thank you to my father, for teaching me to play this obscure board game at 5 years old.</li>
                 <li>Parts of site's design and user interface
                     are inspired by Tim Styer's Acquire, which can be played on <a href="https://acquire.tlstyer.com/">his website</a>.
                     Thank you, Tim, for keeping Acquire alive on the web for many years.
                 </li>
             </ul>
         </div>
+        <label class="switch">
+            <input id="color-scheme-toggle" type="checkbox">
+            <span class="slider round"></span>
+            <span class="color-label" id="light-label">Light</span>
+            <span class="color-label" id="dark-label">Dark</span>
+        </label>
+        <script src="src/common/dark_mode_toggle.js"></script>
         <script src="src/common/navbar.js"></script>
     </body>
 </html>

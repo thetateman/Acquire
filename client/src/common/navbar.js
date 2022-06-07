@@ -1,5 +1,5 @@
 const logout = () => {
-    localStorage.clear();
+    //localStorage.clear();
     fetch('/api/logoutUser', {
         method: 'DELETE',
         headers: {
