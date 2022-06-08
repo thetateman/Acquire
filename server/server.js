@@ -94,7 +94,7 @@ app.use('/game', (req, res) => {
 });
 
 const server = http.createServer(app);
-const io = socketio(server, {transports: ['websocket']});
+const io = socketio(server);
 let player_id = 0;
 
 io.use(function(socket, next) {
