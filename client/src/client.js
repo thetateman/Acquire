@@ -442,7 +442,7 @@ const updateStatsTable = (game) => {
     document.querySelectorAll('#buy-shares-button')
     .forEach(e => e.addEventListener('click', function() {purchaseShares(e, sock);}));
 
-    document.querySelectorAll('#dispose-shares-button-row td')
+    document.querySelectorAll('.dispose-shares-type-container button')
     .forEach(e => e.addEventListener('click', function() {disposeSharesEditor(e);}));
     
     document
