@@ -64,38 +64,33 @@ const updateChainSelectorRow = (gameState) => {
                 }
             }
         });
+        document.querySelector('#chain-selector-label').textContent = 'Buy:';
     } else if(gameState.expectedNextAction === 'chooseNewChain'){
         chains.forEach((chain) => {
             if(gameState.available_chains.includes(chain)){
                 visibleChainSelectors.push(chain);
             }
         });
+        document.querySelector('#chain-selector-label').textContent = 'New Chain:';
     } else if(gameState.expectedNextAction === 'chooseRemainingChain'){
         chains.forEach((chain) => {
             if(gameState.active_merger.largest_chains.includes(chain)){
                 visibleChainSelectors.push(chain);
             }
         });
+        document.querySelector('#chain-selector-label').textContent = 'Remaining Chain:';
     } else { // Not a state where we want to display chain selectors.
-
+        console.log('HMMMM, check on this.');
+        return false;
     }
     visibleChainSelectors.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'inline-flex');
+    document.querySelector('#chain-selector-row-container').style.visibility = 'visible';
 }
 
 const updateTile = (x, y, tileType) => {
-    const tileColors = {'i': "var(--imperial-color)",
-    'c': "var(--continental-color)",
-    'w': "var(--worldwide-color)",
-    'f': "var(--festival-color)",
-    'a': "var(--american-color)",
-    't': "var(--tower-color)",
-    'l': "var(--luxor-color)",
-    'p': "var(--pending-tile-color)",
-    's': "var(--single-tile-color)"
-    };
     let tile = document.querySelector(`[x="${x}"][y="${y}"]`);
-    tile.style["background-color"] = tileColors[tileType];
-    tile.style["border-color"] = tileColors[tileType];
+    tile.style["background-color"] = `var(--${tileType}-color)`;
+    tile.style["border-color"] = `var(--${tileType}-color)`;
     tile.style["border-style"] = "outset";
     tile.style["color"] = "black";
     if(tileType === 's'){
@@ -105,6 +100,7 @@ const updateTile = (x, y, tileType) => {
 };
 
 const tileClickHandler = (e, sock) => {
+    //TODO: only send allowed websocket message on legal tile click
     console.log(`clicked x:${e.getAttribute('x')} y:${e.getAttribute('y')}`);
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'playTile', updateData: {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)}})
 };
@@ -116,6 +112,7 @@ const chainSelectHandler = (e, sock) => {
     if(localStorage.getItem('expected_next_action') === 'chooseNewChain'){
         sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseNewChain', updateData: {newChainChoice: chainSelection}});
         chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
+        document.querySelector('#chain-selector-row-container').style.visibility = 'hidden';
     }
     else if(localStorage.getItem('expected_next_action') === 'purchaseShares'){
         let numSharesInCart = 0;
@@ -127,7 +124,9 @@ const chainSelectHandler = (e, sock) => {
             localStorage[`${chainSelection}InCart`]++;
             localStorage.purchaseTotal = parseInt(localStorage.purchaseTotal, 10) + currentGameState.share_prices[chainSelection];
             document.querySelector('#share-purchase-total').textContent = `Total: ${localStorage.purchaseTotal}`;
-            let cartShare = `<span class="cart-share" id="${chainSelection}-cart-share">${chainSelection}</span>`;
+            let cartShare = 
+                `<span class="cart-share" id="${chainSelection}-cart-share" style="background-color:var(--${chainSelection}-color)">
+                ${JSON.parse(localStorage.gameState).share_prices[chainSelection]}</span>`;
             document.querySelector('#share-cart').insertAdjacentHTML('afterbegin', cartShare);
             updateChainSelectorRow(currentGameState);
         }
@@ -135,6 +134,7 @@ const chainSelectHandler = (e, sock) => {
     else if(localStorage.getItem('expected_next_action') === 'chooseRemainingChain'){
         sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseRemainingChain', updateData: {remainingChainChoice: chainSelection}});
         chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
+        document.querySelector('#chain-selector-row-container').style.visibility = 'hidden';
     }
     //sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'selectChain', updateData: {chain_selection: chainSelection}});
 };
@@ -263,6 +263,7 @@ const purchaseShares = (e, sock) => {
     localStorage.purchaseTotal = 0;
     document.querySelectorAll(".cart-share").forEach((cartShare) => cartShare.remove());
     document.querySelector("#buy-shares-container").style.display = 'none';
+    document.querySelector('#chain-selector-row-container').style.visibility = 'hidden';
     chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
 };
 const disposeShares = (e, sock) => {

@@ -6,15 +6,15 @@
     --button-hover-bg-color: #79b2fc;
     --standard-box-shadow: rgba(0, 0, 0, 0.65) 1px 2px 6px;
     --standard-section-divider: 2px solid #8d8d8d;
-    --imperial-color: #ff00ff;
-    --continental-color: #00ffff;
-    --worldwide-color: #9e4104;
-    --festival-color: #00ff00;
-    --american-color: #0000ff;
-    --tower-color: #ffff00;
-    --luxor-color: #ff0000;
-    --pending-tile-color: gray;
-    --single-tile-color: black;
+    --i-color: #ff00ff;
+    --c-color: #00ffff;
+    --w-color: #9e4104;
+    --f-color: #00ff00;
+    --a-color: #0000ff;
+    --t-color: #ffff00;
+    --l-color: #ff0000;
+    --p-color: gray;
+    --s-color: black;
     --single-tile-border-color: dimgray;
     --standard-empty-tile-color: #f8f8bc;
 }
@@ -110,12 +110,13 @@ a {
     align-items: center;
     justify-content: center;
     width: 11%; 
-    background-color: var(--single-tile-color);
+    background-color: var(--s-color);
     border-color: var(--single-tile-border-color);
     color: white;
 }
 
 #chain-selector-row-container {
+    visibility: hidden;
     margin-bottom: 0.6vw;
 }
 
@@ -135,6 +136,10 @@ a {
     justify-content: space-around;
     text-align: center;
     color: var(--main-text-color);
+}
+
+#share-cart-label {
+    font-size: 95%; /* Firefox does weird text wrapping without this */
 }
 
 .share-info-label {
@@ -231,31 +236,31 @@ a {
 }
 
 #ihead, #ibutton {
-    background-color: var(--imperial-color);
+    background-color: var(--i-color);
 }
 
 #chead, #cbutton {
-    background-color: var(--continental-color);
+    background-color: var(--c-color);
 }
 
 #whead, #wbutton {
-    background-color: var(--worldwide-color);
+    background-color: var(--w-color);
 }
 
 #fhead, #fbutton {
-    background-color: var(--festival-color);
+    background-color: var(--f-color);
 }
 
 #ahead, #abutton {
-    background-color: var(--american-color);
+    background-color: var(--a-color);
 }
 
 #thead, #tbutton {
-    background-color: var(--tower-color);
+    background-color: var(--t-color);
 }
 
 #lhead, #lbutton {
-    background-color: var(--luxor-color);
+    background-color: var(--l-color);
 }
 
 #stats-placeholder-row, #button-buffer-row{
@@ -318,6 +323,10 @@ a {
 }
 
 #start-game-button {
+    font-size: 1.2vw;
+    padding: 0.2vw;
+    height: auto;
+    font-weight: bold;
     position: absolute;
     display: none;
 }
@@ -331,11 +340,12 @@ a {
     display: flex;
     align-items: center;
     justify-content: left;
-    font-size: 1.5rem;
+    font-size: 1.4vw;
     color: var(--main-text-color);
 }
 .dynamic-share-action-column button {
-    font-size: 1.5rem;
+    font-size: 1.4vw;
+    font-weight: bold;
     height: auto;
 }
 
