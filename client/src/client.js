@@ -190,6 +190,10 @@ const disposeSharesEditor = (e) => {
             else if(parseInt(localStorage.keep, 10) > 1){
                 localStorage.keep = parseInt(localStorage.keep, 10) - 2;
             }
+            else if(parseInt(localStorage.keep, 10) === 1 && parseInt(localStorage.sell, 10) === 1){
+                localStorage.keep = parseInt(localStorage.keep, 10) - 1;
+                localStorage.sell = parseInt(localStorage.sell, 10) - 1;
+            }
             else{
                 console.error("this shouldn't happen.");
             }
@@ -345,6 +349,18 @@ const myTurnStateUpdater = (game) => {
 };
 
 const updateGame = (sock) => (gameUpdate) => {
+    if(gameUpdate.hasOwnProperty('error')){
+        /**
+         * Game did not successfully update upon an action attempted by this player. Game state on server should
+         * be unchanged. No other players are notified of the action or it's error status. The server sent this
+         * message to reset this player's UI components to their state prior to the unaccepted action.
+         */
+        console.error(`Failed to update game because: ${gameUpdate.error}`);
+        localStorage.setItem('gameState', JSON.stringify(gameUpdate.game.state));
+        localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
+        myTurnStateUpdater(gameUpdate.game);
+        return false;
+    }
     if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares', 'startGame'].includes(gameUpdate.type)){
         localStorage.setItem('gameState', JSON.stringify(gameUpdate.game.state));
         localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);

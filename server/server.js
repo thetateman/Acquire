@@ -235,7 +235,13 @@ io.on('connection', (sock) => {
             console.error(err);
         }
         if(updateResult !== "success"){
+            /**
+             * Game did not successfully update upon an action attempted by this player. Game state on server *should*
+             * be unchanged. No other players are notified of the action or it's error status. The server sends
+             * a message to reset the acting player's UI components to their state prior to the unaccepted action.
+             */
             if(verbose){console.log(`Failed to update game because: ${updateResult}.`);}
+            sock.emit('gameUpdate', {type: updateType, game: getSendableGame(games[game_id], sock.request.session.username), error: updateResult});
             return false;
         }
         if(updateType === "joinGame"){
