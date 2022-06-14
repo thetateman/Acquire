@@ -55,107 +55,107 @@
                         <td class="chain-button" id="lbutton">L</td>
                     </tr>
                     -->
-                </table>
+                </table>  
                 <div id="tile-action-container">
                     <button id="start-game-button">Start Game</button>
                     <div class="flex-container" id="tile-bank">
                     </div>
                 </div>
-                <div class="chain-controls-container">
-                    <div class="flex-container" id="chain-selector-row-container">
-                        <span class="share-info-label" id="chain-selector-label">Buy:</span>
-                        <div class="flex-container" id="chain-selector-row">
-                            <span class="chain-button" id="ibutton">I</span>
-                            <span class="chain-button" id="cbutton">C</span>
-                            <span class="chain-button" id="wbutton">W</span>
-                            <span class="chain-button" id="fbutton">F</span>
-                            <span class="chain-button" id="abutton">A</span>
-                            <span class="chain-button" id="tbutton">T</span>
-                            <span class="chain-button" id="lbutton">L</span>
+                <div class="chain-chat-action-container">
+                    <div class="chain-controls-container">
+                        <div class="flex-container" id="chain-selector-row-container">
+                            <span class="share-info-label" id="chain-selector-label">Buy:</span>
+                            <div class="flex-container" id="chain-selector-row">
+                                <span class="chain-button" id="ibutton">I</span>
+                                <span class="chain-button" id="cbutton">C</span>
+                                <span class="chain-button" id="wbutton">W</span>
+                                <span class="chain-button" id="fbutton">F</span>
+                                <span class="chain-button" id="abutton">A</span>
+                                <span class="chain-button" id="tbutton">T</span>
+                                <span class="chain-button" id="lbutton">L</span>
+                            </div>
+                            <div id="chain-selector-row-placeholder"></div>
                         </div>
-                        <div id="chain-selector-row-placeholder"></div>
-                    </div>
-                    <div class="flex-container" id="buy-shares-container">
-                        <div class="flex-container" id="share-cart-label-container">
-                            <span class="share-info-label" id="share-cart-label">Share cart:</span>
-                            <span id="share-purchase-total">Total:</span>
+                        <div class="flex-container" id="buy-shares-container">
+                            <div class="flex-container" id="share-cart-label-container">
+                                <span class="share-info-label" id="share-cart-label">Share cart:</span>
+                                <span id="share-purchase-total">Total:</span>
+                            </div>
+                            <div class="dynamic-share-info-column" id="share-cart-container">
+                                <div class="flex-container" id="share-cart"></div>
+                            </div>
+                            <div class="dynamic-share-action-column">
+                                <button class="share-action-button" id="buy-shares-button">Buy</button>
+                                <input id="end-game-selection" type="checkbox">
+                                <label for="end-game-selection">End Game</label>
+                            </div>
                         </div>
-                        <div class="dynamic-share-info-column" id="share-cart-container">
-                            <div class="flex-container" id="share-cart"></div>
-                        </div>
-                        <div class="dynamic-share-action-column">
-                            <button class="share-action-button" id="buy-shares-button">Buy</button>
-                            <input id="end-game-selection" type="checkbox">
-                            <label for="end-game-selection">End Game</label>
-                        </div>
-                    </div>
-                    <div class="flex-container" id="dispose-shares-container">
-                        <div class="dynamic-share-info-column">
-                            <!--
-                            <table class="dispose-shares-table">
-                                <tr>
-                                    <td id="keep-head" colspan="3">Keep</td>
-                                    <td id="trade-head" colspan="3">Trade</td>
-                                    <td id="sell-head" colspan="3">Sell</td>
-                                </tr>
-                                <tr id="dispose-shares-button-row">
-                                    <td id="-kb">-</td>
-                                    <td id="+kb">+</td>
-                                    <td id="mkb">All</td>
-                                    <td id="-tn">-</td>
-                                    <td id="+tb">+</td>
-                                    <td id="mtb">Max</td>
-                                    <td id="-sb">-</td>
-                                    <td id="+sb">+</td>
-                                    <td id="msb">All</td>
-                                </tr>
-                            
-                            </table>
-                        -->
-                            <div class="flex-container" id="dispose-shares-editor-container">
-                                <div class="dispose-shares-type-container">
-                                    <span class="share-disposal-info-head" id="keep-head">Keep</span>
-                                    <div class="dispose-shares-button-container">
-                                        <button id="-kb">–</button>
-                                        <button id="+kb">+</button>
-                                        <button id="mkb">All</button>
+                        <div class="flex-container" id="dispose-shares-container">
+                            <div class="dynamic-share-info-column">
+                                <!--
+                                <table class="dispose-shares-table">
+                                    <tr>
+                                        <td id="keep-head" colspan="3">Keep</td>
+                                        <td id="trade-head" colspan="3">Trade</td>
+                                        <td id="sell-head" colspan="3">Sell</td>
+                                    </tr>
+                                    <tr id="dispose-shares-button-row">
+                                        <td id="-kb">-</td>
+                                        <td id="+kb">+</td>
+                                        <td id="mkb">All</td>
+                                        <td id="-tn">-</td>
+                                        <td id="+tb">+</td>
+                                        <td id="mtb">Max</td>
+                                        <td id="-sb">-</td>
+                                        <td id="+sb">+</td>
+                                        <td id="msb">All</td>
+                                    </tr>
+                                
+                                </table>
+                            -->
+                                <div class="flex-container" id="dispose-shares-editor-container">
+                                    <div class="dispose-shares-type-container">
+                                        <span class="share-disposal-info-head" id="keep-head">Keep</span>
+                                        <div class="dispose-shares-button-container">
+                                            <button id="-kb">–</button>
+                                            <button id="+kb">+</button>
+                                            <button id="mkb">All</button>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dispose-shares-type-container">
-                                    <span class="share-disposal-info-head" id="trade-head">Trade</span>
-                                    <div class="dispose-shares-button-container">
-                                        <button id="-tn">–</button>
-                                        <button id="+tb">+</button>
-                                        <button id="mtb">Max</button>
+                                    <div class="dispose-shares-type-container">
+                                        <span class="share-disposal-info-head" id="trade-head">Trade</span>
+                                        <div class="dispose-shares-button-container">
+                                            <button id="-tn">–</button>
+                                            <button id="+tb">+</button>
+                                            <button id="mtb">Max</button>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="dispose-shares-type-container">
-                                    <span class="share-disposal-info-head" id="sell-head">Sell</span>
-                                    <div class="dispose-shares-button-container">
-                                        <button id="-sb">–</button>
-                                        <button id="+sb">+</button>
-                                        <button id="msb">All</button>
+                                    <div class="dispose-shares-type-container">
+                                        <span class="share-disposal-info-head" id="sell-head">Sell</span>
+                                        <div class="dispose-shares-button-container">
+                                            <button id="-sb">–</button>
+                                            <button id="+sb">+</button>
+                                            <button id="msb">All</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="dynamic-share-action-column">
-                            <button class="share-action-button" id="dispose-shares-button">OK</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="controls-wrapper">
-                    <ul id="events"></ul>
-                    <div class="controls">
-                        <div class="chat-wrapper">
-                            <form id="chat-form">
-                                <input id="chat" autocomplete="off" title="chat" />
-                                <button id="send">Send</button>
-                            </form>
+                            <div class="dynamic-share-action-column">
+                                <button class="share-action-button" id="dispose-shares-button">OK</button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                    <div class="chat-controls-wrapper">
+                        <ul id="messages"></ul>
+                        <form id="chat-form">
+                            <input id="chat-input" autocomplete="off" title="chat" placeholder="Send message..." />
+                        </form>
+                    </div> 
+                        </div>
+                    </div> 
+                </div>     
+                    </div>
+                </div>     
             </div>
         </div>
         <script src="/src/common/dark_mode_toggle.js"></script>

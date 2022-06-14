@@ -17,6 +17,7 @@
     --s-color: black;
     --single-tile-border-color: dimgray;
     --standard-empty-tile-color: #f8f8bc;
+    --column-scrollbar-width: 10px;
 }
 body {
     font-family: "Helvetica Neue", sans-serif;
@@ -69,8 +70,8 @@ a {
 .game-board {
     background-color: var(--standard-empty-tile-color);
     border-spacing: 3px;
-    margin: 10px auto;
-    width: 95%;
+    margin: 3px auto;
+    width: 98%;
     aspect-ratio: 4/3;
 }
 
@@ -95,7 +96,7 @@ a {
 }
 
 #tile-bank {
-    margin: 10px auto;
+    margin: 0.5vw auto;
     width: 35vw;
     height: 3.8vw;
     justify-content: space-around;
@@ -115,13 +116,18 @@ a {
     color: white;
 }
 
+.chain-chat-action-container {
+    height: 25.5vw;
+    display: flex;
+    flex-direction: column;
+}
+
 #chain-selector-row-container {
-    visibility: hidden;
+    display: none;
     margin-bottom: 0.6vw;
 }
 
 .chain-controls-container {
-    height: 12vw;
     width: 98%;
     margin: 0px auto;
 }
@@ -156,9 +162,9 @@ a {
 }
 
 #chain-selector-row {
-    margin: 10px auto;
+    margin: 0.2vw auto;
     border: var(--standard-section-divider);
-    padding: 8px 0px;
+    padding: 0.5vw 0px;
     flex-basis: 70%;
     height: 3.25vw;
     justify-content: space-around;
@@ -177,7 +183,7 @@ a {
     align-items: center;
     justify-content: space-around;
     width: 23vw;
-    height: 5vw;
+    height: 4.25vw;
     border: var(--standard-section-divider);
 }
 
@@ -188,7 +194,7 @@ a {
     align-items: center;
     justify-content: center;
     flex-basis: 25%; 
-    height: 4vw;
+    height: 3.5vw;
     background-color: gray;
 }
 
@@ -203,7 +209,7 @@ a {
 }
 
 .stats-board {
-    margin: 10px auto;
+    margin: 0px auto;
     width: 98%;
     border: 3px solid var(--main-bg-color);
     border-collapse: collapse;
@@ -211,7 +217,7 @@ a {
 }
 
 .stats-board th, .stats-board td {
-    border: 3px solid var(--main-bg-color);
+    border: 0.3vw solid var(--main-bg-color);
     border-collapse: collapse;
     background-color: lightgray;
     font-size: 1.25vw;
@@ -266,7 +272,7 @@ a {
 #stats-placeholder-row, #button-buffer-row{
     background-color: var(--main-bg-color);
     color: var(--main-bg-color);
-    font-size: 0.4vw; /* control height of space between player and bank rows*/
+    font-size: 0px; /* control height of space between player and bank rows*/
 }
 
 #dispose-shares-container, #buy-shares-container {
@@ -369,34 +375,15 @@ a {
     flex-direction: row;
 }
 
-.controls-wrapper {
-    background-color: rgb(255, 255, 255);
-    width: 95%;
-    margin: 20px auto;
-    border: var(--standard-section-divider);
-}
-
-.chat-wrapper {
-    padding: 10px;
-}
-
-.chat-wrapper form {
-    display: flex;
-}
-
-.chat-wrapper form input {
-    font-size: 1.0rem;
-    margin: 0 10px 0 0;
-    padding: 0 5px;
+.chat-controls-wrapper {
+    background-color: var(--main-bg-color);
+    width: 97%;
     flex-grow: 1;
-}
-
-.chat-wrapper form button {
-    width: 80px;
-}
-
-#events {
-    height: 150px;
+    margin: 1vw auto;
+    border: var(--standard-section-divider);
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 #games{
@@ -412,6 +399,66 @@ a {
     padding: 3px 8px;
     margin: 0px 15px 0px 15px;
 }
+
+/* ------------- Styles for elements within chat-column ------------ */
+#messages {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+  
+  #messages li {
+    word-wrap: break-word;
+  }
+  
+  #chat-form {
+    width: 100%;
+    overflow: visible;
+  }
+  
+  #chat-input {
+    font-size: 1.15rem;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0px 3px;
+    border-width: 1px;
+    border-style: solid;
+    color: var(--main-text-color);
+    background-color: var(--main-bg-color);
+  }
+  
+  #chat-input:focus {
+    outline-style: none;
+    border-width: 1px;
+    border-style: solid;
+    box-shadow: var(--standard-box-shadow);
+  }
+
+/*--------------- Scroll bars -------------------*/
+body {
+    scrollbar-color: #888 var(--main-bg-color);
+    scrollbar-width: var(--column-scrollbar-width);
+  }
+  
+  ::-webkit-scrollbar {
+    background-color: black;
+    width: var(--column-scrollbar-width);
+  }
+  
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background-color: var(--main-bg-color); 
+  }
+   
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888; 
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+  }
 
 /*--------------- Dark mode styles-------------------*/
 body.dark-mode{

@@ -1,7 +1,7 @@
 const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
 
 const log = (text) => {
-    const parent = document.querySelector('#events');
+    const parent = document.querySelector('#messages');
     const el = document.createElement('li');
     el.textContent = text;
 
@@ -12,7 +12,7 @@ const log = (text) => {
 const onChatSubmitted = (sock) => (e) => {
     e.preventDefault();
 
-    const input = document.querySelector('#chat');
+    const input = document.querySelector('#chat-input');
     const text = input.value;
     input.value = '';
 
@@ -84,7 +84,7 @@ const updateChainSelectorRow = (gameState) => {
         return false;
     }
     visibleChainSelectors.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'inline-flex');
-    document.querySelector('#chain-selector-row-container').style.visibility = 'visible';
+    document.querySelector('#chain-selector-row-container').style.display = 'flex';
 }
 
 const updateTile = (x, y, tileType) => {
@@ -112,7 +112,7 @@ const chainSelectHandler = (e, sock) => {
     if(localStorage.getItem('expected_next_action') === 'chooseNewChain'){
         sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseNewChain', updateData: {newChainChoice: chainSelection}});
         chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
-        document.querySelector('#chain-selector-row-container').style.visibility = 'hidden';
+        document.querySelector('#chain-selector-row-container').style.display = 'none';
     }
     else if(localStorage.getItem('expected_next_action') === 'purchaseShares'){
         let numSharesInCart = 0;
@@ -134,7 +134,7 @@ const chainSelectHandler = (e, sock) => {
     else if(localStorage.getItem('expected_next_action') === 'chooseRemainingChain'){
         sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseRemainingChain', updateData: {remainingChainChoice: chainSelection}});
         chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
-        document.querySelector('#chain-selector-row-container').style.visibility = 'hidden';
+        document.querySelector('#chain-selector-row-container').style.display = 'none';
     }
     //sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'selectChain', updateData: {chain_selection: chainSelection}});
 };
@@ -263,7 +263,7 @@ const purchaseShares = (e, sock) => {
     localStorage.purchaseTotal = 0;
     document.querySelectorAll(".cart-share").forEach((cartShare) => cartShare.remove());
     document.querySelector("#buy-shares-container").style.display = 'none';
-    document.querySelector('#chain-selector-row-container').style.visibility = 'hidden';
+    document.querySelector('#chain-selector-row-container').style.display = 'none';
     chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
 };
 const disposeShares = (e, sock) => {
@@ -380,8 +380,11 @@ const updateGame = (sock) => (gameUpdate) => {
             let newPlayerRow = `<tr><td row="${i}" column="username">${gameUpdate.joining_player}</td>`+ chainData +
             `<td row="${i}" column="cash">${gameUpdate.player_data['cash']}</td>` +
             `<td row="${i}" column="net">${gameUpdate.player_data['net_worth']}</td></tr>`;
-    
             document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("beforebegin", newPlayerRow);
+            
+            // Shrink height of chat based on additional player row height
+            let playerRowsHeight = (i + 1) * 1.55;
+            document.querySelector('.chain-chat-action-container').style.height = `${26 - playerRowsHeight}vw`;
         }
     }
     else if(gameUpdate.type === 'startGame'){
@@ -404,9 +407,12 @@ const generateStatsTable = (game) => {
         playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}</td>`+ chainData +
         `<td row="${i}" column="cash">${playerState['cash']}</td>` +
         `<td row="${i}" column="net">${playerState['net_worth']}</td></tr>`;
-        
     }
     document.querySelector("#stats-table-header-row").insertAdjacentHTML("afterend", playerRows);
+
+    // Shrink height of chat based on additional player row height
+    let playerRowsHeight = game.num_players * 1.55;
+    document.querySelector('.chain-chat-action-container').style.height = `${26 - playerRowsHeight}vw`;
 
     // Build and add the table rows for misc stats
     let bankShareRow = "<td>Bank Shares</td>";

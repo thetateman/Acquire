@@ -39,8 +39,8 @@ button:hover {
 
 /* -------------Page content container styles---------------- */
 .lobby-content {
-  height: calc(100vh - 48px); 
-  /* 48px is the height of the navbar. Unfortunately I can't figure out how to
+  height: calc(100vh - 43px); 
+  /* 43px is the height of the navbar. Unfortunately I can't figure out how to
    calculate this on the fly with plain CSS. So I'll have to remember to come back
    here and change this if the height of the navbar changes.*/
 }

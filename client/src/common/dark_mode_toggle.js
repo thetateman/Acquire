@@ -1,6 +1,7 @@
 /**
  * Add this script to any page we need the dark mode toggle.
  * Assumes document body has class 'dark-mode'.
+ * Assumes page has standard navigation bar.
  */
 (() => {
     // Add toggle to page
