@@ -383,8 +383,8 @@ const updateGame = (sock) => (gameUpdate) => {
             document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("beforebegin", newPlayerRow);
             
             // Shrink height of chat based on additional player row height
-            let playerRowsHeight = (i + 1) * 1.55;
-            document.querySelector('.chain-chat-action-container').style.height = `${26 - playerRowsHeight}vw`;
+            let playerRowsHeight = (i + 1) * 1.85;
+            document.querySelector('.chain-chat-action-container').style.height = `${27 - playerRowsHeight}vw`;
         }
     }
     else if(gameUpdate.type === 'startGame'){
@@ -411,8 +411,8 @@ const generateStatsTable = (game) => {
     document.querySelector("#stats-table-header-row").insertAdjacentHTML("afterend", playerRows);
 
     // Shrink height of chat based on additional player row height
-    let playerRowsHeight = game.num_players * 1.55;
-    document.querySelector('.chain-chat-action-container').style.height = `${26 - playerRowsHeight}vw`;
+    let playerRowsHeight = game.num_players * 1.85;
+    document.querySelector('.chain-chat-action-container').style.height = `${27 - playerRowsHeight}vw`;
 
     // Build and add the table rows for misc stats
     let bankShareRow = "<td>Bank Shares</td>";
