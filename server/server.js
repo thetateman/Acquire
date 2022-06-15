@@ -26,6 +26,11 @@ let userStatuses = {};
 
 const app = express();
 app.use(helmet());
+app.use(helmet.contentSecurityPolicy({
+    directives: {
+        connectSrc: ["'self'", "wss://onlineacquire.com"],
+    },
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
