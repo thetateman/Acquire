@@ -61,7 +61,7 @@ app.get("/robots.txt", (req, res) => {
 
 function authLogic(req, res, next) {
     //TODO: fix below
-    if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.webm'){
+    if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.webm'|| req.originalUrl === '/img/a_background.mp4'){
          next();
     } else {
         res.status(401);
