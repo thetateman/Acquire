@@ -1,47 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta name="description" content="Play the board game Acquire online with other people.">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Acquire Login</title>
         <link rel="stylesheet" href="./styles/login.css" />
     </head>
     <body>
-        <div id="image">
-            <div class="controls-wrapper">
-                <div class="controls">
-                    <div class="chat-wrapper">
-                        <h3>Log in with an existing account:</h3>
-                        <form id="login-form">
-                            <input id="login_id" autocomplete="off" placeholder="username OR email"/>
-                            <input id="login_pw" autocomplete="off" title="chat" placeholder="password" type="password" />
-                            <button id="login">Login</button>
-                        </form>
-                        <div id="error-message1">
+        <div id="content">
+            <video autoplay muted loop id="video">
+                <source src="/img/a_background.webm" type="video/webm">
+            </video>
+            <div id="image">
+                <div class="controls-wrapper">
+                    <div class="controls">
+                        <div class="chat-wrapper">
+                            <h3>Log in with an existing account:</h3>
+                            <form id="login-form">
+                                <input id="login_id" autocomplete="off" placeholder="username OR email"/>
+                                <input id="login_pw" autocomplete="off" title="chat" placeholder="password" type="password" />
+                                <button id="login">Login</button>
+                            </form>
+                            <div id="error-message1">
+                            </div>
+                        </div>
+                        <div class="chat-wrapper">
+                            <h3>Create a new account:</h3>
+                            <form id=email-form>
+                                <input id="su_username" autocomplete="off" placeholder="username" />
+                                <input id="su_email" autocomplete="off" placeholder="email address" />
+                            </form>
+                        </div>
+                        <div class="chat-wrapper">
+                            <form id="password-form">
+                                <input id="su_pw" autocomplete="off" placeholder="password" type="password" />
+                                <input id="su_re_pw" autocomplete="off" placeholder="repeat password" type="password" />
+                                <button id="signup">Sign Up</button>
+                            </form>
+                            <div id="error-message2">
+                            </div>
                         </div>
                     </div>
-                    <div class="chat-wrapper">
-                        <h3>Create a new account:</h3>
-                        <form id=email-form>
-                            <input id="su_username" autocomplete="off" placeholder="username" />
-                            <input id="su_email" autocomplete="off" placeholder="email address" />
-                        </form>
-                    </div>
-                    <div class="chat-wrapper">
-                        <form id="password-form">
-                            <input id="su_pw" autocomplete="off" placeholder="password" type="password" />
-                            <input id="su_re_pw" autocomplete="off" placeholder="repeat password" type="password" />
-                            <button id="signup">Sign Up</button>
-                        </form>
-                        <div id="error-message2">
-                        </div>
+                    <div class="mini-controls">
+                        <span class="mini-control" id="play-as-guest">Play as Guest</span>
+                        <a class="mini-control" href="/about">About the Site</a>
                     </div>
                 </div>
-                <div class="mini-controls">
-                    <span class="mini-control" id="play-as-guest">Play as Guest</span>
-                    <a class="mini-control" href="/about">About the Site</a>
-                </div>
+                <script src="./src/client_login.js"></script>
             </div>
-            <script src="./src/client_login.js"></script>
         </div>
     </body>
 </html>

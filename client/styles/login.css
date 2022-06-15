@@ -2,6 +2,7 @@ body {
     font-family: "Helvetica Neue", sans-serif;
     margin: 0;
     padding: 0;
+    overflow: hidden;
 }
 
 input {
@@ -18,7 +19,7 @@ button {
     padding: 3px 15px;
     color: white;
     line-height: 15px;
-    background-color: #00bcd4;
+    background-color: #4897ff;
     border: none;
     border-radius: 2px;
     cursor: pointer;
@@ -28,11 +29,7 @@ button {
 }
 
 button:hover {
-    background-color: #79d7e4;
-}
-
-button.turn:hover {
-    background-color: #eaeaea;
+    background-color: #79b2fc;
 }
 
 .controls-wrapper {
@@ -94,12 +91,33 @@ button.turn:hover {
     text-decoration: underline;
 }
 
-#image{
+#content {
     height: 100vh;
+    width: 100vw;
+}
+
+#image {
+    height: 100vh;
+    width: 100vw;
     display: flex;
     justify-content: center;
     align-items: center;
     background-position: center;
     background-size: cover;
-    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5),  rgba(0, 0, 0, 0.5)), url(/img/a_background.gif);
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.5),  rgba(0, 0, 0, 0.5));
+    position: absolute;
+    top: 0;
+    z-index: 1;
  }
+
+ #video {
+    height: 100%;
+    width: 133.3333333333vh;
+    min-width: 100%;
+    min-height: 75vw;
+    position: absolute;
+    left: 50%; /* % of surrounding element */
+    top: 50%;
+    transform: translate(-50%, -50%); /* % of current element */
+    z-index: 0;
+  }

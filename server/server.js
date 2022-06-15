@@ -54,11 +54,14 @@ app.use(sessionMiddleware);
 
 
 app.use("/api", apiRouter);
+app.get("/robots.txt", (req, res) => {
+    res.sendFile(path.resolve(`${__dirname}/../robots.txt`));
+});
 
 
 function authLogic(req, res, next) {
     //TODO: fix below
-    if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.gif'){
+    if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.webm'){
          next();
     } else {
         res.status(401);
