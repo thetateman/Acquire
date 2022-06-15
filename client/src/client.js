@@ -105,6 +105,14 @@ const tileClickHandler = (e, sock) => {
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'playTile', updateData: {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)}})
 };
 
+const cartShareClickHandler = (IDnum, chainSelection, currentGameState) => () => {
+    localStorage[`${chainSelection}InCart`]--;
+    localStorage.purchaseTotal = parseInt(localStorage.purchaseTotal, 10) - currentGameState.share_prices[chainSelection];
+    document.querySelector('#share-purchase-total').textContent = `Total: ${localStorage.purchaseTotal}`;
+    updateChainSelectorRow(currentGameState);
+    document.querySelector(`#share-cart span[number="${IDnum}`).remove();
+}
+
 const chainSelectHandler = (e, sock) => {
     const chainSelection = e.id.charAt(0);
     const currentGameState = JSON.parse(localStorage.gameState);
@@ -122,12 +130,14 @@ const chainSelectHandler = (e, sock) => {
         }
         else{
             localStorage[`${chainSelection}InCart`]++;
+            localStorage.currentCartShareID++;
             localStorage.purchaseTotal = parseInt(localStorage.purchaseTotal, 10) + currentGameState.share_prices[chainSelection];
             document.querySelector('#share-purchase-total').textContent = `Total: ${localStorage.purchaseTotal}`;
             let cartShare = 
-                `<span class="cart-share" id="${chainSelection}-cart-share" style="background-color:var(--${chainSelection}-color)">
+                `<span class="cart-share" id="${chainSelection}-cart-share" number="${localStorage.currentCartShareID}" style="background-color:var(--${chainSelection}-color)">
                 ${JSON.parse(localStorage.gameState).share_prices[chainSelection]}</span>`;
-            document.querySelector('#share-cart').insertAdjacentHTML('afterbegin', cartShare);
+            document.querySelector('#share-cart').insertAdjacentHTML('beforeend', cartShare);
+            document.querySelector(`#share-cart span[number="${localStorage.currentCartShareID}`).addEventListener('click', cartShareClickHandler(localStorage.currentCartShareID, chainSelection, currentGameState));
             updateChainSelectorRow(currentGameState);
         }
     }
@@ -302,8 +312,9 @@ const prepareToPurchaseShares = (game) => {
      * To be called whenever we are expecting this user to purchase shares.
      * Puts UI and localStorage variables in correct state for share purchace interaction.
      */
-     document.querySelector("#buy-shares-container").style.display = 'flex';
      localStorage.purchaseTotal = 0;
+     localStorage.currentCartShareID = 0;
+     document.querySelector("#buy-shares-container").style.display = 'flex';
      document.querySelector('#share-purchase-total').textContent = 'Total: 0';
      updateChainSelectorRow(game.state);
 };
