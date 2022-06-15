@@ -34,7 +34,7 @@
 
 24. Better encapsulate server-side websocket logic
 
-25. Share disposal order bug
+25. Share disposal order bug X (refer to https://github.com/thetateman/Acquire/commit/82adde9f06b689483292bbf695cf117e0ed238f2 game.js:740)
 
 26. Bug: users added to game list w/o joining game.
 
