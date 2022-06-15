@@ -343,6 +343,18 @@ const prepareToDisposeShares = (game) => {
       localStorage.setItem('maxSharesToTradeFor', state.bank_shares[remainingChain]);
 };
 
+const statsTableUsernameStyleUpdater = (game) => {
+    document.querySelectorAll(`.stats-board td[column="username"]`).forEach((nameElement) => {
+        let playerID = nameElement.getAttribute('row');
+        if(playerID == game.state.turn){
+            nameElement.style['background-color'] = 'palegreen';
+        }
+        else {
+            nameElement.style['background-color'] = 'lightgray';
+        }
+    });
+}
+
 const myTurnStateUpdater = (game) => {
     /**
      * If it is this user's turn, updates client state based on expected next action.
@@ -455,6 +467,7 @@ const updateStatsTable = (game) => {
     chains.forEach((chain) => {
         document.querySelector(`[row="price"][column="${chain}"]`).innerHTML = game.state.share_prices[chain];
     });
+    statsTableUsernameStyleUpdater(game);
 }
 
 (() => {
