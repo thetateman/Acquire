@@ -63,7 +63,7 @@ class game {
                     
 
                 }
-                else {
+                else { // there is a merger
                     let mergingChains = [];
                     let largestChains = [connectingTrueChains[0]];
                     for(let i = 1; i < connectingTrueChains.length; i++){
@@ -97,7 +97,7 @@ class game {
                     /**
                      * The playersDisposing object holds the data representing which players 
                      * need to dispose which shares, and in what order. Each key-value
-                     * pair is a eliminated chain, and an array of players who hold 
+                     * pair is an eliminated chain, and an array of players who hold 
                      * shares in that chain (in order of disposal turn). Example:
                      * {
                      *     'i': [0, 2, 3, 5],
@@ -676,7 +676,6 @@ class game {
                 break;
             case 'disposeShares':
                 let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
-                
                 // Check that disposal is allowed
                 let sumShareDisposal = updateData.sell + updateData.trade + updateData.keep;
                 if(sumShareDisposal !== game.state.player_states[game.state.turn][disposingChain]){
@@ -700,7 +699,6 @@ class game {
                 game.state.player_states[userID][disposingChain] -= updateData.sell;
                 game.state.player_states[userID].cash += updateData.sell * game.state.share_prices[disposingChain];
                 game.state.bank_shares[disposingChain] += updateData.sell;
-
 
                 // Increment expected disposal
                 game.state.active_merger.player_disposing_index++;
@@ -736,16 +734,15 @@ class game {
                         game.state.active_merger = {};
 
                         game.state.expectedNextAction = 'purchaseShares';
-
                     }
                     else{
                         // Update turn to next player expected to dispose shares
+                        disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
                         game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
-                        game.expectedNextAction = 'disposeShares';
                     }
                 }
                 else{
-                    // Update turn to next player expected to dispose shares
+                    // Update turn to next player expected to dispose shares 
                     game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
                 }
                 this.updateNetWorths(game);
