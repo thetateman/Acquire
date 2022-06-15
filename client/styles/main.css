@@ -60,7 +60,8 @@ ul {
 }
 
 li {
-    padding: 10px 10px 10px 10px;
+    padding: 2px 0.5vw;
+    color: var(--main-text-color)
 }
 
 a {
@@ -367,6 +368,7 @@ a {
 /* Right column */
 .stats-column{
     flex-basis: 45%;
+    overflow: hidden;
 }
 
 .flex-container {
@@ -461,7 +463,7 @@ body {
 
 /*--------------- Dark mode styles-------------------*/
 body.dark-mode{
-    --main-bg-color: rgb(48, 48, 48);
+    --main-bg-color: rgb(28, 28, 28);
     --main-text-color: white;
     --standard-box-shadow: rgba(0, 0, 0, 0.95) 1px 2px 6px;
     /*--standard-border-color: rgb(92, 92, 92);*/

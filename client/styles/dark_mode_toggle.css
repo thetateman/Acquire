@@ -38,13 +38,13 @@
     width: 26px;
     left: 4px;
     bottom: 4px;
-    background-color: rgb(44, 44, 44);
+    background-color: rgb(28, 28, 28);
     -webkit-transition: .4s;
     transition: .4s;
   }
   
   #color-scheme-toggle:checked + .slider {
-    background-color: rgb(49, 49, 49);
+    background-color: rgb(28, 28, 28);
   }
   
   
@@ -79,7 +79,7 @@
   }
   
   #light-label {
-    color: rgb(44, 44, 44);
+    color: rgb(28, 28, 28);
     inset: 8px 32px;
   }
   
