@@ -126,11 +126,20 @@ button:hover {
         flex-direction: column;
         height: auto;
     }
+    .chat-wrapper form input {
+        font-size: 1.2rem;
+        margin: 5px 10px;
+        padding: 5px 5px;
+        flex-grow: 1;
+    }
     #image {
         display: block;
         background-image: none;
     }
     .controls-wrapper {
         width: 300px;
+    }
+    #email-form{
+        height: auto;
     }
   }
