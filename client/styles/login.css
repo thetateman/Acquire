@@ -121,3 +121,9 @@ button:hover {
     transform: translate(-50%, -50%); /* % of current element */
     z-index: 0;
   }
+
+  @media only screen and (max-width: 600px) {
+    body {
+      overflow: scroll;
+    }
+  }
