@@ -108,7 +108,6 @@ let player_id = 0;
 io.use(function(socket, next) {
     sessionMiddleware(socket.request, socket.request.res, next);
 });
-
 io.on('connection', (sock) => {
     /**
      * Some user tracking objects (like userStatuses or sock.request.session.<some_user_tracking_variable>) can be
@@ -118,16 +117,16 @@ io.on('connection', (sock) => {
      * socket connection.
      */
     if(sock.request.session === undefined){
-        console.error("session undefined");
+        console.error(`${Date()} Session undefined`);
         socket.disconnect();
     }
     if(sock.request.session.username === undefined){
-        console.error("Client attempted connection with undefined username.");
+        console.error(`${Date()} Client attempted connection with undefined username.`);
         console.error(sock.request.session)
         sock.request.session.username = "ERROR_MISSING_USER_NAME";
     }
     if(sock.request.session.isAuth !== true){
-        console.error("Unauthenticated client attempted connection.");
+        console.error(`${Date()} Unauthenticated client attempted connection.`);
         console.error(sock.request.session)
         sock.request.session.destroy();
         socket.disconnect();
@@ -247,7 +246,10 @@ io.on('connection', (sock) => {
             updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData, {admin: false, verbose: verbose});
         } 
         catch(err){
+            console.error(`${Date()} ################ Internal game update error #################`);
+            console.error(`Attempted: Game update: game: ${game_id}, updateType: ${updateType}, updateData: ${JSON.stringify(updateData)}`);
             console.error(err);
+            console.error(`Game object dump: ${JSON.stringify(games[game_id])}`);
         }
         if(updateResult !== "success"){
             /**
