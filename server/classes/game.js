@@ -557,9 +557,12 @@ class game {
                 // Draw initial six tiles
                 for(let i=0; i<game.num_players; i++){
                     for(let j=0; j<6; j++){
-                        game.state.player_states[i].tiles.push(game.state.tile_bank.pop());
+                        let newTile = game.state.tile_bank.pop()
+                        newTile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
+                        game.state.player_states[i].tiles.push(newTile);
                     }
                 }
+                
                 return "success";
             }
         }
@@ -625,6 +628,13 @@ class game {
                     default:
                         if(verbose){console.log("Not a valid placement type.");}
                 }
+                //update tile type predictions for all players
+                game.state.player_states.forEach((player) => {
+                    player.tiles.forEach((tile) => {
+                        tile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
+                    });
+                });
+                        
                 this.updateNetWorths(game);
 
 
@@ -649,6 +659,14 @@ class game {
                 // Bonus share for creating chain
                 game.state.bank_shares[updateData.newChainChoice]--;
                 game.state.player_states[game.state.turn][updateData.newChainChoice]++;
+
+                //update tile type predictions for all players
+                game.state.player_states.forEach((player) => {
+                    player.tiles.forEach((tile) => {
+                        tile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
+                    });
+                });
+
                 this.updateNetWorths(game);
 
                 game.state.expectedNextAction = 'purchaseShares';
@@ -733,6 +751,13 @@ class game {
                         //merger operations complete, clear active_merger object
                         game.state.active_merger = {};
 
+                        //update tile type predictions for all players
+                        game.state.player_states.forEach((player) => {
+                            player.tiles.forEach((tile) => {
+                                tile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
+                            });
+                        });
+
                         game.state.expectedNextAction = 'purchaseShares';
                     }
                     else{
@@ -796,8 +821,12 @@ class game {
                     game.state.game_ended = true;
                 }
                 else {
-                    game.state.player_states[userID].tiles.push(game.state.tile_bank.pop()) // Draws new tile.
-                    //TODO: handle empty tile bank ------- NOTE: test for/handle other exceptions like this.
+                    // Draw new tile
+                    if(game.state.tile_bank.length !== 0){
+                        let newTile = game.state.tile_bank.pop()
+                        newTile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
+                        game.state.player_states[userID].tiles.push(newTile);
+                    }
                     game.state.expectedNextAction = 'playTile';
                     game.state.play_count++;
                     game.state.turn = game.state.play_count % game.num_players;

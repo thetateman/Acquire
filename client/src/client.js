@@ -39,13 +39,33 @@ const updateGameBoard = (game) => {
             }
         }
     }
+    // Color my tiles
+    game.state.player_states[game.usernames.indexOf(localStorage.username)].tiles
+    .forEach((tile) => {
+        let tileSlot = document.querySelector(`[x="${tile.x}"][y="${tile.y}"]`);
+        tileSlot.style['background-color'] = 'var(--tile-bank-single-color)';
+        tileSlot.style['border-color'] = '#adad72'; // This color looks best for dark and light modes.
+    });
 };
 
 const updateTileBank = (game, sock) => {
+    // First find adjacent single tiles
+    let tiles = game.state.player_states[game.usernames.indexOf(localStorage.username)].tiles;
+    let singleTiles = tiles.filter((tile) => tile.predicted_type === 's');
+    singleTiles.forEach((singleTile) => {
+        if(singleTiles.some((tile) => {
+            return (tile.x === singleTile.x && tile.y === singleTile.y + 1) ||
+            (tile.x === singleTile.x && tile.y === singleTile.y - 1) ||
+            (tile.x === singleTile.x + 1 && tile.y === singleTile.y) ||
+            (tile.x === singleTile.x - 1 && tile.y === singleTile.y);
+            })
+        ){
+            singleTile.predicted_type = 'j';
+        }
+    });
     document.querySelector('#tile-bank').innerHTML = "";
-    game.state.player_states[game.usernames.indexOf(localStorage.username)].tiles
-    .forEach((tile) => {
-        let tileHTML = `<span x="${tile.x}" y="${tile.y}">${tile.x+1}${String.fromCharCode(tile.y+65)}</span>`;
+    tiles.forEach((tile) => {
+        let tileHTML = `<span x="${tile.x}" y="${tile.y}" type="${tile.predicted_type}">${tile.x+1}${String.fromCharCode(tile.y+65)}</span>`;
         document.querySelector('#tile-bank').insertAdjacentHTML('beforeend', tileHTML);
     });
     document.querySelectorAll('#tile-bank span')
@@ -468,7 +488,7 @@ const updateStatsTable = (game) => {
         document.querySelector(`[row="price"][column="${chain}"]`).innerHTML = game.state.share_prices[chain];
     });
     statsTableUsernameStyleUpdater(game);
-}
+};
 
 (() => {
     const sock = io();
