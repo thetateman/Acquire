@@ -117,6 +117,10 @@ io.on('connection', (sock) => {
      * Because these are hard to predict, I try to mitigate the issue by initializing the problematic objects on first
      * socket connection.
      */
+    if(sock.request.session === undefined){
+        console.error("session undefined");
+        socket.disconnect();
+    }
     if(sock.request.session.username === undefined){
         console.error("Client attempted connection with undefined username.");
         console.error(sock.request.session)
@@ -126,6 +130,8 @@ io.on('connection', (sock) => {
         console.error("Unauthenticated client attempted connection.");
         console.error(sock.request.session)
         sock.request.session.destroy();
+        socket.disconnect();
+        return false;
     }
     if(sock.request.session.lastKnownLocation === undefined){
         sock.request.session.lastKnownLocation = 'unknown';
@@ -229,6 +235,7 @@ io.on('connection', (sock) => {
          
     });
     sock.on('gameAction', ({game_id, updateType, updateData}) => {
+        //if(verbose){console.time('gameAction');}
         if(!Object.keys(games).includes(game_id.toString())){
             if(verbose){console.log("Requested a game that does not exist!");}
             sock.emit('error', "none"); //TODO: add catch-all error listener to client.
@@ -272,6 +279,7 @@ io.on('connection', (sock) => {
                 });
             });
         }
+        //if(verbose){console.timeEnd('gameAction');}
     });
 });
 
