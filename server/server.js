@@ -322,3 +322,4 @@ if(verbose){
     console.log(games[updateID].state.player_states[3]);
     console.log(games[updateID].state.bank_shares);
 }
+

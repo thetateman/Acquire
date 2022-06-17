@@ -116,12 +116,19 @@ class game {
                         }
                         
                         // Find first player with shares, including or after merging player
-                        let firstDisposingPlayer = playersDisposing[chain].find((player) => {player >= game.state.turn});
-                        if(firstDisposingPlayer === undefined){
-                            firstDisposingPlayer = 0;
+                        let firstDisposingPlayer;
+                        if(playersDisposing[chain].includes(game.state.turn)){
+                            firstDisposingPlayer = game.state.turn;
                         }
+                        else{
+                            firstDisposingPlayer = playersDisposing[chain].find((player) => player >= game.state.turn);
+                            if(firstDisposingPlayer === undefined){
+                                firstDisposingPlayer = playersDisposing[chain][0];
+                            }
+                        }
+                        
                         // Re-order player array, starting with merging player or next player with shares
-                        let tempPlayerArr = playersDisposing[chain].splice(firstDisposingPlayer);
+                        let tempPlayerArr = playersDisposing[chain].splice(playersDisposing[chain].indexOf(firstDisposingPlayer));
                         playersDisposing[chain] = tempPlayerArr.concat(playersDisposing[chain]);
                         
                     });
@@ -150,28 +157,32 @@ class game {
         * @returns {array} List of unique tile types adjacent to input tile (excludes 'e')
         */
         let connectingChains = [];
-        if(board[y+1] != null){ //Check that row is in range
-            if(board[y+1][x] != 'e' && board[y+1][x] != null){ // If tile is not empty and not outside the board
+        if(y < 8){ //Check that row is in range
+            if(board[y+1][x] !== 'e'){ // If tile is not empty and not outside the board
                 if(!connectingChains.includes(board[y+1][x])){ // Check that we did not already add chain
                     connectingChains.push(board[y+1][x]); //Add chain to connectingChains
                 }
             }
         }
-        if(board[y-1] != null){
-            if(board[y-1][x] != 'e' && board[y-1][x] != null){
+        if(y > 0){
+            if(board[y-1][x] !== 'e'){
                 if(!connectingChains.includes(board[y-1][x])){
                     connectingChains.push(board[y-1][x]);
                 }
             }
         }
-        if(board[y][x+1] != 'e' && board[y][x+1] != null){
-            if(!connectingChains.includes(board[y][x+1])){
-                connectingChains.push(board[y][x+1]);
+        if(x < 11){
+            if(board[y][x+1] !== 'e'){
+                if(!connectingChains.includes(board[y][x+1])){
+                    connectingChains.push(board[y][x+1]);
+                }
             }
         }
-        if(board[y][x-1] != 'e' && board[y][x-1] != null){
-            if(!connectingChains.includes(board[y][x-1])){
-                connectingChains.push(board[y][x-1]);
+        if(x > 0){
+            if(board[y][x-1] !== 'e'){
+                if(!connectingChains.includes(board[y][x-1])){
+                    connectingChains.push(board[y][x-1]);
+                }
             }
         }
         return connectingChains;
@@ -237,7 +248,7 @@ class game {
         */
        let predictedType = 's';
        let neighbors = this.getNeighbors(board, x, y);
-       let connectingTrueChains = neighbors.filter((f) => f !== 's');
+       let connectingTrueChains = neighbors.filter((f) => ['i', 'c', 'w', 'f', 'a', 't', 'l'].includes(f));
        if(connectingTrueChains.length > 0){
            if(connectingTrueChains.length === 1){
                predictedType = connectingTrueChains[0];
@@ -574,6 +585,12 @@ class game {
         if(userID === -1){
             return "userNotInGame";
         }
+        if(!game.state.game_started && !admin){
+            return "gameHasNotStarted";
+        }
+        if(game.state.game_ended){
+            return "gameEnded";
+        }
         
         if(verbose){console.log(`Player ${game.state.turn}'s turn to ${game.state.expectedNextAction}.`);}
         if(userID !== game.state.turn && !admin){
@@ -813,12 +830,41 @@ class game {
                   
 
                 if(updateData.endGame === true){
-                    //TODO: check that player is allowed to end game.
+                    if(Object.values(game.state.chains).some((chain) => chain.length > 40) ||
+                     (!Object.values(game.state.chains).some((chain) => chain.length > 0 && chain.length < 11)
+                         && game.state.available_chains.length < 7))
+                    {
+                        //award prizes
+                        this.awardPrizes(game, "endGame");
+                        this.updateNetWorths(game);
 
-                    //award prizes
-                    this.awardPrizes(game, "endGame");
-                    this.updateNetWorths(game);
-                    game.state.game_ended = true;
+                        let usernamesRanked = JSON.parse(JSON.stringify(game.usernames));
+                        usernamesRanked.sort((a, b) => {
+                            if(game.state.player_states[game.usernames.indexOf(a)].net_worth < game.state.player_states[game.usernames.indexOf(b)].net_worth){
+                                return 1;
+                            }
+                            else {
+                                return -1
+                            }
+                        });
+                        let places = [];
+                        for(let i=0;i<game.num_players;i++){
+                            places.push([]);
+                        }
+                        places[0].push(usernamesRanked[0]);
+                        let placeIndex = 0;
+                        for(let i=1; i<usernamesRanked.length; i++){
+                            if(!(game.state.player_states[game.usernames.indexOf(usernamesRanked[i])].net_worth === game.state.player_states[game.usernames.indexOf(places[placeIndex][0])].net_worth)){
+                                placeIndex++;
+                            }
+                            places[placeIndex].push(usernamesRanked[i]);
+                        }
+                        game.state.game_ended = true;
+                        game.places = places;
+                    }
+                    else {
+                        return 'gameCannotBeEnded';
+                    }
                 }
                 else {
                     // Draw new tile

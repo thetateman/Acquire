@@ -51,18 +51,20 @@ const updateGameBoard = (game) => {
 const updateTileBank = (game, sock) => {
     // First find adjacent single tiles
     let tiles = game.state.player_states[game.usernames.indexOf(localStorage.username)].tiles;
-    let singleTiles = tiles.filter((tile) => tile.predicted_type === 's');
-    singleTiles.forEach((singleTile) => {
-        if(singleTiles.some((tile) => {
-            return (tile.x === singleTile.x && tile.y === singleTile.y + 1) ||
-            (tile.x === singleTile.x && tile.y === singleTile.y - 1) ||
-            (tile.x === singleTile.x + 1 && tile.y === singleTile.y) ||
-            (tile.x === singleTile.x - 1 && tile.y === singleTile.y);
-            })
-        ){
-            singleTile.predicted_type = 'j';
-        }
-    });
+    if(game.state.available_chains.length > 0){
+        let singleTiles = tiles.filter((tile) => tile.predicted_type === 's');
+        singleTiles.forEach((singleTile) => {
+            if(singleTiles.some((tile) => {
+                return (tile.x === singleTile.x && tile.y === singleTile.y + 1) ||
+                (tile.x === singleTile.x && tile.y === singleTile.y - 1) ||
+                (tile.x === singleTile.x + 1 && tile.y === singleTile.y) ||
+                (tile.x === singleTile.x - 1 && tile.y === singleTile.y);
+                })
+            ){
+                singleTile.predicted_type = 'j';
+            }
+        });
+    }
     document.querySelector('#tile-bank').innerHTML = "";
     tiles.forEach((tile) => {
         let tileHTML = `<span x="${tile.x}" y="${tile.y}" type="${tile.predicted_type}">${tile.x+1}${String.fromCharCode(tile.y+65)}</span>`;
@@ -319,6 +321,7 @@ const populateGame = (sock) => (game) => {
     if(game.state.game_started){
         updateTileBank(game, sock);
         myTurnStateUpdater(game);
+        statsTableUsernameStyleUpdater(game);
     }
     //TODO: Reveal hidden elements if necessary (dispose-shares-table).
     // Normally this state is updated on updateGame calls, but we should update in the same way on page load.
@@ -366,11 +369,21 @@ const prepareToDisposeShares = (game) => {
 const statsTableUsernameStyleUpdater = (game) => {
     document.querySelectorAll(`.stats-board td[column="username"]`).forEach((nameElement) => {
         let playerID = nameElement.getAttribute('row');
-        if(playerID == game.state.turn){
-            nameElement.style['background-color'] = 'palegreen';
+        if(game.state.game_ended){
+            if(game.places[0].includes(game.usernames[playerID])){
+                nameElement.style['background-color'] = 'gold';
+            }
+            else {
+                nameElement.style['background-color'] = 'lightgray';
+            }
         }
-        else {
-            nameElement.style['background-color'] = 'lightgray';
+        else{
+            if(playerID == game.state.turn){
+                nameElement.style['background-color'] = 'palegreen';
+            }
+            else {
+                nameElement.style['background-color'] = 'lightgray';
+            }
         }
     });
 }
