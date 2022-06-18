@@ -21,14 +21,26 @@ body {
 }
 
 /* Change the color of links on hover */
-.topnav a:hover {
+.topnav a:not(#navbar-username):hover {
   background-color: #ddd;
   color: black;
 }
 
+#navbar-username {
+  padding-right: 6px;
+  color: #4897ff;
+}
+
+#logout-button {
+  border-radius: 20px;
+  padding: 11px 10px;
+  margin-right: 6px;
+}
+
+
 /* Add a color to the active/current link */
 .topnav a.active {
-  background-color: #04AA6D;
+  background-color: #4897ff;
   color: white;
 }
 

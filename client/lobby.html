@@ -8,14 +8,6 @@
         <link rel="stylesheet" href="styles/dark_mode_toggle.css">
     </head>
     <body class="dark-mode">
-        <div class="topnav">
-            <a class="active" href="#home">Lobby</a>
-            <a href="#news">Game Stats</a>
-            <a href="/about">About</a>
-            <div class="topnav-right">
-                <a href="#" id="logout-button">Logout</a>
-            </div>
-        </div>
         <div class="lobby-content">
             <div class="flex-container">
                 <div class="chat-column">
@@ -83,9 +75,9 @@
             </div>
         </div>
         <script src="src/common/dark_mode_toggle.js"></script> <!--Put this up here attempting to avoid dark mode -> light mode flash on page load-->    
+        <script src="src/common/navbar.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="src/client_lobby.js"></script>
-        <script src="src/common/navbar.js"></script>
         <script src="src/common/global_chat.js"></script>
     </body>
 </html>

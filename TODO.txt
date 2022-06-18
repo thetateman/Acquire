@@ -29,12 +29,12 @@
 19. Share disposal - client X
 20. In the event of a >=3-way merger where >=2 eliminated chains are of equal size, merging player should choose order of eliminations.
 21. Advanced test cases
-22. Handle empty tile bank
+22. Handle empty tile bank X
 23. Handle all tiles dead or asleap
 
 24. Better encapsulate server-side websocket logic
 
-25. Share disposal order bug X (refer to https://github.com/thetateman/Acquire/commit/82adde9f06b689483292bbf695cf117e0ed238f2 game.js:740)
+25. Share disposal order bug X (refer to https://github.com/thetateman/Acquire/commit/cc41bbeb32031faf20a4e9805cf4186521be76ba game.js:119)
 
 26. Bug: users added to game list w/o joining game.
 
