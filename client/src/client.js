@@ -101,6 +101,15 @@ const updateChainSelectorRow = (gameState) => {
             }
         });
         document.querySelector('#chain-selector-label').textContent = 'Remaining Chain:';
+    } else if(gameState.expectedNextAction === 'chooseNextElimChain'){
+        let elimChainOptionGroupIndex = -1;
+        for(let i=0;i<gameState.active_merger.elim_chains_ranked.length;i++){
+            if(gameState.active_merger.elim_chains_ranked[i].includes(gameState.active_merger.elim_chains[gameState.active_merger.disposing_chain_index])){
+                visibleChainSelectors = visibleChainSelectors.concat(gameState.active_merger.elim_chains_ranked[i]);
+                break;
+            }
+        }
+        document.querySelector('#chain-selector-label').textContent = 'Eliminate Next:';
     } else { // Not a state where we want to display chain selectors.
         console.log('HMMMM, check on this.');
         return false;
@@ -165,6 +174,11 @@ const chainSelectHandler = (e, sock) => {
     }
     else if(localStorage.getItem('expected_next_action') === 'chooseRemainingChain'){
         sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseRemainingChain', updateData: {remainingChainChoice: chainSelection}});
+        chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
+        document.querySelector('#chain-selector-row-container').style.display = 'none';
+    }
+    else if(localStorage.getItem('expected_next_action') === 'chooseNextElimChain'){
+        sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseNextElimChain', updateData: {nextElimChain: chainSelection}});
         chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
         document.querySelector('#chain-selector-row-container').style.display = 'none';
     }
@@ -399,7 +413,7 @@ const myTurnStateUpdater = (game) => {
         else if(game.state.expectedNextAction === 'purchaseShares'){
             prepareToPurchaseShares(game);
         }
-        else if(['chooseNewChain', 'chooseRemainingChain'].includes(game.state.expectedNextAction)){
+        else if(['chooseNewChain', 'chooseRemainingChain', 'chooseNextElimChain'].includes(game.state.expectedNextAction)){
             updateChainSelectorRow(game.state);
         }
     }
@@ -418,7 +432,7 @@ const updateGame = (sock) => (gameUpdate) => {
         myTurnStateUpdater(gameUpdate.game);
         return false;
     }
-    if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares', 'startGame'].includes(gameUpdate.type)){
+    if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares', 'startGame', 'chooseNextElimChain'].includes(gameUpdate.type)){
         localStorage.setItem('gameState', JSON.stringify(gameUpdate.game.state));
         localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.

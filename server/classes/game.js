@@ -93,6 +93,7 @@ class game {
                             return 0;
                         }
                     });
+
                     let playersDisposing = {};
                     /**
                      * The playersDisposing object holds the data representing which players 
@@ -132,6 +133,8 @@ class game {
                         playersDisposing[chain] = tempPlayerArr.concat(playersDisposing[chain]);
                         
                     });
+
+                    active_merger.elim_chains_ranked = this.rankEliminatedChainsBySize(chains, elimChains, remainingChain);  // May be updated by chooseRemainingChain action.
                     active_merger.players_disposing = playersDisposing; // May be updated by chooseRemainingChain action.
                     active_merger.merging_chains = connectingTrueChains;
                     active_merger.largest_chains = largestChains;
@@ -151,6 +154,37 @@ class game {
 
         
     };
+
+    static rankEliminatedChainsBySize(chains, elimChains, remainingChain){
+        let elimChainsRanked = [];
+        if(remainingChain !== 'p'){ //only if these are the true elim chains, otherwise, handle this in chooseRemainingChain.
+            elimChainsRanked = [[elimChains[0]]];
+            let chainRankIndex = 0;
+            for(let i=1; i<elimChains.length; i++){
+                if(!(chains[elimChains[i]].length === chains[elimChainsRanked[chainRankIndex][0]].length)){
+                    chainRankIndex++;
+                    elimChainsRanked.push([]);
+                }
+                elimChainsRanked[chainRankIndex].push(elimChains[i]);
+
+            }
+        }
+        return elimChainsRanked;
+    };
+
+    static isNextElimChainTied(game){
+        const nextElimChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
+        let isTied = false;
+        game.state.active_merger.elim_chains_ranked.forEach((chainGroup) => {
+            if(chainGroup.includes(nextElimChain)){
+                if(chainGroup.length > 1){
+                    isTied = true;
+                }
+            }
+        });
+        return isTied;
+    };
+
     static getNeighbors(board, x, y){
         /**
         * Checks each tile adjacent to input and adds unique tile types to input
@@ -486,7 +520,7 @@ class game {
         * Called after receiving game updating websocket message, updates in-memory game object.
         * @param {object} game - the game to be updated.
         * @param {string} username - the username of the user who initiated the action.
-        * @param {string} updateType - updateType should be in: ['joinGame', 'startGame', 'playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares'].
+        * @param {string} updateType - updateType should be in: ['joinGame', 'startGame', 'playTile', 'chooseNewChain', 'chooseRemainingChain', 'chooseNextElimChain', 'disposeShares', 'purchaseShares'].
         * @param {object} updateData - action details, e.g., coordinates of tile played.
         * @param {boolean} admin - updater is using administrator privilages to override game rules.
         * @param {boolean} verbose - enables verbose logging
@@ -632,12 +666,18 @@ class game {
                         }
                         else{
                             this.awardPrizes(game);
+                            if(this.isNextElimChainTied(game)){
+                                game.state.turn = game.state.active_merger.merging_player;
+                                console.log("setting action to chooseNextElimChain");
+                                game.state.expectedNextAction = 'chooseNextElimChain';
+                            }
+                            else{
+                                // Update turn to first player to dispose shares.
+                                let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
+                                game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
 
-                            // Update turn to first player to dispose shares.
-                            let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
-                            game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
-
-                            game.state.expectedNextAction = 'disposeShares'
+                                game.state.expectedNextAction = 'disposeShares';
+                            }
                         }
                         game.state.lastPlayedTile = updateData;
                         if(verbose){console.log(game.state.active_merger);}
@@ -696,19 +736,65 @@ class game {
                         game.state.active_merger.elim_chains = game.state.active_merger.elim_chains.filter((chain) => chain !== game.state.active_merger.remaining_chain);
                         delete game.state.active_merger.players_disposing[game.state.active_merger.remaining_chain];
 
+                        // Rank eliminated chains by size to handle ties.
+                        game.state.active_merger.elim_chains_ranked = this.rankEliminatedChainsBySize(game.state.chains, game.state.active_merger.elim_chains, game.state.active_merger.remainingChain);
+
                         this.awardPrizes(game);
                         this.updateNetWorths(game);
-                        // Update turn to first player to dispose shares.
-                        let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
-                        game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
                         
-                        game.state.expectedNextAction = 'disposeShares';
+                        if(this.isNextElimChainTied(game)){
+                            game.state.turn = game.state.active_merger.merging_player;
+                            game.state.expectedNextAction = 'chooseNextElimChain';
+                        }
+                        else {
+                            // Update turn to first player to dispose shares.
+                            let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
+                            game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+                            
+                            game.state.expectedNextAction = 'disposeShares';
+                        }
                     }
                     else {
                         return "notLargestChainInMerger";
                     }
                 }
                 break;
+            case 'chooseNextElimChain':
+                // Check eligibility
+                let chainIsEligibleForElim = false;
+                let disposingChainDefault = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
+                game.state.active_merger.elim_chains_ranked.forEach((chainGroup) => {
+                    if(chainGroup.includes(updateData.nextElimChain)){
+                        if(chainGroup.length > 1 && chainGroup.includes(disposingChainDefault)){
+                            chainIsEligibleForElim = true;
+                        }
+                    }
+                });
+                if(!chainIsEligibleForElim){
+                    return 'chainIsNotEligibleForElim';
+                }
+
+                console.log(`choosing next elim chain as: ${updateData.nextElimChain}`);
+                // Move nextElimChain to the front of elim_chains
+                game.state.active_merger.elim_chains.splice(game.state.active_merger.disposing_chain_index, 0,
+                    game.state.active_merger.elim_chains.splice(
+                        game.state.active_merger.elim_chains.indexOf(updateData.nextElimChain), 1
+                    )
+                );
+
+                //filter nextElimChain from elim_chains_ranked
+                for(let i=0; i<game.state.active_merger.elim_chains_ranked.length; i++){
+                    game.state.active_merger.elim_chains_ranked[i] = 
+                    game.state.active_merger.elim_chains_ranked[i].filter((rankedChain) => rankedChain !== updateData.nextElimChain);
+
+                }
+
+                // Update turn to next player expected to dispose shares
+                let disposingChainUpdated = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
+                game.state.turn = game.state.active_merger.players_disposing[disposingChainUpdated][game.state.active_merger.player_disposing_index];
+                game.state.expectedNextAction = 'disposeShares';
+                break;
+
             case 'disposeShares':
                 let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
                 // Check that disposal is allowed
@@ -778,9 +864,15 @@ class game {
                         game.state.expectedNextAction = 'purchaseShares';
                     }
                     else{
-                        // Update turn to next player expected to dispose shares
-                        disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
-                        game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+                        if(this.isNextElimChainTied(game)){
+                            game.state.turn = game.state.active_merger.merging_player;
+                            game.state.expectedNextAction = 'chooseNextElimChain';
+                        }
+                        else {
+                            // Update turn to next player expected to dispose shares
+                            disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
+                            game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+                        }
                     }
                 }
                 else{

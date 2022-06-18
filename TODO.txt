@@ -27,7 +27,7 @@
 17. Fix price stats after mergers X
 18. Share disposal - server X
 19. Share disposal - client X
-20. In the event of a >=3-way merger where >=2 eliminated chains are of equal size, merging player should choose order of eliminations.
+20. In the event of a >=3-way merger where >=2 eliminated chains are of equal size, merging player should choose order of eliminations. X
 21. Advanced test cases
 22. Handle empty tile bank X
 23. Handle all tiles dead or asleap
@@ -38,4 +38,5 @@
 
 26. Bug: users added to game list w/o joining game.
 
+27. Minor bug: clicking tile on puchase phase returns total to $0
 
