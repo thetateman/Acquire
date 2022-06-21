@@ -450,6 +450,42 @@ class game {
             player.net_worth = player.cash + totalShareValue;
         });
     };
+
+    static endTurn(game){
+        // Draw new tile
+        if(game.state.tile_bank.length !== 0){
+            let newTile = game.state.tile_bank.pop()
+            newTile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
+            game.state.player_states[game.state.turn].tiles.push(newTile);
+        }
+        game.state.expectedNextAction = 'playTile';
+        game.state.play_count++;
+        game.state.turn = game.state.play_count % game.num_players;
+    };
+
+    static shouldAutoPass(game){
+        if(!(Object.values(game.state.share_prices).some((share_price) => share_price <= game.state.player_states[game.state.turn].cash && share_price !== 0))
+            || game.state.available_chains.length === 7)
+        {
+            if(!this.gameIsEndable(game)){
+                return true;
+            }
+        }
+        return false;
+
+    };
+
+    static gameIsEndable(game){
+        if(Object.values(game.state.chains).some((chain) => chain.length > 40) ||
+            (!Object.values(game.state.chains).some((chain) => chain.length > 0 && chain.length < 11)
+                && game.state.available_chains.length < 7))
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
     
     static createGame(games, maxPlayers, creator){
         let id = this.genNewGameID(games)
@@ -654,7 +690,12 @@ class game {
                 //update the game
                 switch(this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, updateData.x, updateData.y, game)){
                     case 'normal':
-                        game.state.expectedNextAction = 'purchaseShares'; //should we wait for a pass if player has no cash?
+                        if(this.shouldAutoPass(game)){
+                            this.endTurn(game);
+                        }
+                        else{
+                            game.state.expectedNextAction = 'purchaseShares';
+                        }
                         break;
                     case 'newChain':
                         game.state.expectedNextAction = 'chooseNewChain';
@@ -726,7 +767,12 @@ class game {
 
                 this.updateNetWorths(game);
 
-                game.state.expectedNextAction = 'purchaseShares';
+                if(this.shouldAutoPass(game)){
+                    this.endTurn(game);
+                }
+                else{
+                    game.state.expectedNextAction = 'purchaseShares';
+                }
                 break;
             case 'chooseRemainingChain':
                 if(game.state.active_merger.remaining_chain === 'p'){
@@ -861,7 +907,12 @@ class game {
                             });
                         });
 
-                        game.state.expectedNextAction = 'purchaseShares';
+                        if(this.shouldAutoPass(game)){
+                            this.endTurn(game);
+                        }
+                        else{
+                            game.state.expectedNextAction = 'purchaseShares';
+                        }
                     }
                     else{
                         if(this.isNextElimChainTied(game)){
@@ -922,10 +973,7 @@ class game {
                   
 
                 if(updateData.endGame === true){
-                    if(Object.values(game.state.chains).some((chain) => chain.length > 40) ||
-                     (!Object.values(game.state.chains).some((chain) => chain.length > 0 && chain.length < 11)
-                         && game.state.available_chains.length < 7))
-                    {
+                    if(this.gameIsEndable(game)){
                         //award prizes
                         this.awardPrizes(game, "endGame");
                         this.updateNetWorths(game);
@@ -959,15 +1007,7 @@ class game {
                     }
                 }
                 else {
-                    // Draw new tile
-                    if(game.state.tile_bank.length !== 0){
-                        let newTile = game.state.tile_bank.pop()
-                        newTile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
-                        game.state.player_states[userID].tiles.push(newTile);
-                    }
-                    game.state.expectedNextAction = 'playTile';
-                    game.state.play_count++;
-                    game.state.turn = game.state.play_count % game.num_players;
+                    this.endTurn(game);
                 }
                 break;
             default:
