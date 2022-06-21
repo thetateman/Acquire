@@ -131,8 +131,18 @@ const updateTile = (x, y, tileType) => {
 };
 
 const tileClickHandler = (e, sock) => {
-    //TODO: only send allowed websocket message on legal tile click
     console.log(`clicked x:${e.getAttribute('x')} y:${e.getAttribute('y')}`);
+    const x = e.getAttribute('x');
+    const y = e.getAttribute('y');
+    const gameState = JSON.parse(localStorage.gameState);
+    if(localStorage.expected_next_action !== 'playTile'){
+        console.log('unexpectedActionType');
+        return false;
+    }
+    if(localStorage.admin !== 'true' && !gameState.player_states[gameState.turn].tiles.some((tile) => x == tile.x && y == tile.y)){
+        console.log('userLacksTile');
+        return false;
+    }
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'playTile', updateData: {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)}})
 };
 

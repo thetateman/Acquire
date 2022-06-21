@@ -733,7 +733,7 @@ class game {
                 if(game.state.board[updateData.y][updateData.x] !== 'e'){
                     return "tileAlreadyPlayed";
                 }
-                if(!admin && null == game.state.player_states[userID].tiles.find((tile) => updateData.x === tile.x && updateData.y === tile.y)){
+                if(!admin && !game.state.player_states[userID].tiles.some((tile) => updateData.x === tile.x && updateData.y === tile.y)){
                     return "userLacksTile";
                 }
                 if(['z', 'd'].includes(this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, updateData.x, updateData.y))){
