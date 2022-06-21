@@ -452,15 +452,37 @@ class game {
     };
 
     static endTurn(game){
-        // Draw new tile
-        if(game.state.tile_bank.length !== 0){
-            let newTile = game.state.tile_bank.pop()
-            newTile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
-            game.state.player_states[game.state.turn].tiles.push(newTile);
+        if(game.state.no_playable_tile_turns === 0){ // if this player was able to play a tile
+            // Draw new tile
+            if(game.state.tile_bank.length !== 0){
+                let newTile = game.state.tile_bank.pop()
+                newTile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
+                game.state.player_states[game.state.turn].tiles.push(newTile);
+            }
         }
-        game.state.expectedNextAction = 'playTile';
+        else if(game.state.no_playable_tile_turns >= game.num_players){
+            this.endGame(game);
+            return false;
+        }
+        //increment turn
         game.state.play_count++;
         game.state.turn = game.state.play_count % game.num_players;
+
+        //determine if new player has a playable tile
+        if(!game.state.player_states[game.state.turn].tiles.some((tile) => !['z', 'd'].includes(tile.predicted_type))){
+            //TODO: send message to chat about this
+            game.state.no_playable_tile_turns++;
+            if(this.shouldAutoPass(game)){
+                this.endTurn(game);
+            }
+            else {
+                game.state.expectedNextAction = 'purchaseShares';
+            }
+        }
+        else{
+            game.state.no_playable_tile_turns = 0;
+            game.state.expectedNextAction = 'playTile';
+        }
     };
 
     static shouldAutoPass(game){
@@ -486,6 +508,37 @@ class game {
             return false;
         }
     };
+
+    static endGame(game){
+        //award prizes
+        this.awardPrizes(game, "endGame");
+        this.updateNetWorths(game);
+
+        //determine player placements
+        let usernamesRanked = JSON.parse(JSON.stringify(game.usernames));
+        usernamesRanked.sort((a, b) => {
+            if(game.state.player_states[game.usernames.indexOf(a)].net_worth < game.state.player_states[game.usernames.indexOf(b)].net_worth){
+                return 1;
+            }
+            else {
+                return -1
+            }
+        });
+        let places = [];
+        for(let i=0;i<game.num_players;i++){
+            places.push([]);
+        }
+        places[0].push(usernamesRanked[0]);
+        let placeIndex = 0;
+        for(let i=1; i<usernamesRanked.length; i++){
+            if(!(game.state.player_states[game.usernames.indexOf(usernamesRanked[i])].net_worth === game.state.player_states[game.usernames.indexOf(places[placeIndex][0])].net_worth)){
+                placeIndex++;
+            }
+            places[placeIndex].push(usernamesRanked[i]);
+        }
+        game.state.game_ended = true;
+        game.places = places;
+    };
     
     static createGame(games, maxPlayers, creator){
         let id = this.genNewGameID(games)
@@ -499,6 +552,7 @@ class game {
                 game_ended: false,
                 turn: 0,
                 play_count: 0,
+                no_playable_tile_turns: 0,
                 expectedNextAction: 'playTile',
                 lastPlayedTile: {},
                 tile_bank: this.genTileBank(),
@@ -730,6 +784,7 @@ class game {
                 game.state.player_states.forEach((player) => {
                     player.tiles.forEach((tile) => {
                         tile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
+                        player.has_playable_tile = true;
                     });
                 });
                         
@@ -974,33 +1029,7 @@ class game {
 
                 if(updateData.endGame === true){
                     if(this.gameIsEndable(game)){
-                        //award prizes
-                        this.awardPrizes(game, "endGame");
-                        this.updateNetWorths(game);
-
-                        let usernamesRanked = JSON.parse(JSON.stringify(game.usernames));
-                        usernamesRanked.sort((a, b) => {
-                            if(game.state.player_states[game.usernames.indexOf(a)].net_worth < game.state.player_states[game.usernames.indexOf(b)].net_worth){
-                                return 1;
-                            }
-                            else {
-                                return -1
-                            }
-                        });
-                        let places = [];
-                        for(let i=0;i<game.num_players;i++){
-                            places.push([]);
-                        }
-                        places[0].push(usernamesRanked[0]);
-                        let placeIndex = 0;
-                        for(let i=1; i<usernamesRanked.length; i++){
-                            if(!(game.state.player_states[game.usernames.indexOf(usernamesRanked[i])].net_worth === game.state.player_states[game.usernames.indexOf(places[placeIndex][0])].net_worth)){
-                                placeIndex++;
-                            }
-                            places[placeIndex].push(usernamesRanked[i]);
-                        }
-                        game.state.game_ended = true;
-                        game.places = places;
+                        this.endGame(game);
                     }
                     else {
                         return 'gameCannotBeEnded';
