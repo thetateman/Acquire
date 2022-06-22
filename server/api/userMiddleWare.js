@@ -6,6 +6,18 @@ const mongoose = require('mongoose');
 
 class UserMiddleware{
   static async createUserMiddleware(req, res, next) {
+      function usernameAllowed(str) {
+         if(!(/^[\x30-\x3B\x41-\x7A]{3,35}$/.test(str))){
+          return false;
+         }
+         return true;
+      }
+      function emailAllowed(str) {
+        if(!(/^[\x21-\x3B\x40-\x7E]{1,99}$/.test(str))){
+         return false;
+        }
+        return true;
+     }  
       require('dotenv').config();
       const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
       .then(()=>{})
@@ -15,6 +27,14 @@ class UserMiddleware{
       const hashedPassword = await bcrypt.hash(password, 12);
 
       let responseObj = {error: "none", user: {}};
+      if(!usernameAllowed(username)){
+        responseObj.error = "invalidUsername";
+        return res.json(responseObj);
+      }
+      if(!emailAllowed(email)){
+        responseObj.error = "invalidEmail";
+        return res.json(responseObj);
+      }
 
       let user = await UserModel.findOne({email})
       if(user) {
@@ -44,10 +64,19 @@ class UserMiddleware{
       return res.json({ result: "" });
   };
   static async loginUserMiddleware(req, res, next){
-      require('dotenv').config();
-      const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
-      .then(()=>{})
-      .catch(e=>console.error(e));
+
+   
+   function loginAllowed(str) {
+     if(!(/^[\x21-\x3B\x40-\x7E]{1,99}$/.test(str))){
+      return false;
+     }
+     return true;
+    };  
+
+    require('dotenv').config();
+    const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
+    .then(()=>{})
+    .catch(e=>console.error(e));
 
     const {loginID, password} = req.body;
     let loginType;
@@ -60,6 +89,11 @@ class UserMiddleware{
     const email = loginID;
     
     let responseObj = {error: "none", user: {}};
+
+    if(!loginAllowed(loginID)){
+      responseObj.error = "wrongLoginID";
+      return res.json(responseObj);
+    }
     
     let user;
     if(loginType === 'email'){

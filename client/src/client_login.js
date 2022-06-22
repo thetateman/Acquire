@@ -7,6 +7,12 @@ function displaySignupError(errorType){
     else if(errorType === 'dupUsername'){
         errorText = "That username is already in use."
     } 
+    else if(errorType === 'invalidUsername'){
+        errorText = "Try a username that is 3-35 alpha-numeric characters."
+    }
+    else if(errorType === 'invalidEmail'){
+        errorText = "Please input an email address";
+    }
     else {
         success = true;
     }
@@ -82,6 +88,11 @@ const onSignUp = (e) => {
     let errorMessage = "";
     if(password !== repeated_password){
         errorMessage = '<text style="color:red;">Passwords must match.</text>';
+        document.querySelector('#error-message2').innerHTML = errorMessage;
+        return;
+    }
+    else if(password.length < 1){
+        errorMessage = '<text style="color:red;">Please input a password.</text>';
         document.querySelector('#error-message2').innerHTML = errorMessage;
         return;
     }
