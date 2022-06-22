@@ -24,8 +24,10 @@ class messages{
             }
 
             console.log(mentions);
+            const playerMentions = mentions.filter((mention) => !['server', 'lobby', 'everyone'].includes(mention));
 
-            if(mentions.includes('everyone')){
+
+            if(mentions.includes('everyone') || playerMentions.length > 0){
                 io.emit('message', {
                     sender: sock.request.session.username,
                     origin: sock.request.session.lastKnownLocation,
@@ -48,15 +50,7 @@ class messages{
                 }
                 return true;
             }
-            else if(mentions.length > 0){
-                io.emit('message', {
-                    sender: sock.request.session.username,
-                    origin: sock.request.session.lastKnownLocation,
-                    'mentions': mentions,
-                    message_content: text});
-                    return true;
-            }
-
+            
             if(sock.request.session.lastKnownLocation.includes('game')){
                 const gameRoom = sock.request.session.lastKnownLocation.split('game')[1];
                 io.in(gameRoom).emit('message', {
