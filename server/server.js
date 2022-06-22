@@ -8,6 +8,7 @@ const helmet = require('helmet');
 
 const apiRouter = require("./api/api.router.js");
 const game = require("./classes/game.js");
+const messages = require("./classes/messages.js");
 const userModel = require("./models/User");
 
 const MongoStore = require('connect-mongo')(session);
@@ -140,34 +141,41 @@ io.on('connection', (sock) => {
     }
 
     connectedUsers.push(sock.request.session.username);
-    io.emit('message', `${sock.request.session.username} logged on.`);
+
+    //welcome message
+    io.emit('message', {
+        sender: 'server',
+        origin: 'lobby',
+        mentions: [],
+        message_content: `${sock.request.session.username} connected.`});
+
+    //Event listeners
+    messages.chatMessage(games, io, sock);
 
     sock.on('disconnect', (reason) => {
         if(sock.request.session.lastKnownLocation.includes('game')){ //User disconnected from a game
             const gameDisconnectedFrom = sock.request.session.lastKnownLocation.split('game')[1];
-            io.emit('gameListUpdate', {action: 'playerDisconnected', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
+            io.in('lobby').emit('gameListUpdate', {action: 'playerDisconnected', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
+            // Leave the room for the game
+            // Actually this happens anyway on redirect
+            //sock.leave(gameDisconnectedFrom);
         }
         else if(sock.request.session.lastKnownLocation === 'lobby'){
             usersInLobby = usersInLobby.filter((user) => user !== sock.request.session.username);
-            io.emit('lobbyUpdate', {action: 'remove', users: [sock.request.session.username]});
+            io.in('lobby').emit('lobbyUpdate', {action: 'remove', users: [sock.request.session.username]});
         }
         sock.request.session.lastKnownLocation = 'disconnected';
         userStatuses[sock.request.session.username] = 'disconnected';
         connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
     });
 
-
-    sock.on('message', (text) => {
-        if(verbose){console.log(`Got message: ${text}`);}
-        io.emit('message', `${sock.request.session.username}: ${text}`);
-    });
-
     sock.on('joinLobby', () => {
+        sock.join('lobby');
         sock.emit('lobbyUpdate', {action: 'add', users: usersInLobby});
         usersInLobby.push(sock.request.session.username);
         sock.request.session.lastKnownLocation = 'lobby';
         userStatuses[sock.request.session.username] = 'lobby';
-        io.emit('lobbyUpdate', {action: 'add', users: [sock.request.session.username]});
+        io.in('lobby').emit('lobbyUpdate', {action: 'add', users: [sock.request.session.username]});
         
     });
 
@@ -207,8 +215,8 @@ io.on('connection', (sock) => {
                 sock.data.username = requestingUser;
                 sock.request.session.lastKnownLocation = `game${gameID}`;
                 userStatuses[sock.request.session.username] = `game${gameID}`;
-                io.emit('gameListUpdate', {action: 'addPlayer', game: {id: gameID}, username: sock.request.session.username});
-                sock.join(gameID);
+                io.in('lobby').emit('gameListUpdate', {action: 'addPlayer', game: {id: gameID}, username: sock.request.session.username});
+                sock.join(gameID); //typeOf(gameID) = string
             }
         }
         
@@ -230,7 +238,7 @@ io.on('connection', (sock) => {
             "action": "addGame",
             "game": gameSummary
         }
-        io.emit('gameListUpdate', updateObject);
+        io.in('lobby').emit('gameListUpdate', updateObject);
          
     });
     sock.on('gameAction', ({game_id, updateType, updateData}) => {

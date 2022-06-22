@@ -1,24 +1,5 @@
 const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
 
-const log = (text) => {
-    const parent = document.querySelector('#messages');
-    const el = document.createElement('li');
-    el.textContent = text;
-
-    parent.appendChild(el);
-    parent.scrollTop = parent.scrollHeight;
-};
-
-const onChatSubmitted = (sock) => (e) => {
-    e.preventDefault();
-
-    const input = document.querySelector('#chat-input');
-    const text = input.value;
-    input.value = '';
-
-    sock.emit('message', text);
-};
-
 const addBoard = () => {
     let spaces = "";
     for(let i=0; i<9; i++){
@@ -529,8 +510,9 @@ const updateStatsTable = (game) => {
 
 (() => {
     const sock = io();
+    window.active_socket_conn = sock;
+
     addBoard();
-    sock.on('message', log);
     sock.on('gameResponse', populateGame(sock));
     sock.on('gameUpdate', updateGame(sock));
     
@@ -552,10 +534,6 @@ const updateStatsTable = (game) => {
     document
     .querySelector('#start-game-button')
     .addEventListener('click', startGame(sock));
-
-    document
-    .querySelector('#chat-form')
-    .addEventListener('submit', onChatSubmitted(sock));
 
     //canvas.addEventListener('click', onClick);
     sock.emit('gameRequest', window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1]);

@@ -30,9 +30,12 @@ const logout = () => {
 
     // set active class on link representing current page
     const page = window.location.href.split("/")[window.location.href.split("/").length - 1];
-    document.querySelector(`.topnav a[href='/${page}']`).classList.toggle('active');
-
-
+    try{
+        document.querySelector(`.topnav a[href='/${page}']`).classList.toggle('active');
+    }
+    catch(err){
+        console.log(err);
+    }
     document
     .querySelector('#logout-button')
     .addEventListener('click', logout);
