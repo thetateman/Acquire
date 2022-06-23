@@ -545,6 +545,8 @@ class game {
         let newGame = {
             id: id,
             num_players: 0,
+            num_connected_players: 0,
+            inactive_since: new Date(8640000000000000).getTime(),
             max_players: maxPlayers,
             usernames:[],
             state: {

@@ -10,6 +10,7 @@ const rateLimit = require('express-rate-limit');
 const apiRouter = require("./api/api.router.js");
 const game = require("./classes/game.js");
 const messages = require("./classes/messages.js");
+const gameManager = require("./classes/gameManager.js");
 const userModel = require("./models/User");
 
 const MongoStore = require('connect-mongo')(session);
@@ -186,6 +187,7 @@ io.on('connection', (sock) => {
         if(sock.request.session.lastKnownLocation.includes('game')){ //User disconnected from a game
             const gameDisconnectedFrom = sock.request.session.lastKnownLocation.split('game')[1];
             io.in('lobby').emit('gameListUpdate', {action: 'playerDisconnected', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
+            games[gameDisconnectedFrom].num_connected_players--;
             // Leave the room for the game
             // Actually this happens anyway on redirect
             //sock.leave(gameDisconnectedFrom);
@@ -240,6 +242,9 @@ io.on('connection', (sock) => {
                 sock.emit('gameResponse', "none");
             }
             else{ // Whenever a user hits a game page (for a game that exists). TODO: move this code somewhere more logical.
+                games[parseInt(gameID, 10)].num_connected_players++;
+                // Unset inactive_since
+                games[parseInt(gameID, 10)].inactive_since = new Date(8640000000000000).getTime();
                 const requestedGameCopy = getSendableGame(games[parseInt(gameID, 10)], requestingUser);
                 sock.emit('gameResponse', requestedGameCopy);
                 sock.data.username = requestingUser;
@@ -322,6 +327,8 @@ io.on('connection', (sock) => {
         //if(verbose){console.timeEnd('gameAction');}
     });
 });
+
+const gamesCleanerIntervalTimeout = setInterval(gameManager.cleanGames, 1000 * 60 * 1, games, io);
 
 server.on('error', (err) => {
     console.error(err);

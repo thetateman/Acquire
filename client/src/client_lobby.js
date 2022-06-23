@@ -45,8 +45,11 @@ const updateGames = (sock) => (update) => {
                 </a>
                 ${playerList}
             </li>`;
-        document.querySelector('#games').insertAdjacentHTML("beforeend", gameElements);
+        document.querySelector('#games').insertAdjacentHTML("afterbegin", gameElements);
         document.querySelector(`#join${id}`).addEventListener('click', onJoinGame(id, sock));
+    }
+    else if(update.action === 'removeGame'){
+        document.querySelector(`#games [gamenum="${update.game}"]`).remove();
     }
     else if(update.action === 'addPlayer'){ //add a username to a game
         let usernameDOMElement = document.querySelector(`[gamenum="${update.game.id}"] [username="${update.username}"]`);
