@@ -1,8 +1,8 @@
 1. Make navbar and its js logic reusable components. X
-2. Complete input validation for login and signup.
-3. Style the login page better. 
-4. Match express sessions with userIDs to better track across site.
-5. Game logic
+2. Complete input validation for login and signup. X
+3. Style the login page better. X
+4. Match express sessions with userIDs to better track across site. X
+5. Game logic X
     Game class - decide what should stay in the game class and what should be in server?
         perhaps all active game state data should be in server, all methods should be in game class.
 
@@ -10,12 +10,12 @@
         1. playTile
             1. Tile Placer - search (done) 
         2. End Game
-6. Connect frontend to game logic.
+6. Connect frontend to game logic. X
 7. Document client js
 8. Disaster recovery
     A. Save games in database. (async)
     B. On server start, load games from database
-10. Maintain net worth calculation.
+10. Maintain net worth calculation. X
 11. Allow multiple active sessions?
 
 

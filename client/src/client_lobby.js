@@ -91,9 +91,11 @@ const updateLobby = (update) => {
     const lobbyHeaderContainer = document.querySelector('.lobby-header-container');
     if(update.action === 'add'){
         update.users.forEach((username) => {
+            console.log('here')
             let usernameDOMElement = userListNode.querySelector(`[username="${username}"]`);
             if(!usernameDOMElement){
                 userListNode.insertAdjacentHTML('beforeend', `<li username="${username}">${username}</li>`);
+                document.querySelector('#num-users-in-lobby').textContent++;
             }
         });
         if(lobbyHeaderContainer.classList.contains('active')){ // Forgive me Abramov...
@@ -109,6 +111,7 @@ const updateLobby = (update) => {
                     userListNode.style.maxHeight = (userListNode.scrollHeight - usernameDOMElement.clientHeight) + "px";
                 }
                 usernameDOMElement.remove();
+                document.querySelector('#num-users-in-lobby').textContent--;
             }
         });
     }
