@@ -59,7 +59,10 @@ const logout = () => {
     document.body.insertAdjacentHTML('afterbegin', navbarHTML);
 
     // set active class on link representing current page
-    const page = window.location.href.split("/")[window.location.href.split("/").length - 1];
+    let page = window.location.href.split("/")[window.location.href.split("/").length - 1];
+    if(page === ''){
+        page = 'lobby'; // root redirects to lobby
+    }
     try{
         document.querySelector(`.topnav a[href='/${page}']`).classList.toggle('active');
     }
