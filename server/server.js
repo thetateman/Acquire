@@ -27,6 +27,7 @@ let usersInLobby = [];
 let userStatuses = {};
 
 const app = express();
+app.set('trust proxy', 'loopback');
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {
