@@ -1,5 +1,6 @@
 const logout = () => {
     //localStorage.clear();
+    localStorage.removeItem('username');
     fetch('/api/logoutUser', {
         method: 'DELETE',
         headers: {
@@ -7,7 +8,7 @@ const logout = () => {
         }
     })
     .then(function(response){
-        location.href = "/";
+        location.href = "/login";
     })
     .catch((error) => {
     console.error('Error:', error);
@@ -16,6 +17,35 @@ const logout = () => {
 };
 
 (() => {
+    let logButtonText = 'Logout';
+    if(window.hasOwnProperty('active_socket_conn')){
+        const sock = window.active_socket_conn;
+        sock.on('usernameResponse', (username) => {
+            localStorage.username = username
+            document.querySelector('#navbar-username').textContent = username;
+        });
+
+        if('username' in localStorage){
+            if(localStorage.username === 'Guest'){
+                logButtonText = 'Log In / Sign Up';
+                sock.emit('usernameRequest');
+            }
+        }
+        else{
+            localStorage.username = 'Guest';
+            logButtonText = 'Log In / Sign Up';
+            sock.emit('usernameRequest');
+        }
+    }
+    else{
+        if(!('username' in localStorage)){
+            logButtonText = 'Log In / Sign Up';
+            localStorage.username = 'Guest';
+        }
+    }
+    if(localStorage.username.substring(0, 5) === 'Guest'){
+        logButtonText = 'Log In / Sign Up';
+    }
     const navbarHTML = `
         <div class="topnav">
             <a href="/lobby">Lobby</a>
@@ -23,7 +53,7 @@ const logout = () => {
             <a href="/about">About</a>
             <div class="topnav-right">
                 <a id="navbar-username">${localStorage.username}</a>
-                <a href="#" id="logout-button">Logout</a>
+                <a href="#" id="logout-button">${logButtonText}</a>
             </div>
         </div>`;
     document.body.insertAdjacentHTML('afterbegin', navbarHTML);

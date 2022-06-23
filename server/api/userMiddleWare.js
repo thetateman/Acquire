@@ -7,7 +7,11 @@ const mongoose = require('mongoose');
 class UserMiddleware{
   static async createUserMiddleware(req, res, next) {
       function usernameAllowed(str) {
+        const bannedUsernames = ['Server', 'server', 'admin', 'Admin', 'lobby', 'COMMAND_RUN', 'everyone'];
          if(!(/^[\x30-\x3B\x41-\x7A]{3,35}$/.test(str))){
+          return false;
+         }
+         if(bannedUsernames.contains(str)){
           return false;
          }
          return true;

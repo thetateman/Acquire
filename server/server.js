@@ -21,6 +21,7 @@ const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 //The games object defines the state of all active games - need to do more research to determine if 
 //there is a better way to store this information.
 let games = {};
+let guestID = 0;
 let connectedUsers = [];
 let usersInLobby = [];
 let userStatuses = {};
@@ -65,8 +66,12 @@ function authLogic(req, res, next) {
     if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.webm'|| req.originalUrl === '/img/a_background.mp4'){
          next();
     } else {
-        res.status(401);
-        res.redirect('/login');
+        req.session.username = 'Guest' + guestID;
+        guestID++;
+        req.session.isAuth = true;
+        //res.status(401);
+        //res.redirect('/login');
+        next();
     }
 }
 
@@ -150,6 +155,11 @@ io.on('connection', (sock) => {
         message_content: `${sock.request.session.username} connected.`});
 
     //Event listeners
+    //Misc
+    sock.on('usernameRequest', () => {
+        sock.emit('usernameResponse', sock.request.session.username);
+    });
+    //Chat
     messages.chatMessage(games, io, sock);
 
     sock.on('disconnect', (reason) => {

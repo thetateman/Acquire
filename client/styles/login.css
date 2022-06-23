@@ -84,6 +84,7 @@ button:hover {
     color: -webkit-link;
     cursor: pointer;
     text-decoration: underline;
+    padding: 5px;
 }
 
 #content {
