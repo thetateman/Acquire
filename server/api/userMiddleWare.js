@@ -11,7 +11,7 @@ class UserMiddleware{
          if(!(/^[\x30-\x3B\x41-\x7A]{3,35}$/.test(str))){
           return false;
          }
-         if(bannedUsernames.contains(str)){
+         if(bannedUsernames.includes(str)){
           return false;
          }
          return true;
