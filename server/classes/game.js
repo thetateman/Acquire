@@ -812,8 +812,10 @@ class game {
                 this.updatePrice(updateData.newChainChoice, game.state.chains, game.state.share_prices);
 
                 // Bonus share for creating chain
-                game.state.bank_shares[updateData.newChainChoice]--;
-                game.state.player_states[game.state.turn][updateData.newChainChoice]++;
+                if(game.state.bank_shares[updateData.newChainChoice] > 0){
+                    game.state.bank_shares[updateData.newChainChoice]--;
+                    game.state.player_states[game.state.turn][updateData.newChainChoice]++;
+                }
 
                 //update tile type predictions for all players
                 game.state.player_states.forEach((player) => {

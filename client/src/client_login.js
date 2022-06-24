@@ -1,3 +1,4 @@
+let fetching_tracker_global = false;
 function displaySignupError(errorType){
     let success = false;
     let errorText;
@@ -43,14 +44,21 @@ function displayLoginError(errorType){
 
 const onLogin = (e) => {
     e.preventDefault();
+    if(fetching_tracker_global){
+        //already busy fetching, don't send another request
+        return false;
+    }
+
+    const buttonText = document.querySelector('#login-button-text');
     const login_id = document.querySelector('#login_id').value;
     const login_pw = document.querySelector('#login_pw').value;
+    
 
 
     const credentials = { loginID: login_id,
                     password: login_pw,
                      };
-    
+    fetching_tracker_global = true;
     fetch('/api/loginUser', {
         method: 'POST', // or 'PUT'
         headers: {
@@ -60,26 +68,37 @@ const onLogin = (e) => {
         })
         .then(function(response){
             response.json().then(function(json){
+                fetching_tracker_global = false;
                 let success = displayLoginError(json.error);
                 console.log('Success:', json);
                 if(success){
                     localStorage.setItem('username', json.user.username);
                     location.href = "/lobby";
                 }
+                else{
+                    buttonText.classList.toggle('active');
+                    buttonText.textContent = 'LOGIN';
+                }
             })
         })
         .catch((error) => {
         console.error('Error:', error);
-        });
-
+    });
+    buttonText.textContent = '.';
+    buttonText.classList.toggle('active');
 
     //location.href = "http://localhost:8080";
 };
 
 const onSignUp = (e) => {
-    
     e.preventDefault();
 
+    if(fetching_tracker_global){
+        //already busy fetching, don't send another request
+        return false;
+    }
+
+    const buttonText = document.querySelector('#signup-button-text');
     const username = document.querySelector('#su_username').value;
     const email = document.querySelector('#su_email').value;
     const password = document.querySelector('#su_pw').value;
@@ -103,7 +122,8 @@ const onSignUp = (e) => {
                     password: password,
                     repeated_password: repeated_password
                      };
-    
+
+    fetching_tracker_global = true;
     fetch('/api/createUser', {
         method: 'POST', // or 'PUT'
         headers: {
@@ -113,11 +133,16 @@ const onSignUp = (e) => {
         })
         .then(function(response){
             response.json().then(function(json){
+                fetching_tracker_global = false;
                 let success = displaySignupError(json.error);
                 console.log('Success:', json);
                 if(success){
                     localStorage.setItem('username', json.user.username);
                     location.href = "/lobby";
+                }
+                else{
+                    buttonText.classList.toggle('active');
+                    buttonText.textContent = 'SIGN UP';
                 }
             })
         })
@@ -136,6 +161,8 @@ const onSignUp = (e) => {
         .catch((error) => {
         console.error('Error:', error);
         });
+    buttonText.textContent = '.';
+    buttonText.classList.toggle('active');
 
     if(errorMessage !== ""){
         document.querySelector('#error-message2').innerHTML = errorMessage;
