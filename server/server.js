@@ -21,7 +21,10 @@ const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 
 //The games object defines the state of all active games - need to do more research to determine if 
 //there is a better way to store this information.
-let games = {};
+
+// Restore active games from backup
+let games = gameManager.restoreGamesObject();
+
 let guestID = 0;
 let connectedUsers = [];
 let usersInLobby = [];
@@ -314,6 +317,8 @@ io.on('connection', (sock) => {
 });
 
 const gamesCleanerIntervalTimeout = setInterval(gameManager.cleanGames, 1000 * 60 * 1, games, io);
+const gamesBackupIntervalTimeout = setInterval(gameManager.backupGamesObject, 1000 * 60 * 1, games);
+
 
 server.on('error', (err) => {
     console.error(err);
@@ -327,7 +332,7 @@ server.listen(8080, () => {
 //Create and edit some placeholder games for testing
 //TODO: updateGame unit tests
 if(verbose){
-
+    /*
     let updateID = 2;
     game.createGame(games, 4, 4);
     userStatuses['4'] = 'game1';
@@ -351,5 +356,7 @@ if(verbose){
     console.log(games[updateID].state.player_states[2]);
     console.log(games[updateID].state.player_states[3]);
     console.log(games[updateID].state.bank_shares);
+    */
+
 }
 

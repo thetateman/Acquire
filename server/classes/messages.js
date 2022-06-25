@@ -1,8 +1,13 @@
-
-
 class messages{
-
     static chatMessage(games, io, sock){
+        /**
+        * Sets listener/handler for chat messages on the socket instance. Parses mentions. Determines which room(s) to send 
+        * messages to.
+        * @param {object} games - the in-memory games object on the server.
+        * @param {object} io - the Socket.io server instance.
+        * @param {object} updateType - the Socket.io socket instance.
+        * 
+        */
         sock.on('message', (text) => {
             //find mentions
             let atIndicies = [];
@@ -23,9 +28,7 @@ class messages{
                 mentions.push(text.substring(atIndicies[i] + 1, spacesAfter[i]));
             }
 
-            console.log(mentions);
             const playerMentions = mentions.filter((mention) => !['server', 'lobby', 'everyone'].includes(mention));
-
 
             if(mentions.includes('everyone') || playerMentions.length > 0){
                 io.emit('message', {

@@ -144,7 +144,7 @@ const onSignUp = (e) => {
             })
             .catch((error) => {
                 if(response.status === 503){
-                    displayLoginError('tooManyRequests');
+                    displaySignupError('tooManyRequests');
                 }
                 else{
                     console.error('Got response, but had issue processing it: ', error);

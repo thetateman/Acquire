@@ -58,7 +58,7 @@ button:hover {
     width: 80px;
 }
 
-#login {
+#login, #signup {
     line-height: 30px;
 }
 

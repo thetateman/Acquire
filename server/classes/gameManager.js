@@ -1,6 +1,51 @@
+const fs = require('fs');
+
 class gameManager{
 
+    static initGameHistory(game){
+
+    };
+
+    static appendEventToGameHistory(game, event){
+
+    };
+
+    static restoreActiveGamesFromHistory(games){ // will need a tree of helper functions, how to structure this?
+
+    };
+
+    static backupGamesObject(games){
+        fs.writeFile('../server_data_backup/active_games.json', JSON.stringify(games), err => {
+            if (err) {
+              console.error(err);
+            }
+            // file written successfully
+          });
+    };
+
+    static restoreGamesObject(){
+        let data;
+        try{
+            data = JSON.stringify(JSON.parse(fs.readFileSync('../server_data_backup/active_games.json', 'utf8')));
+        }
+        catch(err){
+            data = '{}';
+        }
+        let games = JSON.parse(data);
+        for(let game in games){
+            games[game].num_connected_players = 0; // No one is connected if we just started the server...
+        }
+        return games;
+    };
+
     static cleanGames(games, io){
+        /**
+        * Called at regular interval (every minute). Deletes games that have been inactive for over
+        * 5 minutes.
+        * @param {object} games - the in-memory games object on the server.
+        * @param {string} io - socket.io server instance.
+        *
+        */
         for (let game in games) {
             if(games[game].num_connected_players <= 0){
                 if(games[game].inactive_since === new Date(8640000000000000).getTime()){
