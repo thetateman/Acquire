@@ -5,7 +5,6 @@ const socketio = require('socket.io');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 
 const apiRouter = require("./api/api.router.js");
 const game = require("./classes/game.js");
@@ -32,21 +31,7 @@ const app = express();
 
 // Security middleware
 app.set('trust proxy', 'loopback');
-const standardLimiter = rateLimit({
-	windowMs: 10 * 60 * 1000, // 10 minutes
-	max: 2000, // Limit each IP to 2000 requests per `window` (here, per 10 minutes)
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-const apiLimiter = rateLimit({
-	windowMs: 10 * 60 * 1000, // 10 minutes
-	max: 20, // Limit each IP to 20 requests per `window` (here, per 10 minutes)
-	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
 
-// Apply the rate limiting middleware to all requests
-app.use(standardLimiter)
 app.use(helmet());
 app.use(helmet.contentSecurityPolicy({
     directives: {
@@ -75,7 +60,7 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware);
 
 
-app.use("/api", apiLimiter, apiRouter);
+app.use("/api", apiRouter);
 app.get("/robots.txt", (req, res) => {
     res.sendFile(path.resolve(`${__dirname}/../robots.txt`));
 });
