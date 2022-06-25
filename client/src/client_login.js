@@ -14,6 +14,9 @@ function displaySignupError(errorType){
     else if(errorType === 'invalidEmail'){
         errorText = "Please input an email address";
     }
+    else if(errorType === 'tooManyRequests'){
+        errorText = "Too many attempts, wait a minute to try again.";
+    }
     else {
         success = true;
     }
@@ -32,6 +35,9 @@ function displayLoginError(errorType){
     else if(errorType === 'wrongPassword'){
         errorText = "Incorrect Password."
     } 
+    else if(errorType === 'tooManyRequests'){
+        errorText = "Too many attempts, wait a minute to try again.";
+    }
     else {
         success = true;
     }
@@ -80,14 +86,20 @@ const onLogin = (e) => {
                     buttonText.textContent = 'LOGIN';
                 }
             })
+            .catch((error) => {
+                if(response.status === 503){
+                    displayLoginError('tooManyRequests');
+                }
+                else{
+                    console.error('Got response, but had issue processing it: ', error);
+                }
+            })
         })
         .catch((error) => {
         console.error('Error:', error);
     });
     buttonText.textContent = '.';
     buttonText.classList.toggle('active');
-
-    //location.href = "http://localhost:8080";
 };
 
 const onSignUp = (e) => {
@@ -145,19 +157,15 @@ const onSignUp = (e) => {
                     buttonText.textContent = 'SIGN UP';
                 }
             })
+            .catch((error) => {
+                if(response.status === 503){
+                    displayLoginError('tooManyRequests');
+                }
+                else{
+                    console.error('Got response, but had issue processing it: ', error);
+                }
+            })
         })
-            /*
-        .then(data => {
-            if(data.problem !== "dupEmail"){
-                console.log("gotem!");
-                fetch(url).then(function(response) {
-                    response.text().then(function(text) {
-                        poemDisplay.textContent = text;
-                    });
-                    });
-            }
-            */
-        
         .catch((error) => {
         console.error('Error:', error);
         });
@@ -168,7 +176,6 @@ const onSignUp = (e) => {
         document.querySelector('#error-message2').innerHTML = errorMessage;
         return;
     }
-    //location.href = "http://localhost:8080";
 };
 
 (() => {
