@@ -144,7 +144,7 @@ io.on('connection', (sock) => {
         console.error(`${Date()} Unauthenticated client attempted connection.`);
         console.error(sock.request.session)
         sock.request.session.destroy();
-        socket.disconnect();
+        sock.disconnect();
         return false;
     }
     if(sock.request.session.lastKnownLocation === undefined){
@@ -332,7 +332,7 @@ server.listen(8080, () => {
 //Create and edit some placeholder games for testing
 //TODO: updateGame unit tests
 if(verbose){
-    /*
+    games = {};
     let updateID = 2;
     game.createGame(games, 4, 4);
     userStatuses['4'] = 'game1';
@@ -356,7 +356,7 @@ if(verbose){
     console.log(games[updateID].state.player_states[2]);
     console.log(games[updateID].state.player_states[3]);
     console.log(games[updateID].state.bank_shares);
-    */
+    
 
 }
 

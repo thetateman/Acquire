@@ -29,6 +29,7 @@ class gameManager{
             data = JSON.stringify(JSON.parse(fs.readFileSync('../server_data_backup/active_games.json', 'utf8')));
         }
         catch(err){
+            console.error(`${Date()} Could not restore games: `, err);
             data = '{}';
         }
         let games = JSON.parse(data);
