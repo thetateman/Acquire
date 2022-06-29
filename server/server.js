@@ -158,7 +158,25 @@ io.on('connection', (sock) => {
     // Chat
     chatMessages.registerChatMessageHandlers(games, io, sock);
     // Game actions
-    gameMessages.registerGameMessageHandlers(games, io, sock, connectedUsers, userStatuses, usersInLobby, verbose);
+    gameMessages.registerGameMessageHandlers(games, io, sock, userStatuses, usersInLobby, verbose);
+
+    sock.on('disconnect', (reason) => {
+        if(sock.request.session.lastKnownLocation.includes('game')){ //User disconnected from a game
+            const gameDisconnectedFrom = sock.request.session.lastKnownLocation.split('game')[1];
+            io.in('lobby').emit('gameListUpdate', {action: 'playerDisconnected', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
+            games[gameDisconnectedFrom].num_connected_players--;
+            // Leave the room for the game
+            // Actually this happens anyway on redirect
+            //sock.leave(gameDisconnectedFrom);
+        }
+        else if(sock.request.session.lastKnownLocation === 'lobby'){
+            usersInLobby = usersInLobby.filter((user) => user !== sock.request.session.username);
+            io.in('lobby').emit('lobbyUpdate', {action: 'remove', users: [sock.request.session.username]});
+        }
+        sock.request.session.lastKnownLocation = 'disconnected';
+        userStatuses[sock.request.session.username] = 'disconnected';
+        connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
+    });
 });
 
 const gamesCleanerIntervalTimeout = setInterval(gameManager.cleanGames, 1000 * 60 * 1, games, io);
@@ -172,17 +190,15 @@ server.on('error', (err) => {
 server.listen(8080, () => {
     if(verbose){console.log('server started');}
 });
-console.log('test');
-console.error(new Error("test error"), "adkfjaksf");
 
 //Create and edit some placeholder games for testing
 //TODO: updateGame unit tests
 if(verbose){
     games = {};
     let updateID = 2;
-    game.createGame(games, 4, 4);
+    game.createGame(games, 4, 0, false, 4);
     userStatuses['4'] = 'game1';
-    game.createGame(games, 6, 'tate');
+    game.createGame(games, 6, 0, false, 'tate');
     userStatuses['tate'] = 'game2';
     console.log(game.updateGame(games[updateID], 7654, "joinGame", {}));
     userStatuses['7654'] = 'game2';

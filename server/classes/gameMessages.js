@@ -1,14 +1,14 @@
 const game = require("./game.js");
 
 class gameMessages{
-    static registerGameMessageHandlers(games, io, sock, connectedUsers, userStatuses, usersInLobby, verbose){
+    static registerGameMessageHandlers(games, io, sock, userStatuses, usersInLobby, verbose){
         /**
         * Sets listener/handlers for game messages on the socket instance. Includes in-game actions
         * joining/disconnecting from a game or lobby, creating a game.
         * @param {object} games - the in-memory games object on the server.
         * @param {object} io - the Socket.io server instance.
         * @param {object} sock - the Socket.io socket instance.
-        * @param {array} connectedUsers - list of usernames with active socket connections
+        * @param {array} usersInLobby - list of usernames in lobby
         * @param {object} userStatuses - status or location of users.
         * @param {boolean} verbose - verbose flag, set by environment variable.
         * 
@@ -55,33 +55,11 @@ class gameMessages{
                 io.in(game_id.toString()).emit('gameUpdate', gameUpdate);
             }
             else{
-                io.in(game_id.toString()).fetchSockets()
-                .then((sockets) => {
-                    sockets.forEach((playerSocket) => {
-                        playerSocket.emit('gameUpdate', {type: updateType, game: this.getSendableGame(games[game_id], playerSocket.data.username)});
-                    });
-                });
+                this.emitGameToPlayers(games, game_id, updateType, io);
             }
             //if(verbose){console.timeEnd('gameAction');}
         });
-        sock.on('disconnect', (reason) => {
-            if(sock.request.session.lastKnownLocation.includes('game')){ //User disconnected from a game
-                const gameDisconnectedFrom = sock.request.session.lastKnownLocation.split('game')[1];
-                io.in('lobby').emit('gameListUpdate', {action: 'playerDisconnected', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
-                games[gameDisconnectedFrom].num_connected_players--;
-                // Leave the room for the game
-                // Actually this happens anyway on redirect
-                //sock.leave(gameDisconnectedFrom);
-            }
-            else if(sock.request.session.lastKnownLocation === 'lobby'){
-                usersInLobby = usersInLobby.filter((user) => user !== sock.request.session.username);
-                io.in('lobby').emit('lobbyUpdate', {action: 'remove', users: [sock.request.session.username]});
-            }
-            sock.request.session.lastKnownLocation = 'disconnected';
-            userStatuses[sock.request.session.username] = 'disconnected';
-            connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
-        });
-    
+
         sock.on('joinLobby', () => {
             sock.join('lobby');
             sock.emit('lobbyUpdate', {action: 'add', users: usersInLobby});
@@ -89,7 +67,6 @@ class gameMessages{
             sock.request.session.lastKnownLocation = 'lobby';
             userStatuses[sock.request.session.username] = 'lobby';
             io.in('lobby').emit('lobbyUpdate', {action: 'add', users: [sock.request.session.username]});
-            
         });
     
         sock.on('gameRequest', gameID => {
@@ -131,9 +108,9 @@ class gameMessages{
             }
             
         });
-        sock.on('newGame', ({numPlayers, creator}) => {
+        sock.on('newGame', ({numPlayers, timePerPlayer, quitProof}) => {
             // creator arg no longer used, left in place for demonstration
-            const newGameID = game.createGame(games, parseInt(numPlayers, 10), sock.request.session.username);
+            const newGameID = game.createGame(games, parseInt(numPlayers, 10), timePerPlayer, quitProof, sock.request.session.username);
             let usernameDetails = {};
             usernameDetails[games[newGameID].usernames[0]] = {username: games[newGameID].usernames[0], location: userStatuses[games[newGameID].usernames[0]], admin: false};
             const gameSummary = {
@@ -167,5 +144,19 @@ class gameMessages{
         requestedGameCopy.state.tile_bank = [];
         return requestedGameCopy;
    }
+
+   static emitGameToPlayers(games, game_id, updateType, io){
+        /**
+         * Sends gameUpdate message to players in that game, uses getSendableGame() to send each player
+         * a game object that does not include secret data from the game or other players.
+         * @param {int} game_id 
+         */
+        io.in(game_id.toString()).fetchSockets()
+        .then((sockets) => {
+            sockets.forEach((playerSocket) => {
+                playerSocket.emit('gameUpdate', {type: updateType, game: this.getSendableGame(games[game_id], playerSocket.data.username)});
+            });
+        });
+    }
 }
 module.exports = gameMessages;

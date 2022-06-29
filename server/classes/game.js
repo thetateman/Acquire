@@ -540,7 +540,7 @@ class game {
         game.places = places;
     };
     
-    static createGame(games, maxPlayers, creator){
+    static createGame(games, maxPlayers, timePerPlayer, quitProof, creator){
         let id = this.genNewGameID(games)
         let newGame = {
             id: id,

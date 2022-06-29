@@ -74,13 +74,12 @@ const updateGames = (sock) => (update) => {
         console.log("Unexpected message, better look into this...");
     }
 }
-const onNewGame = (creator) => (sock) => (e) => {
+const onNewGame = (sock) => (e) => {
     e.preventDefault();
     numPlayers = document.querySelector('#num-players').value;
-    console.log(creator);
-    creator = "testtext"
-    sock.emit('newGame', {numPlayers, creator}); 
-    // creator arg no longer used by server, left in place for demonstration
+    timePerPlayer = 0;
+    quitProof = false;
+    sock.emit('newGame', {numPlayers, timePerPlayer, quitProof}); 
 };
 
 const onJoinGame = (game, sock) => (e) => {
@@ -152,7 +151,7 @@ const displayLobbyList = () => {
     let currentUser = localStorage.getItem('username'); //There has to be a better way to do this
     document
     .querySelector('#new-game-form')
-    .addEventListener('submit', onNewGame(currentUser)(sock));
+    .addEventListener('submit', onNewGame(sock));
 
     document
     .querySelector('.lobby-header-container')
