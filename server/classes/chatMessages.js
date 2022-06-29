@@ -1,11 +1,11 @@
-class messages{
-    static chatMessage(games, io, sock){
+class chatMessages{
+    static registerChatMessageHandlers(games, io, sock){
         /**
         * Sets listener/handler for chat messages on the socket instance. Parses mentions. Determines which room(s) to send 
         * messages to.
         * @param {object} games - the in-memory games object on the server.
         * @param {object} io - the Socket.io server instance.
-        * @param {object} updateType - the Socket.io socket instance.
+        * @param {object} sock - the Socket.io socket instance.
         * 
         */
         sock.on('message', (text) => {
@@ -77,4 +77,4 @@ class messages{
 
 }
 
-module.exports = messages;
+module.exports = chatMessages;

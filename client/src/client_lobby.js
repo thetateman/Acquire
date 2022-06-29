@@ -31,7 +31,8 @@ const updateGames = (sock) => (update) => {
         const id = update.game.id;
         let playerList = '<ul class="player-list">';
         update.game.usernames.forEach((username) => {
-            playerList += `<li inGame="${update.game.playerDetails[username].inGame}" username="${username}">${username}</li>`;
+            let inGame = update.game.playerDetails[username].location.substring(4) === id.toString();
+            playerList += `<li inGame="${inGame}" username="${username}">${username}</li>`;
         });
         playerList += '</ul>';
         const gameElements = 

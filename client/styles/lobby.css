@@ -152,6 +152,7 @@ li {
 
 .player-list li[inGame="false"]{
   font-style: italic;
+  color: gray;
 }
 
 #new-game-form {
