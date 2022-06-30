@@ -7,10 +7,11 @@ const session = require('express-session');
 const helmet = require('helmet');
 
 const apiRouter = require("./api/api.router.js");
-const game = require("./classes/game.js");
-const chatMessages = require("./classes/chatMessages.js");
-const gameMessages = require("./classes/gameMessages.js");
-const gameManager = require("./classes/gameManager.js");
+const internalGameFunctions = require("./js/internalGameFunctions.js");
+const chatMessages = require("./js/chatMessages.js");
+const gameMessages = require("./js/gameMessages.js");
+const gameManager = require("./js/gameManager.js");
+const computerPlayer = require("./js/computerPlayer");
 const userModel = require("./models/User");
 
 const MongoStore = require('connect-mongo')(session);
@@ -196,27 +197,27 @@ server.listen(8080, () => {
 if(verbose){
     games = {};
     let updateID = 2;
-    game.createGame(games, 4, 0, false, 4);
+    internalGameFunctions.createGame(games, 4, 0, false, 4);
     userStatuses['4'] = 'game1';
-    game.createGame(games, 6, 0, false, 'tate');
+    internalGameFunctions.createGame(games, 6, 0, false, 'tate');
     userStatuses['tate'] = 'game2';
-    console.log(game.updateGame(games[updateID], 7654, "joinGame", {}));
+    console.log(internalGameFunctions.updateGame(games[updateID], 7654, "joinGame", {}));
     userStatuses['7654'] = 'game2';
-    console.log(game.updateGame(games[updateID], 7653, "joinGame", {}));
+    console.log(internalGameFunctions.updateGame(games[updateID], 7653, "joinGame", {}));
     userStatuses['7653'] = 'game2';
-    console.log(game.updateGame(games[updateID], 7652, "joinGame", {}));
+    console.log(internalGameFunctions.updateGame(games[updateID], 7652, "joinGame", {}));
     userStatuses['7652'] = 'game2';
 
     console.log(games[updateID].usernames);
     
-    //console.log(game.updateGame(games[updateID], 'tate', "startGame", {}));
-    //console.log(game.updateGame(computerPlayer.makeNextMove(games[updateID])));
+    console.log(internalGameFunctions.updateGame(games[updateID], 'tate', "startGame", {}));
+    console.log(computerPlayer.makeNextMove(games[updateID]));
     /*
-    console.log(game.updateGame(games[updateID], 7655, "startGame", {}));
-    console.log(game.updateGame(games[updateID], 'tate', "playTile", {x:0, y:0}, {admin: true, verbose: true}));
-    console.log(game.updateGame(games[updateID], 'tate', "purchaseShares", {endGame: false, purchase: {}}));
-    console.log(game.updateGame(games[updateID], 7654, "playTile", {x:4, y:2}, {admin: true, verbose: true}));
-    console.log(game.updateGame(games[updateID], 7654, "purchaseShares", {endGame: false, purchase: {}}));
+    console.log(internalGameFunctions.updateGame(games[updateID], 7655, "startGame", {}));
+    console.log(internalGameFunctions.updateGame(games[updateID], 'tate', "playTile", {x:0, y:0}, {admin: true, verbose: true}));
+    console.log(internalGameFunctions.updateGame(games[updateID], 'tate', "purchaseShares", {endGame: false, purchase: {}}));
+    console.log(internalGameFunctions.updateGame(games[updateID], 7654, "playTile", {x:4, y:2}, {admin: true, verbose: true}));
+    console.log(internalGameFunctions.updateGame(games[updateID], 7654, "purchaseShares", {endGame: false, purchase: {}}));
     console.log(games[updateID].state.player_states[0]);
     console.log(games[updateID].state.player_states[1]);
     console.log(games[updateID].state.player_states[2]);

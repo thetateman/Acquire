@@ -1,5 +1,5 @@
-class chatMessages{
-    static registerChatMessageHandlers(games, io, sock){
+const chatMessages = {
+    registerChatMessageHandlers: function (games, io, sock){
         /**
         * Sets listener/handler for chat messages on the socket instance. Parses mentions. Determines which room(s) to send 
         * messages to.
@@ -73,8 +73,7 @@ class chatMessages{
                 console.log(`received a message with ${sock.request.session.lastKnownLocation} origin.`);
             }
         });
-    }
-
+    },
 }
 
 module.exports = chatMessages;

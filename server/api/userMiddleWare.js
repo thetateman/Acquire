@@ -4,8 +4,8 @@ const bcrypt = require("bcryptjs");
 const mongoose = require('mongoose');
 
 
-class UserMiddleware{
-  static async createUserMiddleware(req, res, next) {
+const UserMiddleware = {
+  createUserMiddleware: async function(req, res, next) {
       function usernameAllowed(str) {
         const bannedUsernames = ['Server', 'server', 'admin', 'Admin', 'lobby', 'COMMAND_RUN', 'everyone'];
          if(!(/^[\x30-\x3B\x41-\x7A]{3,35}$/.test(str))){
@@ -66,8 +66,9 @@ class UserMiddleware{
       responseObj.user.password = "";
       return res.json(responseObj);
       return res.json({ result: "" });
-  };
-  static async loginUserMiddleware(req, res, next){
+  },
+  
+  loginUserMiddleware: async function(req, res, next){
 
    
    function loginAllowed(str) {
@@ -121,9 +122,9 @@ class UserMiddleware{
         responseObj.user.password = "";
         return res.json(responseObj);
     }
-  };
+  },
 
-  static async logoutUserMiddleware(req, res, next){
+  logoutUserMiddleware: async function(req, res, next){
     if(req.session){
       req.session.destroy(err => {
         if(err){
@@ -135,6 +136,6 @@ class UserMiddleware{
     } else {
       res.end();
     }
-  }
+  },
 }
 module.exports = UserMiddleware;

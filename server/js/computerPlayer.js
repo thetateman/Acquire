@@ -1,13 +1,13 @@
-const internalGameFunctions = require("./classes/game.js");
+const sharedGameFunctions = require("./sharedGameFunctions.js");
 
-class computerPlayer{
-    static makeNextMove(game){
+const computerPlayer = {
+    makeNextMove: function(game){
         /**
         * Calculates *reasonable* next move in the game, for the player <game.state.turn>.
         * @param {object} game - the game to be updated.
         * @returns {object} object representing a game action, may be passed to updateGame().
         */
-       const abstractGameFeatures = getAbstractGameFeatures(game);
+       const abstractGameFeatures = this.getAbstractGameFeatures(game);
        switch(game.state.expectedNextAction){
         case 'playTile':
             return this.computerPlayTile(game, abstractGameFeatures);
@@ -24,9 +24,9 @@ class computerPlayer{
         default:
             return 'unexpectedActionType';
        }
-    };
+    },
 
-    static getAbstractGameFeatures(game){
+    getAbstractGameFeatures: function(game){
         let abstractGameFeatures = {
             tileFeatures: [],
             i: {
@@ -56,7 +56,7 @@ class computerPlayer{
         };
         game.state.player_states[game.state.turn].tiles.forEach((tile) => {
             let tileFeatures = JSON.parse(JSON.stringify(tile));
-            tileFeatures.neighbors = internalGameFunctions.getNeighbors(game, tile.x, tile.y);  
+            tileFeatures.neighbors = sharedGameFunctions.getNeighbors(game.state.board, tile.x, tile.y);  
             abstractGameFeatures.tileFeatures.push(tileFeatures);          
         });
         ['i', 'c', 'w', 'f', 'a', 't', 'l'].forEach((chain) => {
@@ -66,36 +66,38 @@ class computerPlayer{
             });
             abstractGameFeatures[chain].positions = positions;
         });
-    }
+    },
     
-    static computerPlayTile(game, abstractGameFeatures){
+    computerPlayTile: function(game, abstractGameFeatures){
         //maybe make copy of game and examine effect of playing each tile...
 
 
 
         let selectedTile = game.state.player_states[game.state.turn].tiles[0];
-        return {selectedTile.x, selectedTile.y}
-    };
+        console.log(selectedTile);
+        let move = {x: selectedTile.x, y: selectedTile.y}
+        return move;
+    },
 
-    static computerPurchaseShares(game){
+    computerPurchaseShares: function(game){
 
-    };
+    },
 
-    static computerChooseNewChain(game){
+    computerChooseNewChain: function(game){
 
-    };
+    },
 
-    static computerChooseRemainingChain(game){
+    computerChooseRemainingChain: function(game){
 
-    };
+    },
 
-    static computerChooseNextElimChain(game){
+    computerChooseNextElimChain: function(game){
 
-    };
+    },
 
-    static computerDisposeShares(game){
+    computerDisposeShares: function(game){
 
-    };
+    },
 
 }
 

@@ -1,8 +1,10 @@
-class game {
+const sharedGameFunctions = require("./sharedGameFunctions.js");
+const computerPlayer = require("./computerPlayer");
+const internalGameFunctions = {
 
     //------------------Game Creation Helper Functions------------------------
     
-    static genNewGameID(games){ 
+    genNewGameID: function(games){ 
         //eventually games should have a UUID for storage and stats calculation
         //this just creates human readable IDs for active games
         let gameIDs = Object.keys(games)
@@ -14,16 +16,16 @@ class game {
             }
         }
         return id;
-    };
+    },
 
-    static shuffleArray(arr) { // Fisher-Yates random shuffle.
+    shuffleArray: function(arr) { // Fisher-Yates random shuffle.
         for (let i = arr.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [arr[i], arr[j]] = [arr[j], arr[i]];
         }
-    };
+    },
 
-    static genTileBank(){
+    genTileBank: function(){
         let tileBank = [];
         for(let i = 0; i < 12; i++){
             for(let j = 0; j < 9; j++){
@@ -32,11 +34,11 @@ class game {
         }
         this.shuffleArray(tileBank);
         return tileBank;
-    }
+    },
 
     //------------------Game Update Helper Functions------------------------
     
-    static tilePlacer(board, chains, share_prices, active_merger, x, y, game, gameStarted=true){
+    tilePlacer: function(board, chains, share_prices, active_merger, x, y, game, gameStarted=true){
         //updates board with new tile, returns string in ["normal", "newChain", "merger"]
         let placementType = 'normal';
         let tileChain = 's';
@@ -44,7 +46,7 @@ class game {
             board[y][x] = tileChain;
             return placementType;
         }
-        let connectingChains = this.getNeighbors(board, x, y); // List of unique chains adjacent to new tile
+        let connectingChains = sharedGameFunctions.getNeighbors(board, x, y); // List of unique chains adjacent to new tile
 
         if(connectingChains.length > 0){
             if(connectingChains.every((element) => element === 's')){
@@ -153,9 +155,9 @@ class game {
         return placementType;
 
         
-    };
+    },
 
-    static rankEliminatedChainsBySize(chains, elimChains, remainingChain){
+    rankEliminatedChainsBySize: function(chains, elimChains, remainingChain){
         let elimChainsRanked = [];
         if(remainingChain !== 'p'){ //only if these are the true elim chains, otherwise, handle this in chooseRemainingChain.
             elimChainsRanked = [[elimChains[0]]];
@@ -170,9 +172,9 @@ class game {
             }
         }
         return elimChainsRanked;
-    };
+    },
 
-    static isNextElimChainTied(game){
+    isNextElimChainTied: function(game){
         const nextElimChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
         let isTied = false;
         game.state.active_merger.elim_chains_ranked.forEach((chainGroup) => {
@@ -183,45 +185,9 @@ class game {
             }
         });
         return isTied;
-    };
+    },
 
-    static getNeighbors(board, x, y){
-        /**
-        * Checks each tile adjacent to input and adds unique tile types to input
-        * @returns {array} List of unique tile types adjacent to input tile (excludes 'e')
-        */
-        let connectingChains = [];
-        if(y < 8){ //Check that row is in range
-            if(board[y+1][x] !== 'e'){ // If tile is not empty and not outside the board
-                if(!connectingChains.includes(board[y+1][x])){ // Check that we did not already add chain
-                    connectingChains.push(board[y+1][x]); //Add chain to connectingChains
-                }
-            }
-        }
-        if(y > 0){
-            if(board[y-1][x] !== 'e'){
-                if(!connectingChains.includes(board[y-1][x])){
-                    connectingChains.push(board[y-1][x]);
-                }
-            }
-        }
-        if(x < 11){
-            if(board[y][x+1] !== 'e'){
-                if(!connectingChains.includes(board[y][x+1])){
-                    connectingChains.push(board[y][x+1]);
-                }
-            }
-        }
-        if(x > 0){
-            if(board[y][x-1] !== 'e'){
-                if(!connectingChains.includes(board[y][x-1])){
-                    connectingChains.push(board[y][x-1]);
-                }
-            }
-        }
-        return connectingChains;
-    };
-    static getConnectingSingles(board, x, y){
+    getConnectingSingles: function(board, x, y){
         /**
         * Performs a depth-first search for every connected single tile
         * @returns {array} List of single tiles connected to input
@@ -271,9 +237,9 @@ class game {
             
         }
         return connectingSingles;
-    };
+    },
 
-    static predictTileType(board, chains, available_chains, x, y){
+    predictTileType: function(board, chains, available_chains, x, y){
         /**
         * Uses getNeighbors function and chain info to calculate the potential type of a tile.
         * predictedType should be in ['<chain>', 's'(single), 'm'(merger), 'n'(new chain), 'z'(asleep), 'd'(dead)].
@@ -281,7 +247,7 @@ class game {
         * 
         */
        let predictedType = 's';
-       let neighbors = this.getNeighbors(board, x, y);
+       let neighbors = sharedGameFunctions.getNeighbors(board, x, y);
        let connectingTrueChains = neighbors.filter((f) => ['i', 'c', 'w', 'f', 'a', 't', 'l'].includes(f));
        if(connectingTrueChains.length > 0){
            if(connectingTrueChains.length === 1){
@@ -316,10 +282,10 @@ class game {
             }
        }
        return predictedType;
-    };
+    },
 
     // Update the price of a chain
-    static updatePrice(chain, chains, share_prices){
+    updatePrice: function(chain, chains, share_prices){
         let basePrice = 0;
         let finalPrice = 0;
         switch(chain){
@@ -362,9 +328,9 @@ class game {
             finalPrice = basePrice + 1000;
         }
         share_prices[chain] = finalPrice;
-    };
+    },
 
-    static awardPrizes(game, reason='merger'){
+    awardPrizes: function(game, reason='merger'){
         let elimChains = [];
         if(reason === 'merger'){
             elimChains = elimChains.concat(game.state.active_merger.merging_chains.filter((chain) => chain !== game.state.active_merger.remaining_chain));
@@ -436,9 +402,9 @@ class game {
                 game.state.player_states[secondPlaces[0]].cash += 5 * game.state.share_prices[elimChains[i]];
             }
         }
-    };
+    },
 
-    static updateNetWorths(game){
+    updateNetWorths: function(game){
         game.state.player_states.forEach((player) => {
             let totalShareValue = 0;
             ['i', 'c', 'w', 'f', 'a', 't', 'l'].forEach((chain) => {
@@ -449,9 +415,9 @@ class game {
             }
             player.net_worth = player.cash + totalShareValue;
         });
-    };
+    },
 
-    static endTurn(game){
+    endTurn: function(game){
         if(game.state.no_playable_tile_turns === 0){ // if this player was able to play a tile
             // Draw new tile
             if(game.state.tile_bank.length !== 0){
@@ -483,9 +449,9 @@ class game {
             game.state.no_playable_tile_turns = 0;
             game.state.expectedNextAction = 'playTile';
         }
-    };
+    },
 
-    static shouldAutoPass(game){
+    shouldAutoPass: function(game){
         if(!(Object.values(game.state.share_prices).some((share_price) => share_price <= game.state.player_states[game.state.turn].cash && share_price !== 0))
             || game.state.available_chains.length === 7)
         {
@@ -495,9 +461,9 @@ class game {
         }
         return false;
 
-    };
+    },
 
-    static gameIsEndable(game){
+    gameIsEndable: function(game){
         if(Object.values(game.state.chains).some((chain) => chain.length > 40) ||
             (!Object.values(game.state.chains).some((chain) => chain.length > 0 && chain.length < 11)
                 && game.state.available_chains.length < 7))
@@ -507,9 +473,9 @@ class game {
         else {
             return false;
         }
-    };
+    },
 
-    static endGame(game){
+    endGame: function(game){
         //award prizes
         this.awardPrizes(game, "endGame");
         this.updateNetWorths(game);
@@ -538,9 +504,9 @@ class game {
         }
         game.state.game_ended = true;
         game.places = places;
-    };
+    },
     
-    static createGame(games, maxPlayers, timePerPlayer, quitProof, creator){
+    createGame: function(games, maxPlayers, timePerPlayer, quitProof, creator){
         let id = this.genNewGameID(games)
         let newGame = {
             id: id,
@@ -605,9 +571,9 @@ class game {
         this.updateGame(newGame, creator, 'joinGame', {});
         games[id] = newGame;
         return id;
-    };
+    },
 
-    static updateGame(game, username, updateType, updateData, {admin=false, verbose=false}={}){
+    updateGame: function(game, username, updateType, updateData, {admin=false, verbose=false}={}){
         /**
         * Called after receiving game updating websocket message, updates in-memory game object.
         * @param {object} game - the game to be updated.
@@ -1049,8 +1015,8 @@ class game {
                 break;
         }
         return "success";
-    };
+    },
 }
 
-module.exports = game;
+module.exports = internalGameFunctions;
 

@@ -1,29 +1,29 @@
 const fs = require('fs');
 
-class gameManager{
+const gameManager = {
 
-    static initGameHistory(game){
+    initGameHistory: function(game){
 
-    };
+    },
 
-    static appendEventToGameHistory(game, event){
+    appendEventToGameHistory: function(game, event){
 
-    };
+    },
 
-    static restoreActiveGamesFromHistory(games){ // will need a tree of helper functions, how to structure this?
+    restoreActiveGamesFromHistory: function(games){ // will need a tree of helper functions, how to structure this?
 
-    };
+    },
 
-    static backupGamesObject(games){
+    backupGamesObject: function(games){
         fs.writeFile('../server_data_backup/active_games.json', JSON.stringify(games), err => {
             if (err) {
               console.error(err);
             }
             // file written successfully
           });
-    };
+    },
 
-    static restoreGamesObject(){
+    restoreGamesObject: function(){
         let data;
         try{
             data = JSON.stringify(JSON.parse(fs.readFileSync('../server_data_backup/active_games.json', 'utf8')));
@@ -37,9 +37,9 @@ class gameManager{
             games[game].num_connected_players = 0; // No one is connected if we just started the server...
         }
         return games;
-    };
+    },
 
-    static cleanGames(games, io){
+    cleanGames: function(games, io){
         /**
         * Called at regular interval (every minute). Deletes games that have been inactive for over
         * 5 minutes.
@@ -60,7 +60,7 @@ class gameManager{
                 delete games[game];
             }
         }
-    }
+    },
 }
 
 module.exports = gameManager;

@@ -4,8 +4,8 @@ const bcrypt = require("bcryptjs");
 const mongoose = require('mongoose');
 
 
-class GameMiddleware{
-  static async retrieveAllActiveGames(req, res, next) {
+const GameMiddleware = {
+  retrieveAllActiveGames: async function(req, res, next) {
       require('dotenv').config();
       const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
       .then(()=>{})
@@ -34,8 +34,9 @@ class GameMiddleware{
       
       await user.save();
       return res.json({ result: "" });
-  };
-  static async loginUserMiddleware(req, res, next){
+  },
+
+  loginUserMiddleware: async function(req, res, next){
       require('dotenv').config();
       const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
       .then(()=>{})
@@ -69,9 +70,9 @@ class GameMiddleware{
         req.session.username = username;
         return res.json({ result: "pass" });
     }
-  };
+  },
 
-  static async logoutUserMiddleware(req, res, next){
+  logoutUserMiddleware: async function(req, res, next){
     if(req.session){
       req.session.destroy(err => {
         if(err){
@@ -83,6 +84,6 @@ class GameMiddleware{
     } else {
       res.end();
     }
-  }
+  },
 }
 module.exports = GameMiddleware;

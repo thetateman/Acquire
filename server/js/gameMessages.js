@@ -1,7 +1,7 @@
-const game = require("./game.js");
+const internalGameFunctions = require("./internalGameFunctions.js");
 
-class gameMessages{
-    static registerGameMessageHandlers(games, io, sock, userStatuses, usersInLobby, verbose){
+const gameMessages = {
+    registerGameMessageHandlers: function(games, io, sock, userStatuses, usersInLobby, verbose){
         /**
         * Sets listener/handlers for game messages on the socket instance. Includes in-game actions
         * joining/disconnecting from a game or lobby, creating a game.
@@ -24,7 +24,7 @@ class gameMessages{
             if(verbose){console.log(`Game update: game: ${game_id}, updateType: ${updateType}, updateData: ${JSON.stringify(updateData)}`);}
             let updateResult;
             try{
-                updateResult = game.updateGame(games[game_id], sock.request.session.username, updateType, updateData, {admin: false, verbose: verbose});
+                updateResult = internalGameFunctions.updateGame(games[game_id], sock.request.session.username, updateType, updateData, {admin: false, verbose: verbose});
             } 
             catch(err){
                 console.error(`${Date()} ################ Internal game update error #################`);
@@ -110,7 +110,7 @@ class gameMessages{
         });
         sock.on('newGame', ({numPlayers, timePerPlayer, quitProof}) => {
             // creator arg no longer used, left in place for demonstration
-            const newGameID = game.createGame(games, parseInt(numPlayers, 10), timePerPlayer, quitProof, sock.request.session.username);
+            const newGameID = internalGameFunctions.createGame(games, parseInt(numPlayers, 10), timePerPlayer, quitProof, sock.request.session.username);
             let usernameDetails = {};
             usernameDetails[games[newGameID].usernames[0]] = {username: games[newGameID].usernames[0], location: userStatuses[games[newGameID].usernames[0]], admin: false};
             const gameSummary = {
@@ -128,10 +128,10 @@ class gameMessages{
             io.in('lobby').emit('gameListUpdate', updateObject);
              
         });
-    };
+    },
 
     // --------------Game Message helper functions --------------------
-    static getSendableGame(game, requestingUser){
+    getSendableGame: function(game, requestingUser){
         //We send a modified copy of the game object to the client, after removing secret data.
         let requestedGameCopy = JSON.parse(JSON.stringify(game)); 
         const requestingUsersPlayerID = requestedGameCopy.usernames.indexOf(requestingUser);
@@ -143,9 +143,9 @@ class gameMessages{
         }
         requestedGameCopy.state.tile_bank = [];
         return requestedGameCopy;
-   }
+    },
 
-   static emitGameToPlayers(games, game_id, updateType, io){
+   emitGameToPlayers: function(games, game_id, updateType, io){
         /**
          * Sends gameUpdate message to players in that game, uses getSendableGame() to send each player
          * a game object that does not include secret data from the game or other players.
@@ -157,6 +157,6 @@ class gameMessages{
                 playerSocket.emit('gameUpdate', {type: updateType, game: this.getSendableGame(games[game_id], playerSocket.data.username)});
             });
         });
-    }
+    },
 }
 module.exports = gameMessages;
