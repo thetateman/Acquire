@@ -12,15 +12,15 @@ const computerPlayer = {
         case 'playTile':
             return this.computerPlayTile(game, abstractGameFeatures);
         case 'purchaseShares':
-            return this.computerPurchaseShares(game);
+            return this.computerPurchaseShares(game, abstractGameFeatures);
         case 'chooseNewChain':
-            return this.computerChooseNewChain(game);
+            return this.computerChooseNewChain(game, abstractGameFeatures);
         case 'chooseRemainingChain':
-            return this.computerChooseRemainingChain(game);
+            return this.computerChooseRemainingChain(game, abstractGameFeatures);
         case 'chooseNextElimChain':
-            return this.computerChooseNextElimChain(game)
+            return this.computerChooseNextElimChain(game, abstractGameFeatures)
         case 'disposeShares':
-            return this.computerDisposeShares(game);
+            return this.computerDisposeShares(game, abstractGameFeatures);
         default:
             return 'unexpectedActionType';
        }
@@ -80,11 +80,14 @@ const computerPlayer = {
     },
 
     computerPurchaseShares: function(game){
+        let move = {purchase: {}};
+        return move;
 
     },
 
     computerChooseNewChain: function(game){
-
+        let move = {newChainChoice: game.state.available_chains[0]};
+        return move;
     },
 
     computerChooseRemainingChain: function(game){

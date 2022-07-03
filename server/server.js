@@ -12,6 +12,7 @@ const chatMessages = require("./js/chatMessages.js");
 const gameMessages = require("./js/gameMessages.js");
 const gameManager = require("./js/gameManager.js");
 const computerPlayer = require("./js/computerPlayer");
+const Timer = require("./js/timers.js");
 const userModel = require("./models/User");
 
 const MongoStore = require('connect-mongo')(session);
@@ -197,9 +198,9 @@ server.listen(8080, () => {
 if(verbose){
     games = {};
     let updateID = 2;
-    internalGameFunctions.createGame(games, 4, 0, false, 4);
+    internalGameFunctions.createGame(games, 4, 1000 * 60 * 1, false, '4');
     userStatuses['4'] = 'game1';
-    internalGameFunctions.createGame(games, 6, 0, false, 'tate');
+    internalGameFunctions.createGame(games, 6, 1000 * 60 * 1, false, 'tate');
     userStatuses['tate'] = 'game2';
     console.log(internalGameFunctions.updateGame(games[updateID], 7654, "joinGame", {}));
     userStatuses['7654'] = 'game2';
@@ -210,8 +211,17 @@ if(verbose){
 
     console.log(games[updateID].usernames);
     
+    console.log(internalGameFunctions.updateGame(games[1], '4', "startGame", {}));
     console.log(internalGameFunctions.updateGame(games[updateID], 'tate', "startGame", {}));
-    console.log(computerPlayer.makeNextMove(games[updateID]));
+    //console.log(computerPlayer.makeNextMove(games[updateID]));
+    let myTimer = new Timer(() => {console.log("hey there...")}, 5000);
+    setTimeout(() => {myTimer.pause()}, 1000);
+    setTimeout(() => {myTimer.resume()}, 2000);
+    setTimeout(() => {myTimer.pause()}, 3000);
+    setTimeout(() => {myTimer.resume()}, 4000);
+
+
+
     /*
     console.log(internalGameFunctions.updateGame(games[updateID], 7655, "startGame", {}));
     console.log(internalGameFunctions.updateGame(games[updateID], 'tate', "playTile", {x:0, y:0}, {admin: true, verbose: true}));

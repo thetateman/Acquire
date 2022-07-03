@@ -34,6 +34,6 @@ const sharedGameFunctions = {
             }
         }
         return connectingChains;
-    }
+    },
 }
 module.exports = sharedGameFunctions;

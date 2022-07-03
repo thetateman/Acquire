@@ -1,5 +1,4 @@
 const sharedGameFunctions = require("./sharedGameFunctions.js");
-const computerPlayer = require("./computerPlayer");
 const internalGameFunctions = {
 
     //------------------Game Creation Helper Functions------------------------
@@ -430,9 +429,12 @@ const internalGameFunctions = {
             this.endGame(game);
             return false;
         }
+        //Turn over, pause time.
+        game.state.player_states[game.state.turn].timerTotal.pause();
         //increment turn
         game.state.play_count++;
         game.state.turn = game.state.play_count % game.num_players;
+        game.state.player_states[game.state.turn].timerTotal.resume();
 
         //determine if new player has a playable tile
         if(!game.state.player_states[game.state.turn].tiles.some((tile) => !['z', 'd'].includes(tile.predicted_type))){
@@ -506,7 +508,7 @@ const internalGameFunctions = {
         game.places = places;
     },
     
-    createGame: function(games, maxPlayers, timePerPlayer, quitProof, creator){
+    createGame: function(games, maxPlayers, timePerPlayer, stallProof, creator){
         let id = this.genNewGameID(games)
         let newGame = {
             id: id,
@@ -514,6 +516,8 @@ const internalGameFunctions = {
             num_connected_players: 0,
             inactive_since: new Date(8640000000000000).getTime(),
             max_players: maxPlayers,
+            time_per_player: timePerPlayer,
+            stall_proof: stallProof,
             usernames:[],
             state: {
                 game_started: false,
@@ -573,6 +577,19 @@ const internalGameFunctions = {
         return id;
     },
 
+    callUpdateGameWithExpectedArgs: function(game, updateData, {admin=false, verbose=false}={}){
+        /**
+         * Updates game using current turn and expected next action.
+         * DON'T use for user generated actions! (does not verify that it is the acting user's turn)
+         * @param {object} game - the game to be updated.
+         * @param {object} updateData - action details, e.g., coordinates of tile played.
+         * @param {boolean} admin - updater is using administrator privilages to override game rules.
+         * @param {boolean} verbose - enables verbose logging
+         * @returns {string} 'Success' or error string
+         */
+        return this.updateGame(game, game.usernames[game.state.turn], game.state.expectedNextAction, updateData, {admin: admin, verbose: verbose});
+    },
+
     updateGame: function(game, username, updateType, updateData, {admin=false, verbose=false}={}){
         /**
         * Called after receiving game updating websocket message, updates in-memory game object.
@@ -600,6 +617,7 @@ const internalGameFunctions = {
                 game.num_players++;
                 game.usernames.push(username);
                 game.state.player_states.push({
+                    out_of_total_time: false,
                     tiles: [],
                     cash: 6000,
                     net_worth: 6000,
