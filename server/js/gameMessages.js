@@ -3,6 +3,7 @@ const Timer = require("./timers.js");
 const computerPlayer = require("./computerPlayer.js");
 
 const gameMessages = {
+    testcount: 0,
     registerGameMessageHandlers: function(games, io, sock, userStatuses, usersInLobby, verbose){
         /**
         * Sets listener/handlers for game messages on the socket instance. Includes in-game actions
@@ -191,10 +192,14 @@ const gameMessages = {
     },
 
     makeAndSendComputerMove: function(games, game_id, io, verbose){
-        let computerGameActionType = games[game_id].state.expectedNextAction;
-        gameMessages.gameActionHandler(games, io, null, verbose)
-        ({game_id: game_id, updateType: computerGameActionType, updateData: computerPlayer.makeNextMove(games[game_id])});
-        gameMessages.emitGameToPlayers(games, game_id, computerGameActionType, io);
+        this.testcount++;
+        console.log(this.testcount);
+        setTimeout(() => {
+            let computerGameActionType = games[game_id].state.expectedNextAction;
+            gameMessages.gameActionHandler(games, io, null, verbose)
+            ({game_id: game_id, updateType: computerGameActionType, updateData: computerPlayer.makeNextMove(games[game_id])});
+            gameMessages.emitGameToPlayers(games, game_id, computerGameActionType, io);
+        }, 2000);
     },
 }
 module.exports = gameMessages;

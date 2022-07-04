@@ -14,6 +14,9 @@ const Timer = function(callback, delay){
         if(timerID){
             return false;
         }
+        if(remaining < 0){
+            return false;
+        }
         start = Date.now()
         timerID = setTimeout(callback, remaining)
     }
