@@ -291,6 +291,7 @@ a {
     font-size: 1.25vw;
     font-weight: bold;
     overflow: hidden;
+    position: relative;
 }
 
 .chain-table-header {
@@ -335,6 +336,14 @@ a {
 
 #lhead, #lbutton {
     background-color: var(--l-color);
+}
+
+.total-time {
+    position: absolute;
+    color: rgb(0, 0, 0);
+    right: 0px;
+    top: 0px;
+    background-color: inherit;
 }
 
 #stats-placeholder-row, #button-buffer-row{

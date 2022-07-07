@@ -430,11 +430,15 @@ const internalGameFunctions = {
             return false;
         }
         //Turn over, pause time.
+        game.state.player_states[game.state.turn].out_of_action_time = false;
         game.state.player_states[game.state.turn].timerTotal.pause();
+        game.state.player_states[game.state.turn].timerAction.reset();
+        game.state.player_states[game.state.turn].timerAction.pause();
         //increment turn
         game.state.play_count++;
         game.state.turn = game.state.play_count % game.num_players;
         game.state.player_states[game.state.turn].timerTotal.resume();
+        game.state.player_states[game.state.turn].timerAction.resume();
 
         //determine if new player has a playable tile
         if(!game.state.player_states[game.state.turn].tiles.some((tile) => !['z', 'd'].includes(tile.predicted_type))){
@@ -516,7 +520,7 @@ const internalGameFunctions = {
             num_connected_players: 0,
             inactive_since: new Date(8640000000000000).getTime(),
             max_players: maxPlayers,
-            time_per_player: timePerPlayer,
+            time_per_player: timePerPlayer * 1000 * 60,
             stall_proof: stallProof,
             usernames:[],
             state: {
@@ -617,7 +621,10 @@ const internalGameFunctions = {
                 game.num_players++;
                 game.usernames.push(username);
                 game.state.player_states.push({
+                    total_time_remaining: null,
+                    action_time_remaining: null,
                     out_of_total_time: false,
+                    out_of_action_time: false,
                     tiles: [],
                     cash: 6000,
                     net_worth: 6000,
@@ -692,6 +699,8 @@ const internalGameFunctions = {
         //player number that represents that user in this game.
         let userID = game.usernames.indexOf(username);
         if(verbose){console.log(userID);}
+
+        //Verify legality of game action. More verification is done on specific action types.
         if(userID === -1){
             return "userNotInGame";
         }
@@ -701,14 +710,23 @@ const internalGameFunctions = {
         if(game.state.game_ended){
             return "gameEnded";
         }
-        
-        if(verbose){console.log(`Player ${game.state.turn}'s turn to ${game.state.expectedNextAction}.`);}
         if(userID !== game.state.turn && !admin){
             return 'notPlayersTurn';
         }
         if (updateType !== game.state.expectedNextAction && !admin){
             return 'unexpectedActionType';
         }
+        /* Moved to gameMessages.gameActionHandler(), because there we know updater is client user.
+        if(game.state.player_states[game.state.turn].out_of_action_time){
+            return 'outOfActionTime';
+        }
+        if(game.state.player_states[game.state.turn].out_of_total_time){
+            return 'outOfTotalTime';
+        }
+        */
+
+        //Player made an action, reset the action timer
+        game.state.player_states[game.state.turn].timerAction.reset();
         
         switch(updateType){
             case 'playTile':

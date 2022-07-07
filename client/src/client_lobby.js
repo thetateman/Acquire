@@ -1,3 +1,5 @@
+"use strict";
+
 const loadGames = (sock) => (games) => {
     console.log(games);
     /**
@@ -76,10 +78,10 @@ const updateGames = (sock) => (update) => {
 }
 const onNewGame = (sock) => (e) => {
     e.preventDefault();
-    numPlayers = document.querySelector('#num-players').value;
-    timePerPlayer = 0;
-    quitProof = false;
-    sock.emit('newGame', {numPlayers, timePerPlayer, quitProof}); 
+    let numPlayers = document.querySelector('#num-players').value;
+    let timePerPlayer = document.querySelector('#time-per-player').value;
+    let stallProof = document.querySelector('#stall-proof').checked;
+    sock.emit('newGame', {numPlayers, timePerPlayer, stallProof}); 
 };
 
 const onJoinGame = (game, sock) => (e) => {

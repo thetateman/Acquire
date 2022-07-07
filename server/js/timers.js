@@ -1,25 +1,39 @@
 const Timer = function(callback, delay){
-    let timerID = null;
-    let start, remaining = delay;
+    let _timerID = null;
+    let _start = delay;
+    let _delay = delay;
+    this.remaining = delay;
+
 
 
     this.pause = function(){
-        clearTimeout(timerID)
-        timerID = null;
-        remaining -= Date.now() - start;
-        console.log(`Paused with ${remaining / 1000} seconds left.`);
+        clearTimeout(_timerID);
+        _timerID = null;
+        this.remaining -= Date.now() - _start;
+        console.log(`Paused with ${this.remaining / 1000} seconds left.`);
     };
 
     this.resume = function(){
-        if(timerID){
+        if(_timerID){
             return false;
         }
-        if(remaining < 0){
+        _start = Date.now();
+        if(this.remaining < 0){
             return false;
         }
-        start = Date.now()
-        timerID = setTimeout(callback, remaining)
-    }
+        _timerID = setTimeout(callback, this.remaining);
+    };
+
+    this.reset = function(){
+        clearTimeout(_timerID);
+        _timerID = null;
+        _start = Date.now();
+        _timerID = setTimeout(callback, _delay);
+    };
+
+    this.getRemaining = function(){
+        return this.remaining - (Date.now() - _start);
+    };
 
     this.resume();
 };

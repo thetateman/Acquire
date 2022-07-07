@@ -124,6 +124,10 @@ const tileClickHandler = (e, sock) => {
         console.log('userLacksTile');
         return false;
     }
+    if(['d', 'z'].includes(gameState.player_states[gameState.turn].tiles.find((tile) => x == tile.x && y == tile.y).predicted_type)){
+        console.log('tileDeadOrAsleep');
+        return false;
+    }
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'playTile', updateData: {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)}})
 };
 
@@ -459,13 +463,23 @@ const updateGame = (sock) => (gameUpdate) => {
 };
 
 const generateStatsTable = (game) => {
-    let playerRows = ""; // Populate player data: usernames, chains, cash.
+    
+    let playerRows = ""; // Populate player data: usernames, time remaining, chains, cash.
     for(let i=0; i<game.num_players; i++){
+        // calculate total time remaining
         let playerState = game.state.player_states[i];
+        let totalTimeRemaining;
+        if(playerState.total_time_remaining === null){
+            totalTimeRemaining = game.time_per_player / 1000;
+        }
+        else{
+            totalTimeRemaining = playerState.total_time_remaining / 1000;
+        }
         let chainData = "";
         // build player data row, setting row and column attributes for easy access when updating.
         chains.forEach((chain) => {chainData += `<td row="${i}" column="${chain}">${playerState[chain]}</td>`});
-        playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}</td>`+ chainData +
+        playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}<span class="total-time">(${totalTimeRemaining})</span></td>`
+        + chainData +
         `<td row="${i}" column="cash">${playerState['cash']}</td>` +
         `<td row="${i}" column="net">${playerState['net_worth']}</td></tr>`;
     }
@@ -489,7 +503,16 @@ const generateStatsTable = (game) => {
 
 const updateStatsTable = (game) => {
     for(let i=0; i<game.num_players; i++){
-        document.querySelector(`[row="${i}"][column="username"]`).innerHTML = game.usernames[i];
+        //calculate time remaining
+        let totalTimeRemaining;
+        if(game.state.player_states[i].total_time_remaining === null){
+            totalTimeRemaining = game.time_per_player / 1000;
+        }
+        else{
+            totalTimeRemaining = game.state.player_states[i].total_time_remaining / 1000;
+        }
+        //update the elements
+        document.querySelector(`[row="${i}"][column="username"]`).innerHTML = `${game.usernames[i]}<span class="total-time">(${totalTimeRemaining})</span>`;
         chains.forEach((chain) => {
             document.querySelector(`[row="${i}"][column="${chain}"]`).innerHTML = game.state.player_states[i][chain];
         });

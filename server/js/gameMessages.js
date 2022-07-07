@@ -18,6 +18,11 @@ const gameMessages = {
         */
 
         sock.on('gameAction', this.gameActionHandler(games, io, sock, verbose));
+        /*
+        sock.on('joinLobby', this.joinLobbyHandler());
+        sock.on('gameRequest', this.gameRequestHandler());
+        sock.on('newGame', this.newGameHandler());
+        */
 
         sock.on('joinLobby', () => {
             sock.join('lobby');
@@ -67,9 +72,9 @@ const gameMessages = {
             }
             
         });
-        sock.on('newGame', ({numPlayers, timePerPlayer, quitProof}) => {
+        sock.on('newGame', ({numPlayers, timePerPlayer, stallProof}) => {
             // creator arg no longer used, left in place for demonstration
-            const newGameID = internalGameFunctions.createGame(games, parseInt(numPlayers, 10), timePerPlayer, quitProof, sock.request.session.username);
+            const newGameID = internalGameFunctions.createGame(games, parseInt(numPlayers, 10), timePerPlayer, stallProof, sock.request.session.username);
             let usernameDetails = {};
             usernameDetails[games[newGameID].usernames[0]] = {username: games[newGameID].usernames[0], location: userStatuses[games[newGameID].usernames[0]], admin: false};
             const gameSummary = {
@@ -106,7 +111,20 @@ const gameMessages = {
                 updateResult = internalGameFunctions.callUpdateGameWithExpectedArgs(games[game_id], updateData, {admin: false, verbose: verbose});
             }
             else{
-                updateResult = internalGameFunctions.updateGame(games[game_id], sock.request.session.username, updateType, updateData, {admin: false, verbose: verbose});
+                let actingPlayerState = games[game_id].state.player_states[games[game_id].usernames.indexOf(sock.request.session.username)];
+                //Check if player is out of time. Do this here because we know that updater is user client, not computer.
+                if(!actingPlayerState){
+                    updateResult = "couldNotFindPlayer";
+                }
+                if(actingPlayerState.out_of_total_time){
+                    updateResult = 'outOfTotalTime';
+                }
+                else if(actingPlayerState.out_of_action_time){
+                    updateResult = 'outOfActionTime';
+                }
+                else{
+                    updateResult = internalGameFunctions.updateGame(games[game_id], sock.request.session.username, updateType, updateData, {admin: false, verbose: verbose});
+                }
             }
         } 
         catch(err){
@@ -139,24 +157,41 @@ const gameMessages = {
             io.in(game_id.toString()).emit('gameUpdate', gameUpdate);
         }
         else if(updateType === 'startGame'){
-            //Set Timers on players. Logically I feel like this should happen in updateGame, but I want to keep IO out of internalGameFunctions
+            // Set Timers on players. Logically I feel like this should happen in updateGame, but I want to keep IO out of internalGameFunctions.
+            // Addtional timer control happens in interalGameFunctions.endTurn().
             for(let i=0; i<games[game_id].num_players; i++){
+                //Total play timer
                 games[game_id].state.player_states[i].timerTotal = new Timer(() => {
                     games[game_id].state.player_states[i].out_of_total_time = true;
-                    gameMessages.makeAndSendComputerMove(games, game_id, io, verbose); // TODO: can't call this twice
-                }, 20000);
+                    games[game_id].state.player_states[i].timerAction.reset(); // so the action timer doesn't expire while we are already waiting on a computer move.
+                    gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
+                }, games[game_id].time_per_player);
+                //Action timer
+                games[game_id].state.player_states[i].timerAction = new Timer(() => {
+                    games[game_id].state.player_states[i].out_of_action_time = true;
+                    if(!(games[game_id].state.player_states[i].timerTotal.getRemaining() < 3000)){
+                        // If player has < 3 seconds of total time, we wait for the timerTotal timeout instead.
+                        // This prevents double moves by the computer.
+                        gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
+                    }
+                }, games[game_id].time_per_player * 0.15);
+                //pause timers for all but the first player.
                 if(i !== 0){
                     games[game_id].state.player_states[i].timerTotal.pause();
+                    games[game_id].state.player_states[i].timerAction.pause();
                 }
             }
             gameMessages.emitGameToPlayers(games, game_id, updateType, io);
         }
         else{
-            if(games[game_id].state.player_states[games[game_id].state.turn].out_of_total_time){
-                gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
+            if(games[game_id].state.player_states[games[game_id].state.turn].out_of_total_time ||
+                games[game_id].state.player_states[games[game_id].state.turn].out_of_action_time){
+                    gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
             }
             else{
-                gameMessages.emitGameToPlayers(games, game_id, updateType, io);
+                if(sock !== null){ // move made by user client (not computer player)
+                    gameMessages.emitGameToPlayers(games, game_id, updateType, io);
+                }
             }
         }
         //if(verbose){console.timeEnd('gameAction');}
@@ -164,10 +199,21 @@ const gameMessages = {
 
     // --------------Game Message helper functions --------------------
     getSendableGame: function(game, requestingUser){
-        //We send a modified copy of the game object to the client, after removing secret data.
+        //We send a modified copy of the game object to the client, after removing secret data and updating time limits.
         let requestedGameCopy = JSON.parse(JSON.stringify(game)); 
         const requestingUsersPlayerID = requestedGameCopy.usernames.indexOf(requestingUser);
         for(let i=0; i<requestedGameCopy.num_players; i++){
+            //get remaining times
+            
+            if(!game.state.player_states[i].timerTotal){
+                requestedGameCopy.state.player_states[i].total_time_remaining = null;
+                requestedGameCopy.state.player_states[i].action_time_remaining = null;
+            }
+            else{
+                requestedGameCopy.state.player_states[i].total_time_remaining = game.state.player_states[i].timerTotal.getRemaining();
+                requestedGameCopy.state.player_states[i].action_time_remaining = game.state.player_states[i].timerAction.getRemaining();
+            }
+            
             if(i === requestingUsersPlayerID){
                 continue;
             }
