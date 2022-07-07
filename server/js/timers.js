@@ -32,7 +32,12 @@ const Timer = function(callback, delay){
     };
 
     this.getRemaining = function(){
-        return this.remaining - (Date.now() - _start);
+        if(_timerID){
+            return this.remaining - (Date.now() - _start);
+        }
+        else{
+            return this.remaining;
+        }
     };
 
     this.resume();

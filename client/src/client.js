@@ -468,17 +468,17 @@ const generateStatsTable = (game) => {
     for(let i=0; i<game.num_players; i++){
         // calculate total time remaining
         let playerState = game.state.player_states[i];
-        let totalTimeRemaining;
+        let totalSecondsRemaining;
         if(playerState.total_time_remaining === null){
-            totalTimeRemaining = game.time_per_player / 1000;
+            totalSecondsRemaining = game.time_per_player / 1000;
         }
         else{
-            totalTimeRemaining = playerState.total_time_remaining / 1000;
+            totalSecondsRemaining = playerState.total_time_remaining / 1000;
         }
         let chainData = "";
         // build player data row, setting row and column attributes for easy access when updating.
         chains.forEach((chain) => {chainData += `<td row="${i}" column="${chain}">${playerState[chain]}</td>`});
-        playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}<span class="total-time">(${totalTimeRemaining})</span></td>`
+        playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}<span class="total-time">(${getReadableTimer(totalSecondsRemaining)})</span></td>`
         + chainData +
         `<td row="${i}" column="cash">${playerState['cash']}</td>` +
         `<td row="${i}" column="net">${playerState['net_worth']}</td></tr>`;
@@ -502,17 +502,19 @@ const generateStatsTable = (game) => {
 };
 
 const updateStatsTable = (game) => {
+    let totalSecondsRemainingArr = [];
     for(let i=0; i<game.num_players; i++){
         //calculate time remaining
-        let totalTimeRemaining;
+        let totalSecondsRemaining;
         if(game.state.player_states[i].total_time_remaining === null){
-            totalTimeRemaining = game.time_per_player / 1000;
+            totalSecondsRemaining = Math.floor(game.time_per_player / 1000);
         }
         else{
-            totalTimeRemaining = game.state.player_states[i].total_time_remaining / 1000;
+            totalSecondsRemaining = Math.floor(game.state.player_states[i].total_time_remaining / 1000);
         }
+        totalSecondsRemainingArr.push(totalSecondsRemaining);
         //update the elements
-        document.querySelector(`[row="${i}"][column="username"]`).innerHTML = `${game.usernames[i]}<span class="total-time">(${totalTimeRemaining})</span>`;
+        document.querySelector(`[row="${i}"][column="username"]`).innerHTML = `${game.usernames[i]}<span class="total-time">(${getReadableTimer(totalSecondsRemaining)})</span>`;
         chains.forEach((chain) => {
             document.querySelector(`[row="${i}"][column="${chain}"]`).innerHTML = game.state.player_states[i][chain];
         });
@@ -528,7 +530,36 @@ const updateStatsTable = (game) => {
     chains.forEach((chain) => {
         document.querySelector(`[row="price"][column="${chain}"]`).innerHTML = game.state.share_prices[chain];
     });
+    if(game.state.game_started){
+        clearTimeout(window.currentTotalTimerTimout);
+        let counter = 0;
+        let totalTimerCurrentTurn = document.querySelector(`[row="${game.state.turn}"][column="username"] .total-time`);
+        window.currentTotalTimerTimout = setInterval(() => {
+            counter++;
+            totalTimerCurrentTurn.textContent = `(${getReadableTimer(totalSecondsRemainingArr[game.state.turn] - counter)})`;
+            console.log(counter);
+        }, 1000);
+    }
+    
     statsTableUsernameStyleUpdater(game);
+};
+
+const getReadableTimer = (totalSeconds) => {
+    let seconds = (totalSeconds) % 60;
+    if(seconds.toString().length === 1){
+        seconds =  `0${seconds}`;
+    }
+    let minutes = Math.floor((totalSeconds) / 60) % 60;
+    let hours = Math.floor((totalSeconds) / 360);
+    let readableTimer = '';
+    if(hours !== 0){
+        readableTimer += hours + ':';
+        if(minutes.toString().length === 1){
+            minutes = `0${minutes}`;
+        }
+    }
+    readableTimer += minutes + ':' + seconds;
+    return readableTimer;
 };
 
 (() => {

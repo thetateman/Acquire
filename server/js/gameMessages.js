@@ -108,23 +108,10 @@ const gameMessages = {
         let updateResult;
         try{
             if(sock === null){ // move made by computer
-                updateResult = internalGameFunctions.callUpdateGameWithExpectedArgs(games[game_id], updateData, {admin: false, verbose: verbose});
+                updateResult = internalGameFunctions.callUpdateGameWithExpectedArgs(games[game_id], updateData, {admin: false, computer: true, verbose: verbose});
             }
             else{
-                let actingPlayerState = games[game_id].state.player_states[games[game_id].usernames.indexOf(sock.request.session.username)];
-                //Check if player is out of time. Do this here because we know that updater is user client, not computer.
-                if(!actingPlayerState){
-                    updateResult = "couldNotFindPlayer";
-                }
-                if(actingPlayerState.out_of_total_time){
-                    updateResult = 'outOfTotalTime';
-                }
-                else if(actingPlayerState.out_of_action_time){
-                    updateResult = 'outOfActionTime';
-                }
-                else{
-                    updateResult = internalGameFunctions.updateGame(games[game_id], sock.request.session.username, updateType, updateData, {admin: false, verbose: verbose});
-                }
+                updateResult = internalGameFunctions.updateGame(games[game_id], sock.request.session.username, updateType, updateData, {admin: false, computer: false, verbose: verbose});
             }
         } 
         catch(err){
@@ -200,7 +187,12 @@ const gameMessages = {
     // --------------Game Message helper functions --------------------
     getSendableGame: function(game, requestingUser){
         //We send a modified copy of the game object to the client, after removing secret data and updating time limits.
-        let requestedGameCopy = JSON.parse(JSON.stringify(game)); 
+        let requestedGameCopy = JSON.parse(JSON.stringify(game, (key, value) => {
+            if(['timerTotal', 'timerAction'].includes(key)){ //Can't stringify circular references in timers.
+                return undefined;
+            }
+            return value;
+        })); 
         const requestingUsersPlayerID = requestedGameCopy.usernames.indexOf(requestingUser);
         for(let i=0; i<requestedGameCopy.num_players; i++){
             //get remaining times

@@ -581,20 +581,21 @@ const internalGameFunctions = {
         return id;
     },
 
-    callUpdateGameWithExpectedArgs: function(game, updateData, {admin=false, verbose=false}={}){
+    callUpdateGameWithExpectedArgs: function(game, updateData, {admin=false, computer=true, verbose=false}={}){
         /**
          * Updates game using current turn and expected next action.
          * DON'T use for user generated actions! (does not verify that it is the acting user's turn)
          * @param {object} game - the game to be updated.
          * @param {object} updateData - action details, e.g., coordinates of tile played.
          * @param {boolean} admin - updater is using administrator privilages to override game rules.
+         * @param {boolean} computer - move was made by computer player.
          * @param {boolean} verbose - enables verbose logging
          * @returns {string} 'Success' or error string
          */
-        return this.updateGame(game, game.usernames[game.state.turn], game.state.expectedNextAction, updateData, {admin: admin, verbose: verbose});
+        return this.updateGame(game, game.usernames[game.state.turn], game.state.expectedNextAction, updateData, {admin: admin, computer: computer, verbose: verbose});
     },
 
-    updateGame: function(game, username, updateType, updateData, {admin=false, verbose=false}={}){
+    updateGame: function(game, username, updateType, updateData, {admin=false, computer=false, verbose=false}={}){
         /**
         * Called after receiving game updating websocket message, updates in-memory game object.
         * @param {object} game - the game to be updated.
@@ -602,6 +603,7 @@ const internalGameFunctions = {
         * @param {string} updateType - updateType should be in: ['joinGame', 'startGame', 'playTile', 'chooseNewChain', 'chooseRemainingChain', 'chooseNextElimChain', 'disposeShares', 'purchaseShares'].
         * @param {object} updateData - action details, e.g., coordinates of tile played.
         * @param {boolean} admin - updater is using administrator privilages to override game rules.
+        * @param {boolean} computer - move was made by computer player.
         * @param {boolean} verbose - enables verbose logging
         * @returns {string} 'Success' or error string
         */
@@ -704,26 +706,26 @@ const internalGameFunctions = {
         if(userID === -1){
             return "userNotInGame";
         }
-        if(!game.state.game_started && !admin){
+        else if(!game.state.game_started && !admin){
             return "gameHasNotStarted";
         }
-        if(game.state.game_ended){
+        else if(game.state.game_ended){
             return "gameEnded";
         }
-        if(userID !== game.state.turn && !admin){
+        else if(userID !== game.state.turn && !admin){
             return 'notPlayersTurn';
         }
-        if (updateType !== game.state.expectedNextAction && !admin){
+        else if (updateType !== game.state.expectedNextAction && !admin){
             return 'unexpectedActionType';
         }
-        /* Moved to gameMessages.gameActionHandler(), because there we know updater is client user.
-        if(game.state.player_states[game.state.turn].out_of_action_time){
-            return 'outOfActionTime';
+        else if(!computer){
+            if(game.state.player_states[game.state.turn].out_of_action_time){
+                return 'outOfActionTime';
+            }
+            if(game.state.player_states[game.state.turn].out_of_total_time){
+                return 'outOfTotalTime';
+            }
         }
-        if(game.state.player_states[game.state.turn].out_of_total_time){
-            return 'outOfTotalTime';
-        }
-        */
 
         //Player made an action, reset the action timer
         game.state.player_states[game.state.turn].timerAction.reset();
