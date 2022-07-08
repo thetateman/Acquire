@@ -30,8 +30,8 @@
                         <div class="controls">
                             <form id="new-game-form">
                                 <button id="new-game-button">New Game</button>
-                                <span class="input-label">No. of Players:</span>
-                                <select id="num-players">
+                                <span class="input-label">Max<br>Players:</span>
+                                <select class="new-game-option-selector" id="num-players">
                                     <option value="1">1</option>
                                     <option value="2">2</option>
                                     <option value="3">3</option>
@@ -39,17 +39,22 @@
                                     <option value="5">5</option>
                                     <option value="6">6</option>
                                 </select>
-                                <span class="input-label">Minutes<br>per Player:</span>
-                                <select id="time-per-player">
+                                <span class="input-label">Minutes per Player:</span>
+                                <select class="new-game-option-selector" id="time-per-player">
+                                    <option value="-1">No Limit</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
                                     <option value="3">3</option>
                                     <option value="4">4</option>
                                     <option value="5">5</option>
                                     <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                    <option value="15">15</option>
+                                    <option value="30">30</option>
                                 </select>
-                                <label for="#stall-proof">Stall Proof</label>
-                                <input type="checkbox" id="stall-proof">
                             </form>
                         </div>
                         <ul id="games">

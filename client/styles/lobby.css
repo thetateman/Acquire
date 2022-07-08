@@ -169,6 +169,10 @@ li {
   flex-grow: 1;
 }
 
+#new-game-form > *{
+  align-self: center;
+}
+
 .input-label {
   padding: 5px 8px;
 }
@@ -176,7 +180,11 @@ li {
 #new-game-button {
   width: 95px;
   padding: 3px 8px;
-  margin: 0px 15px 0px 15px;
+  margin: 0px 8px 0px 10px;
+}
+
+.new-game-option-selector{
+  height: 5vh;
 }
 
 a {

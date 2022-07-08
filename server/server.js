@@ -198,9 +198,9 @@ server.listen(8080, () => {
 if(verbose){
     games = {};
     let updateID = 2;
-    internalGameFunctions.createGame(games, 4, 1000 * 60 * 1, false, '4');
+    internalGameFunctions.createGame(games, 4, 1000 * 60 * 1, '4');
     userStatuses['4'] = 'game1';
-    internalGameFunctions.createGame(games, 6, 1000 * 60 * 1, false, 'tate');
+    internalGameFunctions.createGame(games, 6, 1000 * 60 * 1, 'tate');
     userStatuses['tate'] = 'game2';
     console.log(internalGameFunctions.updateGame(games[updateID], 7654, "joinGame", {}));
     userStatuses['7654'] = 'game2';

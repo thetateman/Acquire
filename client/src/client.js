@@ -562,7 +562,7 @@ const getReadableTimer = (totalSeconds) => {
         seconds =  `0${seconds}`;
     }
     let minutes = Math.floor((totalSeconds) / 60) % 60;
-    let hours = Math.floor((totalSeconds) / 360);
+    let hours = Math.floor((totalSeconds) / 3600);
     let readableTimer = '';
     if(hours !== 0){
         readableTimer += hours + ':';

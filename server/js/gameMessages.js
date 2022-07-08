@@ -72,9 +72,8 @@ const gameMessages = {
             }
             
         });
-        sock.on('newGame', ({numPlayers, timePerPlayer, stallProof}) => {
-            // creator arg no longer used, left in place for demonstration
-            const newGameID = internalGameFunctions.createGame(games, parseInt(numPlayers, 10), timePerPlayer, stallProof, sock.request.session.username);
+        sock.on('newGame', ({numPlayers, timePerPlayer}) => {
+            const newGameID = internalGameFunctions.createGame(games, parseInt(numPlayers, 10), timePerPlayer, sock.request.session.username);
             let usernameDetails = {};
             usernameDetails[games[newGameID].usernames[0]] = {username: games[newGameID].usernames[0], location: userStatuses[games[newGameID].usernames[0]], admin: false};
             const gameSummary = {
@@ -150,10 +149,11 @@ const gameMessages = {
                 //Total play timer
                 games[game_id].state.player_states[i].timerTotal = new Timer(() => {
                     games[game_id].state.player_states[i].out_of_total_time = true;
-                    games[game_id].state.player_states[i].timerAction.reset(); // so the action timer doesn't expire while we are already waiting on a computer move.
+                    //games[game_id].state.player_states[i].timerAction.reset(); // so the action timer doesn't expire while we are already waiting on a computer move.
                     gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
                 }, games[game_id].time_per_player);
                 //Action timer
+                /*
                 games[game_id].state.player_states[i].timerAction = new Timer(() => {
                     games[game_id].state.player_states[i].out_of_action_time = true;
                     if(!(games[game_id].state.player_states[i].timerTotal.getRemaining() < 3000)){
@@ -162,10 +162,11 @@ const gameMessages = {
                         gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
                     }
                 }, games[game_id].time_per_player * 0.15);
+                */
                 //pause timers for all but the first player.
                 if(i !== 0){
                     games[game_id].state.player_states[i].timerTotal.pause();
-                    games[game_id].state.player_states[i].timerAction.pause();
+                    //games[game_id].state.player_states[i].timerAction.pause();
                 }
             }
             gameMessages.emitGameToPlayers(games, game_id, updateType, io);
@@ -199,11 +200,11 @@ const gameMessages = {
             
             if(!game.state.player_states[i].timerTotal){
                 requestedGameCopy.state.player_states[i].total_time_remaining = null;
-                requestedGameCopy.state.player_states[i].action_time_remaining = null;
+                //requestedGameCopy.state.player_states[i].action_time_remaining = null;
             }
             else{
                 requestedGameCopy.state.player_states[i].total_time_remaining = game.state.player_states[i].timerTotal.getRemaining();
-                requestedGameCopy.state.player_states[i].action_time_remaining = game.state.player_states[i].timerAction.getRemaining();
+                //requestedGameCopy.state.player_states[i].action_time_remaining = game.state.player_states[i].timerAction.getRemaining();
             }
             
             if(i === requestingUsersPlayerID){
