@@ -482,6 +482,9 @@ const generateStatsTable = (game) => {
         + chainData +
         `<td row="${i}" column="cash">${playerState['cash']}</td>` +
         `<td row="${i}" column="net">${playerState['net_worth']}</td></tr>`;
+        if(totalSecondsRemaining < 30){
+            document.querySelector(`[row="${game.state.turn}"][column="username"] .total-time`).style.color = 'red';
+        }
     }
     document.querySelector("#stats-table-header-row").insertAdjacentHTML("afterend", playerRows);
 
@@ -515,6 +518,9 @@ const updateStatsTable = (game) => {
         totalSecondsRemainingArr.push(totalSecondsRemaining);
         //update the elements
         document.querySelector(`[row="${i}"][column="username"]`).innerHTML = `${game.usernames[i]}<span class="total-time">(${getReadableTimer(totalSecondsRemaining)})</span>`;
+        if(totalSecondsRemaining < 30){
+            document.querySelector(`[row="${game.state.turn}"][column="username"] .total-time`).style.color = 'red';
+        }
         chains.forEach((chain) => {
             document.querySelector(`[row="${i}"][column="${chain}"]`).innerHTML = game.state.player_states[i][chain];
         });
@@ -536,6 +542,9 @@ const updateStatsTable = (game) => {
         let totalTimerCurrentTurn = document.querySelector(`[row="${game.state.turn}"][column="username"] .total-time`);
         window.currentTotalTimerTimout = setInterval(() => {
             counter++;
+            if(totalSecondsRemainingArr[game.state.turn] - counter < 30){
+                totalTimerCurrentTurn.style.color = 'red';
+            }
             totalTimerCurrentTurn.textContent = `(${getReadableTimer(totalSecondsRemainingArr[game.state.turn] - counter)})`;
             console.log(counter);
         }, 1000);
@@ -545,6 +554,9 @@ const updateStatsTable = (game) => {
 };
 
 const getReadableTimer = (totalSeconds) => {
+    if(totalSeconds < 0){
+        return('0:00');
+    }
     let seconds = (totalSeconds) % 60;
     if(seconds.toString().length === 1){
         seconds =  `0${seconds}`;
