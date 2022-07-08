@@ -478,7 +478,7 @@ const generateStatsTable = (game) => {
         let chainData = "";
         // build player data row, setting row and column attributes for easy access when updating.
         chains.forEach((chain) => {chainData += `<td row="${i}" column="${chain}">${playerState[chain]}</td>`});
-        playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}<span class="total-time">(${getReadableTimer(totalSecondsRemaining)})</span></td>`
+        playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}<span class="total-time">${getReadableTimer(totalSecondsRemaining)}</span></td>`
         + chainData +
         `<td row="${i}" column="cash">${playerState['cash']}</td>` +
         `<td row="${i}" column="net">${playerState['net_worth']}</td></tr>`;
@@ -517,7 +517,7 @@ const updateStatsTable = (game) => {
         }
         totalSecondsRemainingArr.push(totalSecondsRemaining);
         //update the elements
-        document.querySelector(`[row="${i}"][column="username"]`).innerHTML = `${game.usernames[i]}<span class="total-time">(${getReadableTimer(totalSecondsRemaining)})</span>`;
+        document.querySelector(`[row="${i}"][column="username"]`).innerHTML = `${game.usernames[i]}<span class="total-time">${getReadableTimer(totalSecondsRemaining)}</span>`;
         if(totalSecondsRemaining < 30){
             document.querySelector(`[row="${game.state.turn}"][column="username"] .total-time`).style.color = 'red';
         }
@@ -545,7 +545,7 @@ const updateStatsTable = (game) => {
             if(totalSecondsRemainingArr[game.state.turn] - counter < 30){
                 totalTimerCurrentTurn.style.color = 'red';
             }
-            totalTimerCurrentTurn.textContent = `(${getReadableTimer(totalSecondsRemainingArr[game.state.turn] - counter)})`;
+            totalTimerCurrentTurn.textContent = `${getReadableTimer(totalSecondsRemainingArr[game.state.turn] - counter)}`;
             console.log(counter);
         }, 1000);
     }
@@ -554,8 +554,11 @@ const updateStatsTable = (game) => {
 };
 
 const getReadableTimer = (totalSeconds) => {
-    if(totalSeconds < 0){
-        return('0:00');
+    if((totalSeconds / 60) > 25000){ // no limit
+        return '';
+    }
+    else if(totalSeconds < 0){
+        return('(0:00)');
     }
     let seconds = (totalSeconds) % 60;
     if(seconds.toString().length === 1){
@@ -571,7 +574,7 @@ const getReadableTimer = (totalSeconds) => {
         }
     }
     readableTimer += minutes + ':' + seconds;
-    return readableTimer;
+    return '(' + readableTimer + ')';
 };
 
 (() => {

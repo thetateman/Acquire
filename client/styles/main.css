@@ -290,8 +290,13 @@ a {
     background-color: lightgray;
     font-size: 1.25vw;
     font-weight: bold;
+    text-align: center;
     overflow: hidden;
     position: relative;
+}
+
+.stats-board td:nth-child(1) {
+    text-align: left;
 }
 
 .chain-table-header {
@@ -299,15 +304,15 @@ a {
 }
 
 .player-table-header {
-    width: 25%;
+    width: 27%;
 }
 
 .cash-table-header {
-    width: 13%;
+    width: 12%;
 }
 
 .net-table-header {
-    width: 13%;
+    width: 12%;
 }
 
 #ihead, #ibutton {
