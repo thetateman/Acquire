@@ -887,7 +887,7 @@ const internalGameFunctions = {
                 game.state.active_merger.elim_chains.splice(game.state.active_merger.disposing_chain_index, 0,
                     game.state.active_merger.elim_chains.splice(
                         game.state.active_merger.elim_chains.indexOf(updateData.nextElimChain), 1
-                    )
+                    )[0]
                 );
 
                 //filter nextElimChain from elim_chains_ranked

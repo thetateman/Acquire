@@ -1,3 +1,5 @@
+"use strict";
+
 const sharedGameFunctions = require("./sharedGameFunctions.js");
 
 const computerPlayer = {
@@ -71,9 +73,13 @@ const computerPlayer = {
     computerPlayTile: function(game, abstractGameFeatures){
         //maybe make copy of game and examine effect of playing each tile...
 
+        let selectedTile;
+        game.state.player_states[game.state.turn].tiles.forEach((tile) => {
+            if(!(tile.predicted_type === 'd' || tile.predicted_type === 'z')){
+                selectedTile = tile;
+            }
+        })
 
-
-        let selectedTile = game.state.player_states[game.state.turn].tiles[0];
         console.log(selectedTile);
         let move = {x: selectedTile.x, y: selectedTile.y}
         return move;
@@ -91,14 +97,19 @@ const computerPlayer = {
     },
 
     computerChooseRemainingChain: function(game){
-
+        let move = {remainingChainChoice: game.state.active_merger.largest_chains[0]};
+        return move;
     },
 
     computerChooseNextElimChain: function(game){
-
+        let move = {nextElimChain: game.state.active_merger.elim_chains_ranked[0][0]};
+        return move;
     },
 
     computerDisposeShares: function(game){
+        let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
+        let move = {sell: game.state.player_states[game.state.turn][disposingChain], trade: 0, keep: 0};
+        return move;
 
     },
 

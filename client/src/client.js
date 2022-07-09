@@ -1,3 +1,4 @@
+"use strict";
 const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
 
 const addBoard = () => {
@@ -120,14 +121,21 @@ const tileClickHandler = (e, sock) => {
         console.log('unexpectedActionType');
         return false;
     }
-    if(localStorage.admin !== 'true' && !gameState.player_states[gameState.turn].tiles.some((tile) => x == tile.x && y == tile.y)){
-        console.log('userLacksTile');
-        return false;
+    try{
+        if(localStorage.admin !== 'true' && !gameState.player_states[gameState.turn].tiles.some((tile) => x == tile.x && y == tile.y)){
+            console.log('userLacksTile');
+            return false;
+        }
+        if(['d', 'z'].includes(gameState.player_states[gameState.turn].tiles.find((tile) => x == tile.x && y == tile.y).predicted_type)){
+            console.log('tileDeadOrAsleep');
+            return false;
+        }
     }
-    if(['d', 'z'].includes(gameState.player_states[gameState.turn].tiles.find((tile) => x == tile.x && y == tile.y).predicted_type)){
-        console.log('tileDeadOrAsleep');
-        return false;
+    catch(err) {
+        console.log('likely not player\'s turn. here\'s the actual error');
+        console.log(err);
     }
+    
     sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'playTile', updateData: {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)}})
 };
 
@@ -399,9 +407,13 @@ const statsTableUsernameStyleUpdater = (game) => {
 
 const myTurnStateUpdater = (game) => {
     /**
+     * If player is out of time, hide controls.
      * If it is this user's turn, updates client state based on expected next action.
      */
-    if(game.usernames[game.state.turn] === localStorage.username){
+    if(game.state.player_states[game.usernames.indexOf(localStorage.username)].total_time_remaining < 0){
+        document.querySelector('.chain-controls-container').style.display = 'none';
+    }
+    else if(game.usernames[game.state.turn] === localStorage.username){
         if(game.state.expectedNextAction === 'disposeShares'){
             prepareToDisposeShares(game);
         }
@@ -442,7 +454,7 @@ const updateGame = (sock) => (gameUpdate) => {
             const i = gameUpdate.player_num;
             // build player data row, setting row and column attributes for easy access when updating.
             chains.forEach((chain) => {chainData += `<td row="${i}" column="${chain}">${gameUpdate.player_data[chain]}</td>`});
-            let newPlayerRow = `<tr><td row="${i}" column="username">${gameUpdate.joining_player}</td>`+ chainData +
+            let newPlayerRow = `<tr><td row="${i}" column="username">${gameUpdate.joining_player}<span class="total-time">${document.querySelector('.total-time').textContent}</span></td>`+ chainData +
             `<td row="${i}" column="cash">${gameUpdate.player_data['cash']}</td>` +
             `<td row="${i}" column="net">${gameUpdate.player_data['net_worth']}</td></tr>`;
             document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("beforebegin", newPlayerRow);
@@ -465,6 +477,7 @@ const updateGame = (sock) => (gameUpdate) => {
 const generateStatsTable = (game) => {
     
     let playerRows = ""; // Populate player data: usernames, time remaining, chains, cash.
+    let totalSecondsRemainingArr = [];
     for(let i=0; i<game.num_players; i++){
         // calculate total time remaining
         let playerState = game.state.player_states[i];
@@ -475,16 +488,22 @@ const generateStatsTable = (game) => {
         else{
             totalSecondsRemaining = playerState.total_time_remaining / 1000;
         }
+        totalSecondsRemainingArr.push(totalSecondsRemaining);
+        let timerColor;
+        if(totalSecondsRemaining < 30){
+            timerColor = 'red';
+        }
+        else{
+            timerColor = 'black';
+        }
         let chainData = "";
         // build player data row, setting row and column attributes for easy access when updating.
         chains.forEach((chain) => {chainData += `<td row="${i}" column="${chain}">${playerState[chain]}</td>`});
-        playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}<span class="total-time">${getReadableTimer(totalSecondsRemaining)}</span></td>`
+        playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}<span class="total-time" style="color:${timerColor}">${getReadableTimer(totalSecondsRemaining)}</span></td>`
         + chainData +
         `<td row="${i}" column="cash">${playerState['cash']}</td>` +
         `<td row="${i}" column="net">${playerState['net_worth']}</td></tr>`;
-        if(totalSecondsRemaining < 30){
-            document.querySelector(`[row="${game.state.turn}"][column="username"] .total-time`).style.color = 'red';
-        }
+        
     }
     document.querySelector("#stats-table-header-row").insertAdjacentHTML("afterend", playerRows);
 
@@ -502,6 +521,8 @@ const generateStatsTable = (game) => {
     let miscStats = "<tr>" + bankShareRow + "</tr><tr>" + chainSizeRow + "</tr><tr>" + priceRow + "</tr>";
 
     document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("afterend", miscStats);
+
+    addTimers(game, totalSecondsRemainingArr);
 };
 
 const updateStatsTable = (game) => {
@@ -519,7 +540,7 @@ const updateStatsTable = (game) => {
         //update the elements
         document.querySelector(`[row="${i}"][column="username"]`).innerHTML = `${game.usernames[i]}<span class="total-time">${getReadableTimer(totalSecondsRemaining)}</span>`;
         if(totalSecondsRemaining < 30){
-            document.querySelector(`[row="${game.state.turn}"][column="username"] .total-time`).style.color = 'red';
+            document.querySelector(`[row="${i}"][column="username"] .total-time`).style.color = 'red';
         }
         chains.forEach((chain) => {
             document.querySelector(`[row="${i}"][column="${chain}"]`).innerHTML = game.state.player_states[i][chain];
@@ -536,20 +557,8 @@ const updateStatsTable = (game) => {
     chains.forEach((chain) => {
         document.querySelector(`[row="price"][column="${chain}"]`).innerHTML = game.state.share_prices[chain];
     });
-    if(game.state.game_started){
-        clearTimeout(window.currentTotalTimerTimout);
-        let counter = 0;
-        let totalTimerCurrentTurn = document.querySelector(`[row="${game.state.turn}"][column="username"] .total-time`);
-        window.currentTotalTimerTimout = setInterval(() => {
-            counter++;
-            if(totalSecondsRemainingArr[game.state.turn] - counter < 30){
-                totalTimerCurrentTurn.style.color = 'red';
-            }
-            totalTimerCurrentTurn.textContent = `${getReadableTimer(totalSecondsRemainingArr[game.state.turn] - counter)}`;
-            console.log(counter);
-        }, 1000);
-    }
     
+    addTimers(game, totalSecondsRemainingArr);
     statsTableUsernameStyleUpdater(game);
 };
 
@@ -560,7 +569,7 @@ const getReadableTimer = (totalSeconds) => {
     else if(totalSeconds < 0){
         return('(0:00)');
     }
-    let seconds = (totalSeconds) % 60;
+    let seconds = Math.floor((totalSeconds) % 60);
     if(seconds.toString().length === 1){
         seconds =  `0${seconds}`;
     }
@@ -575,6 +584,23 @@ const getReadableTimer = (totalSeconds) => {
     }
     readableTimer += minutes + ':' + seconds;
     return '(' + readableTimer + ')';
+};
+
+const addTimers = (game, totalSecondsRemainingArr) => {
+    if(game.state.game_started && totalSecondsRemainingArr[0] < 25000 * 60){
+        clearTimeout(window.currentTotalTimerTimout);
+        if(!game.state.game_ended){
+            let counter = 0;
+            let totalTimerCurrentTurn = document.querySelector(`[row="${game.state.turn}"][column="username"] .total-time`);
+            window.currentTotalTimerTimout = setInterval(() => {
+                counter++;
+                if(totalSecondsRemainingArr[game.state.turn] - counter < 30){
+                    totalTimerCurrentTurn.style.color = 'red';
+                }
+                totalTimerCurrentTurn.textContent = `${getReadableTimer(totalSecondsRemainingArr[game.state.turn] - counter)}`;
+            }, 1000);
+        }
+    }
 };
 
 (() => {

@@ -1,9 +1,10 @@
+"use strict";
+
 const internalGameFunctions = require("./internalGameFunctions.js");
 const Timer = require("./timers.js");
 const computerPlayer = require("./computerPlayer.js");
 
 const gameMessages = {
-    testcount: 0,
     registerGameMessageHandlers: function(games, io, sock, userStatuses, usersInLobby, verbose){
         /**
         * Sets listener/handlers for game messages on the socket instance. Includes in-game actions
@@ -174,12 +175,12 @@ const gameMessages = {
         else{
             if(games[game_id].state.player_states[games[game_id].state.turn].out_of_total_time ||
                 games[game_id].state.player_states[games[game_id].state.turn].out_of_action_time){
-                    gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
+                    if(!games[game_id].state.game_ended){
+                        gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
+                    }
             }
-            else{
-                if(sock !== null){ // move made by user client (not computer player)
-                    gameMessages.emitGameToPlayers(games, game_id, updateType, io);
-                }
+            if(sock !== null){ // move made by user client (not computer player)
+                gameMessages.emitGameToPlayers(games, game_id, updateType, io);
             }
         }
         //if(verbose){console.timeEnd('gameAction');}
@@ -231,14 +232,12 @@ const gameMessages = {
     },
 
     makeAndSendComputerMove: function(games, game_id, io, verbose){
-        this.testcount++;
-        console.log(this.testcount);
         setTimeout(() => {
             let computerGameActionType = games[game_id].state.expectedNextAction;
             gameMessages.gameActionHandler(games, io, null, verbose)
             ({game_id: game_id, updateType: computerGameActionType, updateData: computerPlayer.makeNextMove(games[game_id])});
             gameMessages.emitGameToPlayers(games, game_id, computerGameActionType, io);
-        }, 2000);
+        }, 1000);
     },
 }
 module.exports = gameMessages;
