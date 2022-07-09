@@ -212,14 +212,6 @@ if(verbose){
     console.log(games[updateID].usernames);
     
     console.log(internalGameFunctions.updateGame(games[updateID], 'tate', "startGame", {}));
-    //console.log(computerPlayer.makeNextMove(games[updateID]));
-    let myTimer = new Timer(() => {console.log("hey there...")}, 5000);
-    setTimeout(() => {myTimer.pause()}, 1000);
-    setTimeout(() => {myTimer.resume()}, 2000);
-    setTimeout(() => {myTimer.pause()}, 3000);
-    setTimeout(() => {myTimer.resume()}, 4000);
-
-
 
     /*
     console.log(internalGameFunctions.updateGame(games[updateID], 7655, "startGame", {}));

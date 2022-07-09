@@ -10,7 +10,6 @@ const Timer = function(callback, delay){
         clearTimeout(_timerID);
         _timerID = null;
         this.remaining -= Date.now() - _start;
-        console.log(`Paused with ${this.remaining / 1000} seconds left.`);
     };
 
     this.resume = function(){

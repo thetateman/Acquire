@@ -80,7 +80,6 @@ const computerPlayer = {
             }
         })
 
-        console.log(selectedTile);
         let move = {x: selectedTile.x, y: selectedTile.y}
         return move;
     },
