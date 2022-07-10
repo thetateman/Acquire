@@ -22,6 +22,9 @@ const updateGameBoard = (game) => {
         }
     }
     // Color my tiles
+    if(game.usernames.indexOf(localStorage.username) === -1){
+        return 'userNotInGame';
+    }
     game.state.player_states[game.usernames.indexOf(localStorage.username)].tiles
     .forEach((tile) => {
         let tileSlot = document.querySelector(`[x="${tile.x}"][y="${tile.y}"]`);
@@ -336,8 +339,10 @@ const populateGame = (sock) => (game) => {
         document.querySelector('#start-game-button').style.display = 'block';
     }
     if(game.state.game_started){
-        updateTileBank(game, sock);
-        myTurnStateUpdater(game);
+        if(game.usernames.indexOf(localStorage.username) !== -1){ //if user is a player in this game
+            updateTileBank(game, sock);
+            myTurnStateUpdater(game);
+        }
         statsTableUsernameStyleUpdater(game);
     }
     //TODO: Reveal hidden elements if necessary (dispose-shares-table).
@@ -444,8 +449,10 @@ const updateGame = (sock) => (gameUpdate) => {
         localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
-        updateTileBank(gameUpdate.game, sock);
-        myTurnStateUpdater(gameUpdate.game);
+        if(gameUpdate.game.usernames.indexOf(localStorage.username) !== -1){ //if user is a player in this game
+            updateTileBank(gameUpdate.game, sock);
+            myTurnStateUpdater(gameUpdate.game);
+        }
     } 
     else if(gameUpdate.type === 'joinGame'){
         if(gameUpdate.joining_player !== localStorage.getItem('username')){ // if joining player != current user. (Data will have been added already.)
