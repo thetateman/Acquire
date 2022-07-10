@@ -161,6 +161,12 @@ li {
   padding: 10px;
 }
 
+@media (max-width: 1050px) {
+  #new-game-form {
+    flex-direction: column;
+  }
+}
+
 .controls {
   border-bottom: var(--standard-section-divider);
 }
