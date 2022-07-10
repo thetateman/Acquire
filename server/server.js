@@ -24,11 +24,14 @@ const verbose = (process.env.VERBOSE === 'true');
 
 const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 
-//The games object defines the state of all active games - need to do more research to determine if 
-//there is a better way to store this information.
+//The games object defines the state of all active games.
 
 // Restore active games from backup
-let games = gameManager.restoreGamesObject();
+//let games = gameManager.restoreGamesObject(); 
+/* NOTE: resetting the timers gets complicated when restoring games from backup,
+restoring games probably isn't worth the trouble. */
+
+let games = {};
 
 let guestID = 0;
 let connectedUsers = [];
@@ -184,7 +187,8 @@ io.on('connection', (sock) => {
 });
 
 const gamesCleanerIntervalTimeout = setInterval(gameManager.cleanGames, 1000 * 60 * 1, games, io);
-const gamesBackupIntervalTimeout = setInterval(gameManager.backupGamesObject, 1000 * 60 * 1, games);
+// See note above on restoring games from backup.
+//const gamesBackupIntervalTimeout = setInterval(gameManager.backupGamesObject, 1000 * 60 * 1, games);
 
 
 server.on('error', (err) => {
