@@ -17,25 +17,30 @@ const logout = () => {
 };
 
 (() => {
-    let logButtonText = 'Logout';
+    let logButtonText = 'Log Out';
     if(window.hasOwnProperty('active_socket_conn')){
         const sock = window.active_socket_conn;
         sock.on('usernameResponse', (username) => {
             localStorage.username = username
             document.querySelector('#navbar-username').textContent = username;
+            if(username.substring(0, 5) === 'Guest'){
+                document.querySelector('#logout-button').textContent = 'Log In / Sign Up';
+            }
+            else {
+                document.querySelector('#logout-button').textContent = 'Log Out';
+            }
         });
 
         if('username' in localStorage){
-            if(localStorage.username === 'Guest'){
+            if(localStorage.username.substring(0, 5) === 'Guest'){
                 logButtonText = 'Log In / Sign Up';
-                sock.emit('usernameRequest');
             }
         }
         else{
             localStorage.username = 'Guest';
             logButtonText = 'Log In / Sign Up';
-            sock.emit('usernameRequest');
         }
+        sock.emit('usernameRequest');
     }
     else{
         if(!('username' in localStorage)){
