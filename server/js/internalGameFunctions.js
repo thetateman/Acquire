@@ -65,75 +65,7 @@ const internalGameFunctions = {
 
                 }
                 else { // there is a merger
-                    let mergingChains = [];
-                    let largestChains = [connectingTrueChains[0]];
-                    for(let i = 1; i < connectingTrueChains.length; i++){
-                        if(chains[connectingTrueChains[i]].length > chains[largestChains[0]].length){
-                            largestChains.length = 0;
-                            largestChains.push(connectingTrueChains[i]);
-                        }
-                        else if(chains[connectingTrueChains[i]].length === chains[largestChains[0]].length){
-                            largestChains.push(connectingTrueChains[i]);
-                        }
-                    }
-                    let remainingChain = 'p'; //pending, should change with next action
-                    if(largestChains.length === 1){
-                        remainingChain = largestChains[0];
-                    }
-                    // Build active_merger object for use in later game actions.
-                    let elimChains = connectingTrueChains.filter((chain) => chain !== remainingChain);
-                    // Sort eliminated chains by size, largest to smallest.
-                    elimChains.sort((a, b) => {
-                        if(chains[a].length < chains[b].length){
-                            return 1;
-                        } 
-                        else if(chains[a].length > chains[b].length) {
-                            return -1;
-                        }
-                        else{
-                            return 0;
-                        }
-                    });
-
-                    let playersDisposing = {};
-                    /**
-                     * The playersDisposing object holds the data representing which players 
-                     * need to dispose which shares, and in what order. Each key-value
-                     * pair is an eliminated chain, and an array of players who hold 
-                     * shares in that chain (in order of disposal turn). Example:
-                     * {
-                     *     'i': [0, 2, 3, 5],
-                     *     't': [1],
-                     *     'f': [5, 1, 3]
-                     * }
-                     * 
-                     */
-                    
-                    elimChains.forEach((chain) => {
-                        playersDisposing[chain] = [];
-                        for(let playerIndex=0; playerIndex<game.state.player_states.length; playerIndex++){
-                            if(game.state.player_states[playerIndex][chain] > 0){
-                                playersDisposing[chain].push(playerIndex);
-                            }
-                        }
-                        
-                        // Find first player with shares, including or after merging player
-                        let firstDisposingPlayer;
-                        if(playersDisposing[chain].includes(game.state.turn)){
-                            firstDisposingPlayer = game.state.turn;
-                        }
-                        else{
-                            firstDisposingPlayer = playersDisposing[chain].find((player) => player >= game.state.turn);
-                            if(firstDisposingPlayer === undefined){
-                                firstDisposingPlayer = playersDisposing[chain][0];
-                            }
-                        }
-                        
-                        // Re-order player array, starting with merging player or next player with shares
-                        let tempPlayerArr = playersDisposing[chain].splice(playersDisposing[chain].indexOf(firstDisposingPlayer));
-                        playersDisposing[chain] = tempPlayerArr.concat(playersDisposing[chain]);
-                        
-                    });
+                    let {largestChains, remainingChain, elimChains, playersDisposing} = sharedGameFunctions.getMergerInfo(game, connectingTrueChains);
 
                     active_merger.elim_chains_ranked = this.rankEliminatedChainsBySize(chains, elimChains, remainingChain);  // May be updated by chooseRemainingChain action.
                     active_merger.players_disposing = playersDisposing; // May be updated by chooseRemainingChain action.
@@ -237,52 +169,7 @@ const internalGameFunctions = {
         }
         return connectingSingles;
     },
-
-    predictTileType: function(board, chains, available_chains, x, y){
-        /**
-        * Uses getNeighbors function and chain info to calculate the potential type of a tile.
-        * predictedType should be in ['<chain>', 's'(single), 'm'(merger), 'n'(new chain), 'z'(asleep), 'd'(dead)].
-        * @returns {string} Character representing the type a tile would be if played
-        * 
-        */
-       let predictedType = 's';
-       let neighbors = sharedGameFunctions.getNeighbors(board, x, y);
-       let connectingTrueChains = neighbors.filter((f) => ['i', 'c', 'w', 'f', 'a', 't', 'l'].includes(f));
-       if(connectingTrueChains.length > 0){
-           if(connectingTrueChains.length === 1){
-               predictedType = connectingTrueChains[0];
-               return predictedType;
-           } 
-           else {
-               let numSafeChains = 0;
-               for(let i = 0; i < connectingTrueChains.length; i++){
-                   if(chains[connectingTrueChains[i]].length >= 11){
-                       numSafeChains++;
-                   }
-               }
-               if(numSafeChains >= 2){
-                   predictedType = 'd';
-                   return predictedType;
-               }
-               else {
-                   predictedType = 'm';
-                   return predictedType;
-               }
-           }
-       }
-       else if(neighbors.length > 0){
-            if(available_chains.length === 0){
-                predictedType = 'z';
-                return predictedType;
-            }
-            else {
-                predictedType = 'n';
-                return predictedType;
-            }
-       }
-       return predictedType;
-    },
-
+    
     // Update the price of a chain
     updatePrice: function(chain, chains, share_prices){
         let basePrice = 0;
@@ -421,7 +308,7 @@ const internalGameFunctions = {
             // Draw new tile
             if(game.state.tile_bank.length !== 0){
                 let newTile = game.state.tile_bank.pop()
-                newTile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
+                newTile.predicted_type = sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
                 game.state.player_states[game.state.turn].tiles.push(newTile);
             }
         }
@@ -687,7 +574,7 @@ const internalGameFunctions = {
                 for(let i=0; i<game.num_players; i++){
                     for(let j=0; j<6; j++){
                         let newTile = game.state.tile_bank.pop()
-                        newTile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
+                        newTile.predicted_type = sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
                         game.state.player_states[i].tiles.push(newTile);
                     }
                 }
@@ -741,7 +628,7 @@ const internalGameFunctions = {
                 if(!admin && !game.state.player_states[userID].tiles.some((tile) => updateData.x === tile.x && updateData.y === tile.y)){
                     return "userLacksTile";
                 }
-                if(['z', 'd'].includes(this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, updateData.x, updateData.y))){
+                if(['z', 'd'].includes(sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, updateData.x, updateData.y))){
                     return "tileDeadOrAsleep";
                 }
                 // Remove tile from player hand
@@ -788,7 +675,7 @@ const internalGameFunctions = {
                 //update tile type predictions for all players
                 game.state.player_states.forEach((player) => {
                     player.tiles.forEach((tile) => {
-                        tile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
+                        tile.predicted_type = sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
                         player.has_playable_tile = true;
                     });
                 });
@@ -823,7 +710,7 @@ const internalGameFunctions = {
                 //update tile type predictions for all players
                 game.state.player_states.forEach((player) => {
                     player.tiles.forEach((tile) => {
-                        tile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
+                        tile.predicted_type = sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
                     });
                 });
 
@@ -965,7 +852,7 @@ const internalGameFunctions = {
                         //update tile type predictions for all players
                         game.state.player_states.forEach((player) => {
                             player.tiles.forEach((tile) => {
-                                tile.predicted_type = this.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
+                                tile.predicted_type = sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
                             });
                         });
 

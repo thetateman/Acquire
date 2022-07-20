@@ -60,7 +60,9 @@ const gameManager = {
                 // If the game has been inactive for 5 minutes, remove timeouts and delete the game.
                 io.in('lobby').emit('gameListUpdate', {action: 'removeGame', game: game});
                 for(let i=0; i<games[game].num_players; i++){
-                    games[game].state.player_states[i].timerTotal.pause();
+                    if(games[game].state.player_states[i].hasOwnProperty('timerTotal')){
+                        games[game].state.player_states[i].timerTotal.pause();
+                    }
                 }
                 delete games[game];
             }

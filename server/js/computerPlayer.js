@@ -58,7 +58,9 @@ const computerPlayer = {
         };
         game.state.player_states[game.state.turn].tiles.forEach((tile) => {
             let tileFeatures = JSON.parse(JSON.stringify(tile));
-            tileFeatures.neighbors = sharedGameFunctions.getNeighbors(game.state.board, tile.x, tile.y);  
+            tileFeatures.neighbors = sharedGameFunctions.getNeighbors(game.state.board, tile.x, tile.y);
+            tileFeatures.connectingTrueChains = tileFeatures.neighbors.filter((f) => ['i', 'c', 'w', 'f', 'a', 't', 'l'].includes(f));
+            tileFeatures.predicted_type = sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);  
             abstractGameFeatures.tileFeatures.push(tileFeatures);          
         });
         ['i', 'c', 'w', 'f', 'a', 't', 'l'].forEach((chain) => {
@@ -68,17 +70,54 @@ const computerPlayer = {
             });
             abstractGameFeatures[chain].positions = positions;
         });
+        return abstractGameFeatures;
     },
     
     computerPlayTile: function(game, abstractGameFeatures){
         //maybe make copy of game and examine effect of playing each tile...
 
         let selectedTile;
-        game.state.player_states[game.state.turn].tiles.forEach((tile) => {
-            if(!(tile.predicted_type === 'd' || tile.predicted_type === 'z')){
-                selectedTile = tile;
+        // First try to find a favorable merger
+        selectedTile = abstractGameFeatures.tileFeatures.find((tile) => {
+            if(tile.predicted_type === 'm'){
+                let playMerger = false;
+                let mergerInfo = sharedGameFunctions.getMergerInfo(game, tile.connectingTrueChains);
+                mergerInfo.elimChains.forEach((elimChain) => {
+                    let myPositionInElimChain = abstractGameFeatures[elimChain].positions[game.state.turn];
+                    let myRankInElimChain = 1;
+                    let numPlayersTiedForMyRank = 1;
+                    for(let i=0; i<abstractGameFeatures[elimChain].positions; i++){
+                        if(i === game.state.turn){
+                            continue;
+                        }
+                        if(abstractGameFeatures[elimChain].positions[i] === myPositionInElimChain){
+                            numPlayersTiedForMyRank++;
+                        }
+                        else if(abstractGameFeatures[elimChain].positions[i] > myPositionInElimChain){
+                            myRankInElimChain++;
+                        }
+                    }
+                    if(myRankInElimChain === 1 && numPlayersTiedForMyRank === 1){
+                        playMerger = true;
+                    }
+                });
+                if(playMerger){
+                    return true;
+                }
             }
-        })
+        });
+
+        if(!selectedTile){
+            selectedTile = abstractGameFeatures.tileFeatures.find((tile) => tile.predicted_type === 'n');
+        }
+
+        if(!selectedTile){
+            game.state.player_states[game.state.turn].tiles.forEach((tile) => {
+                if(!(tile.predicted_type === 'd' || tile.predicted_type === 'z')){
+                    selectedTile = tile;
+                }
+            });
+        }
 
         let move = {x: selectedTile.x, y: selectedTile.y}
         return move;
