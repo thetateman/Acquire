@@ -40,3 +40,6 @@
 
 27. Minor bug: clicking tile on puchase phase returns total to $0
 
+########### COMPUTER MOVES ##############
+1. On update failure, retry with different move.
+2. Gracefully handle errors in move computation.

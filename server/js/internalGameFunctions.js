@@ -892,6 +892,12 @@ const internalGameFunctions = {
                 let numTotalShares = 0;
                 let totalPurchasePrice = 0;
                 for (const [key, value] of Object.entries(updateData.purchase)) {
+                    if(!['i', 'c', 'w', 'f', 'a', 't', 'l'].includes(key)){
+                        return "notAChain";
+                    }
+                    if(!Number.isInteger(value)){
+                        return "purchaseValueMustBeInt";
+                    }
                     let purchasePricePerShare = game.state.share_prices[key];
                     let purchasePrice = purchasePricePerShare * value;
 
