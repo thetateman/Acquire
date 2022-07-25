@@ -148,11 +148,15 @@ const gameMessages = {
             // Addtional timer control happens in interalGameFunctions.endTurn().
             for(let i=0; i<games[game_id].num_players; i++){
                 //Total play timer
+                let test_time_lim = games[game_id].time_per_player;
+                if(games[game_id].usernames[i] !== games[game_id].creator){
+                    test_time_lim = 5000;
+                }
                 games[game_id].state.player_states[i].timerTotal = new Timer(() => {
                     games[game_id].state.player_states[i].out_of_total_time = true;
                     //games[game_id].state.player_states[i].timerAction.reset(); // so the action timer doesn't expire while we are already waiting on a computer move.
                     gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
-                }, games[game_id].time_per_player);
+                }, test_time_lim);
                 //Action timer
                 /*
                 games[game_id].state.player_states[i].timerAction = new Timer(() => {
@@ -233,10 +237,12 @@ const gameMessages = {
 
     makeAndSendComputerMove: function(games, game_id, io, verbose){
         setTimeout(() => {
-            let computerGameActionType = games[game_id].state.expectedNextAction;
-            gameMessages.gameActionHandler(games, io, null, verbose)
-            ({game_id: game_id, updateType: computerGameActionType, updateData: computerPlayer.makeNextMove(games[game_id])});
-            gameMessages.emitGameToPlayers(games, game_id, computerGameActionType, io);
+            if(games[game_id]){ //if game exists (if game has not be deleted due to inactivity)
+                let computerGameActionType = games[game_id].state.expectedNextAction;
+                gameMessages.gameActionHandler(games, io, null, verbose)
+                ({game_id: game_id, updateType: computerGameActionType, updateData: computerPlayer.makeNextMove(games[game_id])});
+                gameMessages.emitGameToPlayers(games, game_id, computerGameActionType, io);
+            }
         }, 1000);
     },
 }

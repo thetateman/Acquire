@@ -72,6 +72,10 @@ const computerPlayer = {
         });
         return abstractGameFeatures;
     },
+
+    getRankInfo: function(game, chains){
+
+    },
     
     computerPlayTile: function(game, abstractGameFeatures){
         //maybe make copy of game and examine effect of playing each tile...
@@ -126,6 +130,7 @@ const computerPlayer = {
     computerPurchaseShares: function(game, abstractGameFeatures){
         let move = {purchase: {}};
         let firstOrSecondRankedChains = [];
+        let chainsToBuy = [];
         let numSharesAdded = 0;
         let spentCash = 0;
         const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
@@ -145,7 +150,19 @@ const computerPlayer = {
             }
         });
         console.log(firstOrSecondRankedChains);
-        firstOrSecondRankedChains.forEach((chain) => {
+
+        chainsToBuy = firstOrSecondRankedChains.filter((chain) => {
+            // filter out if:
+            // 1. I have > 12 shares
+            // 2. Chain unlikely to merge soon && early in game ??
+            // 3. I have a distinct lead in the stock. but I would need to keep cash in reserve to protect lead ???
+            if(game.state.player_states[game.state.turn][chain] > 12){
+                return false;
+            }
+            return true;
+        })
+        
+        chainsToBuy.forEach((chain) => {
             if(numSharesAdded <= 2 && !game.state.available_chains.includes(chain)){
                 console.log(chain);
                 let maxPurchasableShares = Math.floor((game.state.player_states[game.state.turn].cash - spentCash) / game.state.share_prices[chain]);
@@ -176,12 +193,37 @@ const computerPlayer = {
     },
 
     computerChooseNewChain: function(game){
-        let move = {newChainChoice: game.state.available_chains[0]};
+        let myLargestPosition = game.state.available_chains[0];
+        game.state.available_chains.forEach((chain) => {
+            if(game.state.player_states[game.state.turn][chain] > game.state.player_states[game.state.turn][myLargestPosition]){
+                myLargestPosition = chain;
+            }
+        })
+        let move = {newChainChoice: myLargestPosition};
         return move;
     },
 
-    computerChooseRemainingChain: function(game){
+    computerChooseRemainingChain: function(game, abstractGameFeatures){
         let move = {remainingChainChoice: game.state.active_merger.largest_chains[0]};
+        let acceptableRemainingChains = [];
+        game.state.active_merger.largest_chains.forEach((chain) => {
+            let myPositionInChain = abstractGameFeatures[chain].positions[game.state.turn];
+            let myRankInChain = 1;
+            for(let i=0; i<abstractGameFeatures[chain].positions.length; i++){
+                if(i === game.state.turn){
+                    continue;
+                }
+                else if(abstractGameFeatures[chain].positions[i] > myPositionInChain){
+                    myRankInChain++;
+                }
+            }
+            if(myRankInChain !== 1){
+                acceptableRemainingChains.push(chain);
+            }
+        });
+        if(acceptableRemainingChains[0]){
+            move.remainingChainChoice = acceptableRemainingChains[0];
+        }
         return move;
     },
 
@@ -191,8 +233,26 @@ const computerPlayer = {
     },
 
     computerDisposeShares: function(game){
+        let move = {sell: 0, trade: 0, keep: 0};
         let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
-        let move = {sell: game.state.player_states[game.state.turn][disposingChain], trade: 0, keep: 0};
+        let numSharesToDispose = game.state.player_states[game.state.turn][disposingChain];
+        let numSharesToTrade = 0;
+
+        if(game.state.share_prices[game.state.active_merger.remaining_chain] > game.state.share_prices[disposingChain] * 2){
+            // trade max
+            let numSharesToTrade = 2 * Math.floor(numSharesToDispose / 2);
+            if(numSharesToTrade / 2 > game.state.bank_shares[game.state.active_merger.remaining_chain]){
+                numSharesToTrade = game.state.bank_shares[game.state.active_merger.remaining_chain];
+            }
+            move.trade = numSharesToTrade;
+            numSharesToDispose -= numSharesToTrade;
+        }
+        if(game.state.play_count > 50){
+            move.sell = numSharesToDispose;
+        }
+        else{
+            move.keep = numSharesToDispose;
+        }
         return move;
 
     },

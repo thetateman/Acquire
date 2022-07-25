@@ -403,6 +403,7 @@ const internalGameFunctions = {
         let id = this.genNewGameID(games)
         let newGame = {
             id: id,
+            creator: creator,
             num_players: 0,
             num_connected_players: 0,
             inactive_since: new Date(8640000000000000).getTime(),
