@@ -517,6 +517,54 @@ a {
     box-shadow: var(--standard-box-shadow);
   }
 
+  #messages fieldset {
+    border: none;
+    border-top: solid 1px var(--main-text-color);
+    padding: 0px;
+    margin: 0px;
+    text-align: center;
+    color: var(--main-text-color);
+  }
+
+#messages span.chain-label{
+    padding: 1px;
+}
+#messages span[type="i"] {
+    color: black;
+    border-color: var(--i-color);
+    background-color: var(--i-color);
+}
+
+#messages span[type="c"] {
+    color: black;
+    background-color: var(--c-color);
+}
+
+#messages span[type="w"] {
+    color: black;
+    background-color: var(--w-color);
+}
+
+#messages span[type="f"] {
+    color: black;
+    background-color: var(--f-color);
+}
+
+#messages span[type="a"] {
+    color: white;
+    background-color: var(--a-color);
+}
+
+#messages span[type="l"] {
+    color: black;
+    background-color: var(--l-color);
+}
+
+#messages span[type="t"] {
+    color: black;
+    background-color: var(--t-color);
+}
+
 /*--------------- Scroll bars -------------------*/
 body {
     scrollbar-color: #888 var(--main-bg-color);

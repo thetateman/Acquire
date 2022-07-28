@@ -1,7 +1,10 @@
 const log = (messageObj) => {
     // find location: string should be in the same format as lastKnownLocation on server, and origin in message objects
     let location = window.location.href.split("/")[window.location.href.split("/").length - 1];
-    if(location.includes('game')){
+    if(location === ''){
+        location = 'lobby'; // root redirects to lobby
+    }
+    else if(location.includes('game')){
         location = 'game' + window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1];
     }
 

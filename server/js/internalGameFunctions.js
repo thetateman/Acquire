@@ -410,6 +410,7 @@ const internalGameFunctions = {
             max_players: maxPlayers,
             time_per_player: timePerPlayer * 1000 * 60,
             usernames:[],
+            watchers:[],
             state: {
                 game_started: false,
                 game_ended: false,
@@ -418,6 +419,7 @@ const internalGameFunctions = {
                 no_playable_tile_turns: 0,
                 expectedNextAction: 'playTile',
                 lastPlayedTile: {},
+                lastActionData: {},
                 tile_bank: this.genTileBank(),
                 board: [
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
@@ -616,7 +618,7 @@ const internalGameFunctions = {
 
         //Player made an action, reset the action timer
         //game.state.player_states[game.state.turn].timerAction.reset();
-        
+        game.state.lastActionData = updateData;
         switch(updateType){
             case 'playTile':
                 //check that action is legal
@@ -635,6 +637,7 @@ const internalGameFunctions = {
                 // Remove tile from player hand
                 game.state.player_states[userID].tiles = game.state.player_states[userID].tiles.filter((tile) => !(updateData.x === tile.x && updateData.y === tile.y));
                 //update the game
+                game.state.lastPlayedTile = updateData;
                 switch(this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, updateData.x, updateData.y, game)){
                     case 'normal':
                         if(this.shouldAutoPass(game)){
@@ -646,7 +649,6 @@ const internalGameFunctions = {
                         break;
                     case 'newChain':
                         game.state.expectedNextAction = 'chooseNewChain';
-                        game.state.lastPlayedTile = updateData;
                         break;
                     case 'merger':
                         if(game.state.active_merger.remaining_chain === 'p'){ // If waiting on chain choice

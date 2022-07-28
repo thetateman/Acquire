@@ -33,8 +33,16 @@ const updateGames = (sock) => (update) => {
         const id = update.game.id;
         let playerList = '<ul class="player-list">';
         update.game.usernames.forEach((username) => {
-            let inGame = update.game.playerDetails[username].location.substring(4) === id.toString();
-            playerList += `<li inGame="${inGame}" username="${username}">${username}</li>`;
+            let watchingLabel = '';
+            let inGame;
+            if(update.game.playerDetails[username].location === 'watcher'){
+                watchingLabel = ' (watching)';
+                inGame = true;
+            }
+            else{
+                inGame = update.game.playerDetails[username].location.substring(4) === id.toString();
+            }
+            playerList += `<li inGame="${inGame}" username="${username}">${username}${watchingLabel}</li>`;
         });
         playerList += '</ul>';
         const gameElements = 
@@ -60,7 +68,11 @@ const updateGames = (sock) => (update) => {
             usernameDOMElement.setAttribute('inGame', 'true'); //Different styles for users in and out of games
         }
         else{ //user not in player list yet
-            let newPlayer = `<li username="${update.username}">${update.username}</li>`;
+            let watchingLabel = '';
+            if(update.watcher){
+                watchingLabel = ' (watching)';
+            }
+            let newPlayer = `<li username="${update.username}">${update.username}${watchingLabel}</li>`;
             document.querySelector(`[gamenum="${update.game.id}"] .player-list`).insertAdjacentHTML('beforeend', newPlayer);
         }
     }

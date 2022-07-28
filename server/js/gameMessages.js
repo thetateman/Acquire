@@ -44,8 +44,11 @@ const gameMessages = {
                     value.usernames.forEach((username) => {
                         usernameDetails[username] = {'username': username, location: userStatuses[username], admin: false};
                     });
+                    value.watchers.forEach((watcher) => {
+                        usernameDetails[watcher] = {'username': watcher, location: 'watcher', admin: false};
+                    });
                     gameSummaries[key] = {
-                        usernames: value.usernames,
+                        usernames: value.usernames.concat(value.watchers),
                         playerDetails: usernameDetails,
                         max_players: value.max_players,
                         game_started: value.state.game_started,
@@ -59,7 +62,12 @@ const gameMessages = {
                     sock.emit('gameResponse', "none");
                 }
                 else{ // Whenever a user hits a game page (for a game that exists). TODO: move this code somewhere more logical.
+                    let watcher = false;
                     games[parseInt(gameID, 10)].num_connected_players++;
+                    if(!games[parseInt(gameID, 10)].usernames.includes(requestingUser)){
+                        games[parseInt(gameID, 10)].watchers.push(requestingUser);
+                        watcher = true;
+                    }
                     // Unset inactive_since
                     games[parseInt(gameID, 10)].inactive_since = new Date(8640000000000000).getTime();
                     const requestedGameCopy = this.getSendableGame(games[parseInt(gameID, 10)], requestingUser);
@@ -67,7 +75,7 @@ const gameMessages = {
                     sock.data.username = requestingUser;
                     sock.request.session.lastKnownLocation = `game${gameID}`;
                     userStatuses[sock.request.session.username] = `game${gameID}`;
-                    io.in('lobby').emit('gameListUpdate', {action: 'addPlayer', game: {id: gameID}, username: sock.request.session.username});
+                    io.in('lobby').emit('gameListUpdate', {action: 'addPlayer', game: {id: gameID}, username: sock.request.session.username, watcher: watcher, admin: false});
                     sock.join(gameID); //typeOf(gameID) = string
                 }
             }

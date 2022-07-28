@@ -445,10 +445,14 @@ const updateGame = (sock) => (gameUpdate) => {
         return false;
     }
     if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares', 'startGame', 'chooseNextElimChain'].includes(gameUpdate.type)){
+        if(gameUpdate.type === 'disposeShares'){
+            localStorage.setItem('lastMerger', JSON.stringify(JSON.parse(localStorage.gameState).active_merger));
+        }
         localStorage.setItem('gameState', JSON.stringify(gameUpdate.game.state));
         localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
+        postGameMessage(gameUpdate);
         if(gameUpdate.game.usernames.indexOf(localStorage.username) !== -1){ //if user is a player in this game
             updateTileBank(gameUpdate.game, sock);
             myTurnStateUpdater(gameUpdate.game);
@@ -609,6 +613,82 @@ const addTimers = (game, totalSecondsRemainingArr) => {
         }
     }
 };
+
+const postGameMessage = (gameUpdate) => {
+    let messageContentSpan = '';
+    const chainsToTextMap = {'i': 'Imperial', 'c': 'Continental', 'w': 'Worldwide', 'f': 'Festival', 'a': 'American', 't': 'Tower', 'l': 'Luxor'};
+    switch(gameUpdate.type){
+        case 'playTile':
+            let tileText = `${gameUpdate.game.state.lastPlayedTile.x+1}${String.fromCharCode(gameUpdate.game.state.lastPlayedTile.y+65)}`;
+            messageContentSpan = `played tile: ${tileText}.`;
+            break;
+        case 'chooseNewChain':
+            messageContentSpan = `created <span class="chain-label" type="${gameUpdate.game.state.lastActionData.newChainChoice}">${chainsToTextMap[gameUpdate.game.state.lastActionData.newChainChoice]}</span>.`;
+            break;
+        case 'chooseRemainingChain':
+            messageContentSpan = `chose <span class="chain-label" type="${gameUpdate.game.state.lastActionData.remainingChainChoice}">${chainsToTextMap[gameUpdate.game.state.lastActionData.remainingChainChoice]}</span> to remain.`
+            break;
+        case 'disposeShares':
+            let eliminatedChain = JSON.parse(localStorage.lastMerger).elim_chains[JSON.parse(localStorage.lastMerger).disposing_chain_index];
+            let remainingChain = JSON.parse(localStorage.lastMerger).remaining_chain;
+            let remainingChainSpan = `<span class="chain-label" type="${remainingChain}">${chainsToTextMap[remainingChain]}</span>`;
+            let eliminatedChainSpan = `<span class="chain-label" type="${eliminatedChain}">${chainsToTextMap[eliminatedChain]}</span>`;
+            if(gameUpdate.game.state.lastActionData.keep !== 0){
+                messageContentSpan += `kept ${gameUpdate.game.state.lastActionData.keep} ${eliminatedChainSpan}, `
+            }
+            if(gameUpdate.game.state.lastActionData.trade !== 0){
+                messageContentSpan += `traded ${gameUpdate.game.state.lastActionData.trade} ${eliminatedChainSpan} for ${gameUpdate.game.state.lastActionData.trade / 2} ${remainingChainSpan}, `
+            }
+            if(gameUpdate.game.state.lastActionData.sell !== 0){
+                messageContentSpan += `sold ${gameUpdate.game.state.lastActionData.sell} ${eliminatedChainSpan}, `
+            }
+            messageContentSpan = messageContentSpan.substring(0, messageContentSpan.length - 2);
+            messageContentSpan += '.'
+            break;
+        case 'chooseNextElimChain':
+            messageContentSpan = `chose <span class="chain-label" type="${gameUpdate.game.state.lastActionData.nextElimChain}">${chainsToTextMap[gameUpdate.game.state.lastActionData.nextElimChain]}</span> to eliminate next.`
+            break;
+        case 'purchaseShares':
+            if(Object.keys(gameUpdate.game.state.lastActionData.purchase).length === 0){
+                messageContentSpan = 'bought nothing.';
+            }
+            else{
+                messageContentSpan = `bought `
+                for (const [key, value] of Object.entries(gameUpdate.game.state.lastActionData.purchase)){
+                    messageContentSpan += `${value} <span class="chain-label" type="${key}">${chainsToTextMap[key]}</span>, `;
+                }
+                messageContentSpan = messageContentSpan.substring(0, messageContentSpan.length - 2);
+                messageContentSpan += '.'
+            }
+            break;
+        case 'startGame':
+
+            break;
+        case 'joinGame':
+
+            break;
+        
+        
+
+    }//, 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares', 'startGame', 'chooseNextElimChain'};
+
+    // generate chat message about game update
+    const parent = document.querySelector('#messages');
+    let sectionEnd = '';
+    let turn = gameUpdate.game.state.turn;
+    if(gameUpdate.game.state.expectedNextAction === 'playTile'){
+        sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[turn]}</legend></fieldset>`
+        turn--;
+        if(turn < 0){
+            turn = gameUpdate.game.num_players - 1;
+        }
+    }
+    const newMessage = `<li><span>${gameUpdate.game.usernames[turn]}</span> ${messageContentSpan}</li>${sectionEnd}`;
+    
+    parent.insertAdjacentHTML('beforeend', newMessage);
+    parent.scrollTop = parent.scrollHeight;
+
+}
 
 (() => {
     const sock = io();
