@@ -442,6 +442,10 @@ a {
     margin: 0% 2% 0% 7%;
 }
 
+.end-game-action {
+    visibility: hidden;
+}
+
 /* Left column */
 .game-column {   
     flex-basis: 55%;

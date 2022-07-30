@@ -359,9 +359,26 @@ const prepareToPurchaseShares = (game) => {
      */
      localStorage.purchaseTotal = 0;
      localStorage.currentCartShareID = 0;
-     document.querySelector("#buy-shares-container").style.display = 'flex';
+     if(!game.state.game_ended){
+        document.querySelector("#buy-shares-container").style.display = 'flex';
+     }
      document.querySelector('#share-purchase-total').textContent = 'Total: 0';
+     if(gameIsEndable(game)){
+        document.querySelectorAll('.end-game-action').forEach((e) => e.style.visibility = 'visible');
+     }
      updateChainSelectorRow(game.state);
+};
+
+const gameIsEndable = (game) => {
+    if(Object.values(game.state.chains).some((chain) => chain.length > 40) ||
+        (!Object.values(game.state.chains).some((chain) => chain.length > 0 && chain.length < 11)
+            && game.state.available_chains.length < 7))
+    {
+        return true;
+    }
+    else {
+        return false;
+    }
 };
 
 const prepareToDisposeShares = (game) => {
