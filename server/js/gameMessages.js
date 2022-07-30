@@ -157,9 +157,12 @@ const gameMessages = {
             for(let i=0; i<games[game_id].num_players; i++){
                 //Total play timer
                 let test_time_lim = games[game_id].time_per_player;
+                /*
+                // fast timeouts for debugging
                 if(games[game_id].usernames[i] !== games[game_id].creator){
                     test_time_lim = 5000;
                 }
+                */
                 games[game_id].state.player_states[i].timerTotal = new Timer(() => {
                     games[game_id].state.player_states[i].out_of_total_time = true;
                     //games[game_id].state.player_states[i].timerAction.reset(); // so the action timer doesn't expire while we are already waiting on a computer move.
