@@ -149,7 +149,6 @@ const computerPlayer = {
                 firstOrSecondRankedChains.push(chain);
             }
         });
-        console.log(firstOrSecondRankedChains);
 
         chainsToBuy = firstOrSecondRankedChains.filter((chain) => {
             // filter out if:
@@ -176,9 +175,11 @@ const computerPlayer = {
                     if(game.state.bank_shares[chain] < maxPurchasableShares){
                         maxPurchasableShares = game.state.bank_shares[chain];
                     }
-                    move.purchase[chain] = maxPurchasableShares;
-                    numSharesAdded += maxPurchasableShares;
-                    spentCash += game.state.share_prices[chain] * maxPurchasableShares;
+                    if(maxPurchasableShares !== 0){
+                        move.purchase[chain] = maxPurchasableShares;
+                        numSharesAdded += maxPurchasableShares;
+                        spentCash += game.state.share_prices[chain] * maxPurchasableShares;
+                    }
                 }
                 
             }
