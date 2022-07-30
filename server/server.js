@@ -151,12 +151,13 @@ io.on('connection', (sock) => {
     connectedUsers.push(sock.request.session.username);
 
     //welcome message
+    /*
     io.emit('message', {
         sender: 'server',
         origin: 'lobby',
         mentions: [],
         message_content: `${sock.request.session.username} connected.`});
-
+    */
     // Event listeners
     // Misc
     sock.on('usernameRequest', () => {

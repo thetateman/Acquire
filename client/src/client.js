@@ -452,7 +452,6 @@ const updateGame = (sock) => (gameUpdate) => {
         localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
-        postGameMessage(gameUpdate);
         if(gameUpdate.game.usernames.indexOf(localStorage.username) !== -1){ //if user is a player in this game
             updateTileBank(gameUpdate.game, sock);
             myTurnStateUpdater(gameUpdate.game);
@@ -483,6 +482,7 @@ const updateGame = (sock) => (gameUpdate) => {
     else {
         console.log("Got unrecognized game update...")
     }
+    postGameMessage(gameUpdate);
 };
 
 const generateStatsTable = (game) => {
@@ -609,6 +609,12 @@ const addTimers = (game, totalSecondsRemainingArr) => {
                     totalTimerCurrentTurn.style.color = 'red';
                 }
                 totalTimerCurrentTurn.textContent = `${getReadableTimer(totalSecondsRemainingArr[game.state.turn] - counter)}`;
+                if(totalSecondsRemainingArr[game.state.turn] - counter === 0){
+                    let parent = document.querySelector('#messages');
+                    const newMessage = `<li style="color:red">${game.usernames[game.state.turn]} ran out of time! Computer taking over...</li>`;
+                    parent.insertAdjacentHTML('beforeend', newMessage);
+                    parent.scrollTop = parent.scrollHeight;
+                }
             }, 1000);
         }
     }
@@ -629,8 +635,16 @@ const postGameMessage = (gameUpdate) => {
             messageContentSpan = `chose <span class="chain-label" type="${gameUpdate.game.state.lastActionData.remainingChainChoice}">${chainsToTextMap[gameUpdate.game.state.lastActionData.remainingChainChoice]}</span> to remain.`
             break;
         case 'disposeShares':
-            let eliminatedChain = JSON.parse(localStorage.lastMerger).elim_chains[JSON.parse(localStorage.lastMerger).disposing_chain_index];
-            let remainingChain = JSON.parse(localStorage.lastMerger).remaining_chain;
+            let eliminatedChain;
+            let remainingChain;
+            try{
+                eliminatedChain = JSON.parse(localStorage.lastMerger).elim_chains[JSON.parse(localStorage.lastMerger).disposing_chain_index];
+                remainingChain = JSON.parse(localStorage.lastMerger).remaining_chain;
+            }
+            catch(err){
+                console.log("Probably missing merger object, did user join in the middle of a merger?");
+                console.log(err);
+            }
             let remainingChainSpan = `<span class="chain-label" type="${remainingChain}">${chainsToTextMap[remainingChain]}</span>`;
             let eliminatedChainSpan = `<span class="chain-label" type="${eliminatedChain}">${chainsToTextMap[eliminatedChain]}</span>`;
             if(gameUpdate.game.state.lastActionData.keep !== 0){
@@ -662,10 +676,10 @@ const postGameMessage = (gameUpdate) => {
             }
             break;
         case 'startGame':
-
+            messageContentSpan = 'Game Started.';
             break;
         case 'joinGame':
-
+            messageContentSpan = 'joined the game.'
             break;
         
         
@@ -675,15 +689,33 @@ const postGameMessage = (gameUpdate) => {
     // generate chat message about game update
     const parent = document.querySelector('#messages');
     let sectionEnd = '';
-    let turn = gameUpdate.game.state.turn;
-    if(gameUpdate.game.state.expectedNextAction === 'playTile'){
-        sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[turn]}</legend></fieldset>`
-        turn--;
-        if(turn < 0){
-            turn = gameUpdate.game.num_players - 1;
-        }
+    let turn;
+    let computerFlag;
+    let usernameSpan;
+    if(gameUpdate.type === 'startGame'){
+        usernameSpan = '';
+        sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[gameUpdate.game.state.turn]}</legend></fieldset>`;
     }
-    const newMessage = `<li><span>${gameUpdate.game.usernames[turn]}</span> ${messageContentSpan}</li>${sectionEnd}`;
+    else if(gameUpdate.type === 'joinGame'){
+        usernameSpan = `<span>${gameUpdate.joining_player}</span>`;
+    }
+    else{
+        sectionEnd = '';
+        turn = gameUpdate.game.state.turn;
+        computerFlag = '';
+        if(gameUpdate.game.state.expectedNextAction === 'playTile'){
+            sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[turn]}</legend></fieldset>`;
+            turn--;
+            if(turn < 0){
+                turn = gameUpdate.game.num_players - 1;
+            }
+        }
+        if(gameUpdate.game.state.player_states[turn].total_time_remaining <= 0){
+            computerFlag = ' (computer)';
+        }
+        usernameSpan = `<span>${gameUpdate.game.usernames[turn]}${computerFlag}</span>`;
+    }
+    const newMessage = `<li>${usernameSpan} ${messageContentSpan}</li>${sectionEnd}`;
     
     parent.insertAdjacentHTML('beforeend', newMessage);
     parent.scrollTop = parent.scrollHeight;
