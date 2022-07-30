@@ -14,6 +14,9 @@ const addBoard = () => {
 };
 
 const updateGameBoard = (game) => {
+    game.state.drawnDeadTiles.forEach((deadTile) => {
+        game.state.board[deadTile.y][deadTile.x] = 'p';
+    });
     for(let x=0; x<12; x++){
         for(let y=0; y<9; y++){
             if(game.state.board[y][x] !== 'e'){
@@ -500,6 +503,19 @@ const updateGame = (sock) => (gameUpdate) => {
         console.log("Got unrecognized game update...")
     }
     postGameMessage(gameUpdate);
+    // stats hiding
+    if(localStorage.hideStats === 'true'){
+        if(gameUpdate.type !== 'joinGame'){
+            gameUpdate.game.usernames.forEach((username) => {
+                if(username !== localStorage.username){
+                    let playerNum = gameUpdate.game.usernames.indexOf(username);
+                    console.log(playerNum);
+                    document.querySelectorAll(`.stats-board td[row="${playerNum}"]`)
+                    .forEach((td) => td.style.display = 'none');
+                }
+            });
+        }
+}
 };
 
 const generateStatsTable = (game) => {
@@ -709,6 +725,7 @@ const postGameMessage = (gameUpdate) => {
     let turn;
     let computerFlag;
     let usernameSpan;
+    let deadTileFlag = '';
     if(gameUpdate.type === 'startGame'){
         usernameSpan = '';
         sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[gameUpdate.game.state.turn]}</legend></fieldset>`;
@@ -720,6 +737,7 @@ const postGameMessage = (gameUpdate) => {
         sectionEnd = '';
         turn = gameUpdate.game.state.turn;
         computerFlag = '';
+        deadTileFlag = '';
         if(gameUpdate.game.state.expectedNextAction === 'playTile'){
             sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[turn]}</legend></fieldset>`;
             turn--;
@@ -727,12 +745,18 @@ const postGameMessage = (gameUpdate) => {
                 turn = gameUpdate.game.num_players - 1;
             }
         }
+        
         if(gameUpdate.game.state.player_states[turn].total_time_remaining <= 0){
             computerFlag = ' (computer)';
         }
         usernameSpan = `<span>${gameUpdate.game.usernames[turn]}${computerFlag}</span>`;
+        if(gameUpdate.game.state.num_new_dead_tiles > 0 && gameUpdate.game.state.expectedNextAction === 'playTile'){
+            let deadTile = gameUpdate.game.state.drawnDeadTiles[gameUpdate.game.state.drawnDeadTiles.length - 1];
+            let deadTileText = `${deadTile.x+1}${String.fromCharCode(deadTile.y+65)}`;
+            deadTileFlag = `<li>${usernameSpan} drew and replaced dead tile: ${deadTileText}</li>`;
+        }
     }
-    const newMessage = `<li>${usernameSpan} ${messageContentSpan}</li>${sectionEnd}`;
+    const newMessage = `${deadTileFlag}<li>${usernameSpan} ${messageContentSpan}</li>${sectionEnd}`;
     
     parent.insertAdjacentHTML('beforeend', newMessage);
     parent.scrollTop = parent.scrollHeight;

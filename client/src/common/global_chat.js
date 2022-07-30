@@ -99,6 +99,12 @@ const onChatSubmitted = (sock) => (e) => {
                 localStorage.muteList = JSON.stringify(muteList);
             }
         }
+        else if(text.indexOf('hidestats') === 1){
+            localStorage.hideStats = 'true';
+        }
+        else if(text.indexOf('unhidestats') === 1){
+            localStorage.hideStats = 'false';
+        }
         else{
             text = 'invalid_command';
         }

@@ -307,9 +307,23 @@ const internalGameFunctions = {
         if(game.state.no_playable_tile_turns === 0){ // if this player was able to play a tile
             // Draw new tile
             if(game.state.tile_bank.length !== 0){
+                let numDeadTiles = 0;
                 let newTile = game.state.tile_bank.pop()
                 newTile.predicted_type = sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
-                game.state.player_states[game.state.turn].tiles.push(newTile);
+                while(newTile.predicted_type === 'd'){
+                    numDeadTiles++;
+                    game.state.drawnDeadTiles.push(newTile);
+                    if(game.state.tile_bank.length <= 0){
+                        newTile = false;
+                        break;
+                    }
+                    newTile = game.state.tile_bank.pop()
+                    newTile.predicted_type = sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, newTile.x, newTile.y);
+                }
+                game.state.num_new_dead_tiles = numDeadTiles;
+                if(newTile){
+                    game.state.player_states[game.state.turn].tiles.push(newTile);
+                }
             }
         }
         else if(game.state.no_playable_tile_turns >= game.num_players){
@@ -417,9 +431,11 @@ const internalGameFunctions = {
                 turn: 0,
                 play_count: 0,
                 no_playable_tile_turns: 0,
+                num_new_dead_tiles: 0,
                 expectedNextAction: 'playTile',
                 lastPlayedTile: {},
                 lastActionData: {},
+                drawnDeadTiles: [],
                 tile_bank: this.genTileBank(),
                 board: [
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
