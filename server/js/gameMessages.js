@@ -156,7 +156,7 @@ const gameMessages = {
             // Addtional timer control happens in interalGameFunctions.endTurn().
             for(let i=0; i<games[game_id].num_players; i++){
                 //Total play timer
-                let test_time_lim = games[game_id].time_per_player;
+                let test_time_lim = games[game_id].time_per_player + 200; // Extra 200 ms to offset time lost at start.
                 /*
                 // fast timeouts for debugging
                 if(games[game_id].usernames[i] !== games[game_id].creator){
