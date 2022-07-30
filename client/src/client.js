@@ -511,7 +511,10 @@ const updateGame = (sock) => (gameUpdate) => {
                     let playerNum = gameUpdate.game.usernames.indexOf(username);
                     console.log(playerNum);
                     document.querySelectorAll(`.stats-board td[row="${playerNum}"]`)
-                    .forEach((td) => td.style.display = 'none');
+                    .forEach((td) => {
+                        if(td.getAttribute('column') !== 'username')
+                        {td.style.display = 'none'}
+                    });
                 }
             });
         }
