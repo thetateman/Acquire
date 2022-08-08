@@ -741,6 +741,9 @@ const postGameMessage = (gameUpdate) => {
         turn = gameUpdate.game.state.turn;
         computerFlag = '';
         deadTileFlag = '';
+        if(gameUpdate.game.state.game_ended){
+            sectionEnd = `<li><span>${gameUpdate.game.usernames[turn]}</span> ended the game.</li>`;
+        }
         if(gameUpdate.game.state.expectedNextAction === 'playTile'){
             sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[turn]}</legend></fieldset>`;
             turn--;

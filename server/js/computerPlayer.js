@@ -159,9 +159,11 @@ const computerPlayer = {
                 return false;
             }
             return true;
-        })
+        });
+
+        let preferenceRankedChainsToBuy = sharedGameFunctions.shuffleArray(chainsToBuy); // TODO: fix this
         
-        chainsToBuy.forEach((chain) => {
+        preferenceRankedChainsToBuy.forEach((chain) => {
             if(numSharesAdded <= 2 && !game.state.available_chains.includes(chain)){
                 console.log(chain);
                 let maxPurchasableShares = Math.floor((game.state.player_states[game.state.turn].cash - spentCash) / game.state.share_prices[chain]);
@@ -184,11 +186,10 @@ const computerPlayer = {
                 
             }
         });
-        /*
-        if(numSharesAdded < 3){
-
+        if(sharedGameFunctions.gameIsEndable(game)){
+            move.endGame = true;
         }
-        */
+      
         return move;
 
     },

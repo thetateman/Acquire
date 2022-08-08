@@ -152,5 +152,26 @@ const sharedGameFunctions = {
         });
         return {largestChains, remainingChain, elimChains, playersDisposing};
     },
+
+    gameIsEndable: function(game){
+        if(Object.values(game.state.chains).some((chain) => chain.length > 40) ||
+            (!Object.values(game.state.chains).some((chain) => chain.length > 0 && chain.length < 11)
+                && game.state.available_chains.length < 7))
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+    },
+
+    shuffleArray: function(arr) { // Fisher-Yates random shuffle.
+        let newArray = JSON.parse(JSON.stringify(arr));
+        for (let i = newArray.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    },
 }
 module.exports = sharedGameFunctions;

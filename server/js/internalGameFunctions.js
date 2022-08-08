@@ -17,13 +17,6 @@ const internalGameFunctions = {
         return id;
     },
 
-    shuffleArray: function(arr) { // Fisher-Yates random shuffle.
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-    },
-
     genTileBank: function(){
         let tileBank = [];
         for(let i = 0; i < 12; i++){
@@ -31,7 +24,7 @@ const internalGameFunctions = {
                 tileBank.push({x: i, y: j});
             }
         }
-        this.shuffleArray(tileBank);
+        tileBank = sharedGameFunctions.shuffleArray(tileBank);
         return tileBank;
     },
 
@@ -362,24 +355,12 @@ const internalGameFunctions = {
         if(!(Object.values(game.state.share_prices).some((share_price) => share_price <= game.state.player_states[game.state.turn].cash && share_price !== 0))
             || game.state.available_chains.length === 7)
         {
-            if(!this.gameIsEndable(game)){
+            if(!sharedGameFunctions.gameIsEndable(game)){
                 return true;
             }
         }
         return false;
 
-    },
-
-    gameIsEndable: function(game){
-        if(Object.values(game.state.chains).some((chain) => chain.length > 40) ||
-            (!Object.values(game.state.chains).some((chain) => chain.length > 0 && chain.length < 11)
-                && game.state.available_chains.length < 7))
-        {
-            return true;
-        }
-        else {
-            return false;
-        }
     },
 
     endGame: function(game){
@@ -947,7 +928,7 @@ const internalGameFunctions = {
                   
 
                 if(updateData.endGame === true){
-                    if(this.gameIsEndable(game)){
+                    if(sharedGameFunctions.gameIsEndable(game)){
                         this.endGame(game);
                     }
                     else {
