@@ -176,6 +176,13 @@ const displayLobbyList = () => {
     .addEventListener('click', onJoinGame(1, sock));
     */
 
+    // Force reload when page is accessed with the back button.
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+          // page was restored from the bfcache
+          window.location.reload();
+        }
+    });
 
 
 

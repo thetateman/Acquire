@@ -796,6 +796,14 @@ const postGameMessage = (gameUpdate) => {
     .querySelector('#start-game-button')
     .addEventListener('click', startGame(sock));
 
+    // Force reload when page is accessed with the back button.
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+          // page was restored from the bfcache
+          window.location.reload();
+        }
+    });
+
     //canvas.addEventListener('click', onClick);
     sock.emit('gameRequest', window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1]);
 
