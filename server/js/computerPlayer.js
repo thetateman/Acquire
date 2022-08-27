@@ -116,6 +116,10 @@ const computerPlayer = {
         }
 
         if(!selectedTile){
+            selectedTile = abstractGameFeatures.tileFeatures.find((tile) => !['m', 'd', 'z'].includes(tile.predicted_type));
+        }
+
+        if(!selectedTile){
             game.state.player_states[game.state.turn].tiles.forEach((tile) => {
                 if(!(tile.predicted_type === 'd' || tile.predicted_type === 'z')){
                     selectedTile = tile;

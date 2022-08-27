@@ -211,10 +211,15 @@ const internalGameFunctions = {
 
     awardPrizes: function(game, reason='merger'){
         let elimChains = [];
+        let unrealizedPrizes = [];
+        for(let i=0;i<game.num_players;i++){
+            unrealizedPrizes.push(0);
+        }
         if(reason === 'merger'){
             elimChains = elimChains.concat(game.state.active_merger.merging_chains.filter((chain) => chain !== game.state.active_merger.remaining_chain));
         }
-        else if(reason === "endGame"){
+        else if(reason === "endGame" || reason === 'calcUnrealizedPrizes'){
+            // "elimChains" is every chain on the board
             elimChains = elimChains.concat(['i', 'c', 'a', 'w', 'f', 'l', 't'].filter((chain) => !game.state.available_chains.includes(chain)));
         }
         for(let i = 0; i < elimChains.length; i++){
@@ -232,17 +237,34 @@ const internalGameFunctions = {
                     firstPlaces.push(j);
                 }
             }
+            if(firstPlaces.length === 0){
+                //console.log(`No ${elimChains[i]} shares, skipping prizes. (should only happen in debug).`);
+                continue;
+            }
             if(firstPlaces.length > 1){ //first place tie
                 // all players who tie for first place split first and second place awards.
                 let combinedReward = 15 * game.state.share_prices[elimChains[i]]; 
                 let splitReward = combinedReward / firstPlaces.length;
-                splitReward += (100 - (splitReward % 100)) //Rounding up to 100th place.
+                splitReward = Math.ceil(splitReward/100)*100; //Rounding up to 100th place.
                 for(let k = 0; k < firstPlaces.length; k++){
-                    game.state.player_states[firstPlaces[k]].cash += splitReward;
+                    if(reason === 'calcUnrealizedPrizes'){
+                        unrealizedPrizes[firstPlaces[k]] += splitReward;
+                    }
+                    else{
+                        game.state.player_states[firstPlaces[k]].cash += splitReward;
+                    }
                     //console.log(`Player ${firstPlaces[k]} tied for first and receives ${splitReward} for ${elimChains[i]}`);
                 }
             }
             else{ // no tie for first
+                // award first place prize
+                if(reason === 'calcUnrealizedPrizes'){
+                    unrealizedPrizes[firstPlaces[0]] += 10 * game.state.share_prices[elimChains[i]];
+                }
+                else{
+                    game.state.player_states[firstPlaces[0]].cash += 10 * game.state.share_prices[elimChains[i]];
+                }
+                //get list of players in second place
                 for(let j = 0; j < game.num_players; j++){
                     if(j === firstPlaces[0]){
                         continue;
@@ -256,34 +278,43 @@ const internalGameFunctions = {
                         secondPlaces.push(j);
                     }
                 }
-                if(secondPlaces.length > 1){ //tie for second
-                    let splitReward = 5 * game.state.share_prices[elimChains[i]] / secondPlaces.length;
-                    splitReward += (100 - (splitReward % 100)) //Rounding up to 100th place.
-                    for(let k = 0; k < secondPlaces.length; k++){
-                        game.state.player_states[secondPlaces[k]].cash += splitReward;
-                        //console.log(`Player ${firstPlaces[k]} tied for second and receives ${splitReward} for ${elimChains[i]}`);
-                    }
-                }
-                if(firstPlaces.length === 0){
-                    //console.log(`No ${elimChains[i]} shares, skipping prizes. (should only happen in debug).`);
-                    continue;
-                }
                 if(secondPlaces.length === 0){
                     secondPlaces.push(firstPlaces[0]);
                     //console.log(`No one had second in ${elimChains[i]}, giving second place prize to ${firstPlaces[0]}`);
                 }
-                /*
-                console.log(`No ties: awarding ${10 * game.state.share_prices[elimChains[i]]} to ` + 
-                    `player ${firstPlaces[0]} and ${5 * game.state.share_prices[elimChains[i]]} to player ` +
-                    `${secondPlaces[0]} for ${elimChains[i]}.`);
-                */
-                game.state.player_states[firstPlaces[0]].cash += 10 * game.state.share_prices[elimChains[i]];
-                game.state.player_states[secondPlaces[0]].cash += 5 * game.state.share_prices[elimChains[i]];
+                if(secondPlaces.length > 1){ //tie for second
+                    let splitReward = 5 * game.state.share_prices[elimChains[i]] / secondPlaces.length;
+                    splitReward = Math.ceil(splitReward/100)*100; //Rounding up to 100th place.
+                    for(let k = 0; k < secondPlaces.length; k++){
+                        if(reason === 'calcUnrealizedPrizes'){
+                            unrealizedPrizes[secondPlaces[k]] += splitReward;
+                        }
+                        else{
+                            game.state.player_states[secondPlaces[k]].cash += splitReward;
+                        }
+                        //console.log(`Player ${firstPlaces[k]} tied for second and receives ${splitReward} for ${elimChains[i]}`);
+                    }
+                }
+                else {
+                    /*
+                    console.log(`No ties: ${5 * game.state.share_prices[elimChains[i]]} to player ` +
+                        `${secondPlaces[0]} for ${elimChains[i]}.`);
+                    */
+                    if(reason === 'calcUnrealizedPrizes'){
+                        unrealizedPrizes[secondPlaces[0]] += 5 * game.state.share_prices[elimChains[i]];
+                    }
+                    else{
+                        game.state.player_states[secondPlaces[0]].cash += 5 * game.state.share_prices[elimChains[i]];
+                    }
+                }
             }
         }
+        if(reason === 'calcUnrealizedPrizes') return unrealizedPrizes;
     },
 
     updateNetWorths: function(game){
+        let unrealizedPrizes = this.awardPrizes(game, 'calcUnrealizedPrizes');
+        let playerIndex = 0;
         game.state.player_states.forEach((player) => {
             let totalShareValue = 0;
             ['i', 'c', 'w', 'f', 'a', 't', 'l'].forEach((chain) => {
@@ -292,7 +323,8 @@ const internalGameFunctions = {
             if(game.state.game_ended){
                 totalShareValue = 0;
             }
-            player.net_worth = player.cash + totalShareValue;
+            player.net_worth = player.cash + totalShareValue + unrealizedPrizes[playerIndex];
+            playerIndex++;
         });
     },
 
@@ -365,7 +397,7 @@ const internalGameFunctions = {
 
     endGame: function(game){
         //award prizes
-        this.awardPrizes(game, "endGame");
+        //this.awardPrizes(game, "endGame");
         this.updateNetWorths(game);
 
         //determine player placements
@@ -925,7 +957,7 @@ const internalGameFunctions = {
                     game.state.player_states[userID][key] += value;
                     game.state.player_states[userID].cash -= purchasePrice;
                   }
-                  
+                this.updateNetWorths(game);
 
                 if(updateData.endGame === true){
                     if(sharedGameFunctions.gameIsEndable(game)){

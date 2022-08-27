@@ -54,7 +54,7 @@ const logout = () => {
     const navbarHTML = `
         <div class="topnav">
             <a href="/lobby">Lobby</a>
-            <a href="#news">Game Stats</a>
+            <!--<a href="#news">Game Stats</a>-->
             <a href="/about">About</a>
             <div class="topnav-right">
                 <a id="navbar-username">${localStorage.username}</a>
