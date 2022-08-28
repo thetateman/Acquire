@@ -751,16 +751,26 @@ const postGameMessage = (gameUpdate) => {
                 turn = gameUpdate.game.num_players - 1;
             }
         }
+        if(gameUpdate.type === 'disposeShares'){
+            try{
+                turn = localStorage.previousTurn;
+            }
+            catch(err){
+                turn = 0;
+            }
+        }
         
         if(gameUpdate.game.state.player_states[turn].total_time_remaining <= 0){
             computerFlag = ' (computer)';
         }
+        console.log(turn);
         usernameSpan = `<span>${gameUpdate.game.usernames[turn]}${computerFlag}</span>`;
         if(gameUpdate.game.state.num_new_dead_tiles > 0 && gameUpdate.game.state.expectedNextAction === 'playTile'){
             let deadTile = gameUpdate.game.state.drawnDeadTiles[gameUpdate.game.state.drawnDeadTiles.length - 1];
             let deadTileText = `${deadTile.x+1}${String.fromCharCode(deadTile.y+65)}`;
             deadTileFlag = `<li>${usernameSpan} drew and replaced dead tile: ${deadTileText}</li>`;
         }
+        localStorage.previousTurn = gameUpdate.game.state.turn;
     }
     const newMessage = `${deadTileFlag}<li>${usernameSpan} ${messageContentSpan}</li>${sectionEnd}`;
     
