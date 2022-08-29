@@ -217,6 +217,7 @@ const internalGameFunctions = {
         }
         if(reason === 'merger'){
             elimChains = elimChains.concat(game.state.active_merger.merging_chains.filter((chain) => chain !== game.state.active_merger.remaining_chain));
+            elimChains.forEach((chain) => game.state.available_chains.push(chain));
         }
         else if(reason === "endGame" || reason === 'calcUnrealizedPrizes'){
             // "elimChains" is every chain on the board
@@ -860,7 +861,7 @@ const internalGameFunctions = {
                         elimChains.forEach((chain) => {
                             mergingChainTiles = mergingChainTiles.concat(JSON.parse(JSON.stringify(game.state.chains[chain])));
                             game.state.chains[chain] = [];
-                            game.state.available_chains.push(chain);
+                            //game.state.available_chains.push(chain); //moved to awardPrizes() to avoid apparent duplicate prize money in net worth calculation during mergers.
                             if(verbose){console.log(`merging off: ${chain}`);}
                         });
                         mergingChainTiles = mergingChainTiles.concat(
