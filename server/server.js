@@ -109,6 +109,9 @@ app.use('/game', (req, res) => {
     let requestedGameID = req.query.gameid;
     res.sendFile(path.resolve(`${__dirname}/../client/index.html`));
 });
+app.use('/sitemap', (req, res) => {
+    res.sendFile(path.resolve(`${__dirname}/../client/sitemap.xml`));
+});
 
 const server = http.createServer(app);
 const io = socketio(server);
