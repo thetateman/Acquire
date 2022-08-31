@@ -1,3 +1,7 @@
+"use strict";
+
+const fs = require('fs');
+
 const chatMessages = {
     registerChatMessageHandlers: function (games, io, sock){
         /**
@@ -9,6 +13,17 @@ const chatMessages = {
         * 
         */
         sock.on('message', (text) => {
+            if(text.length > 2000){ // limit message length to 2000 characters
+                text = text.substring(0, 1999);
+            }
+            //write to chat log file
+            let logEntry = `${sock.request.session.username} (${sock.request.session.lastKnownLocation}): ${text}\n`;
+            fs.writeFile('../server_data_backup/chatlog.txt', logEntry, { flag: 'a' }, err => {
+                if (err) {
+                  console.error(err);
+                }
+                // file written successfully
+            });
             //find mentions
             let atIndicies = [];
             let spacesAfter = [];

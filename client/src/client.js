@@ -814,7 +814,6 @@ const postGameMessage = (gameUpdate) => {
         }
     });
 
-    //canvas.addEventListener('click', onClick);
-    sock.emit('gameRequest', window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1]);
-
+    localStorage.current_game_id = window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1];
+    sock.emit('gameRequest', localStorage.current_game_id);
 })();

@@ -3,6 +3,12 @@
 const internalGameFunctions = require("./internalGameFunctions.js");
 const Timer = require("./timers.js");
 const computerPlayer = require("./computerPlayer.js");
+const GameModel = require("../models/game.js");
+const mongoose = require('mongoose');
+require('dotenv').config();
+const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
+.then(()=>{})
+.catch(e=>console.error(e));
 
 const gameMessages = {
     registerGameMessageHandlers: function(games, io, sock, userStatuses, usersInLobby, verbose){
@@ -165,6 +171,7 @@ const gameMessages = {
                 */
                 games[game_id].state.player_states[i].timerTotal = new Timer(() => {
                     games[game_id].state.player_states[i].out_of_total_time = true;
+                    games[game_id].players_timed_out.push(games[game_id].usernames[i]);
                     //games[game_id].state.player_states[i].timerAction.reset(); // so the action timer doesn't expire while we are already waiting on a computer move.
                     gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
                 }, test_time_lim);
@@ -199,6 +206,10 @@ const gameMessages = {
             }
         }
         if(verbose){console.timeEnd('gameAction');}
+        if(games[game_id].state.game_ended){
+            //clean up game
+            gameMessages.saveGameToDatabase(games[game_id]);
+        }
     },
 
     // --------------Game Message helper functions --------------------
@@ -256,5 +267,17 @@ const gameMessages = {
             }
         }, 1000);
     },
+
+    saveGameToDatabase: async function(game){
+        let completedGame = new GameModel({
+            time_per_player: game.time_per_player,
+            usernames: game.usernames_ranked,
+            networths: game.final_net_worths,
+            players_timed_out: game.players_timed_out,
+        });
+        await completedGame.save().then(savedDoc => {
+            console.log(savedDoc);
+        });
+    }
 }
 module.exports = gameMessages;

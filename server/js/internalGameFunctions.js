@@ -403,6 +403,8 @@ const internalGameFunctions = {
 
         //determine player placements
         let usernamesRanked = JSON.parse(JSON.stringify(game.usernames));
+        let places = [];
+        let networths = [];
         usernamesRanked.sort((a, b) => {
             if(game.state.player_states[game.usernames.indexOf(a)].net_worth < game.state.player_states[game.usernames.indexOf(b)].net_worth){
                 return 1;
@@ -411,9 +413,10 @@ const internalGameFunctions = {
                 return -1
             }
         });
-        let places = [];
+        
         for(let i=0;i<game.num_players;i++){
             places.push([]);
+            networths.push(game.state.player_states[game.usernames.indexOf(usernamesRanked[i])].net_worth);
         }
         places[0].push(usernamesRanked[0]);
         let placeIndex = 0;
@@ -425,10 +428,12 @@ const internalGameFunctions = {
         }
         game.state.game_ended = true;
         game.places = places;
+        game.usernames_ranked = usernamesRanked;
+        game.final_net_worths = networths;
     },
     
     createGame: function(games, maxPlayers, timePerPlayer, creator){
-        let id = this.genNewGameID(games)
+        let id = this.genNewGameID(games);
         let newGame = {
             id: id,
             creator: creator,
@@ -437,6 +442,7 @@ const internalGameFunctions = {
             inactive_since: new Date(8640000000000000).getTime(),
             max_players: maxPlayers,
             time_per_player: timePerPlayer * 1000 * 60,
+            players_timed_out: [],
             usernames:[],
             watchers:[],
             state: {

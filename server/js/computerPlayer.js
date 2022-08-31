@@ -246,9 +246,9 @@ const computerPlayer = {
 
         if(game.state.share_prices[game.state.active_merger.remaining_chain] > game.state.share_prices[disposingChain] * 2){
             // trade max
-            let numSharesToTrade = 2 * Math.floor(numSharesToDispose / 2);
+            numSharesToTrade = 2 * Math.floor(numSharesToDispose / 2);
             if(numSharesToTrade / 2 > game.state.bank_shares[game.state.active_merger.remaining_chain]){
-                numSharesToTrade = 2 * Math.floor(game.state.bank_shares[game.state.active_merger.remaining_chain] / 2);
+                numSharesToTrade = 4 * Math.floor(game.state.bank_shares[game.state.active_merger.remaining_chain] / 2);
             }
             move.trade = numSharesToTrade;
             numSharesToDispose -= numSharesToTrade;
