@@ -17,6 +17,10 @@ router
     .route("/logoutUser")
     .delete(UserMiddleware.logoutUserMiddleware);
 
+router
+    .route("/searchUser")
+    .get(UserMiddleware.searchUserMiddleware);
+
 /* ---------------Other express router examples-------------------
 router.route("/").get(RestaurantsCtrl.apiGetRestaurants)
 router.route("/id/:id").get(RestaurantsCtrl.apiGetRestaurantById)

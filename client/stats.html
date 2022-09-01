@@ -11,7 +11,15 @@
         <link rel="stylesheet" href="./styles/dark_mode_toggle.css" />
     </head>
     <body class="dark-mode">
-        <script src="src/common/dark_mode_toggle.js"></script>
+        <div class="chat-wrapper">
+            <form id="search-form">
+                <input id="search-username" autocomplete="off" placeholder="username" />
+                <button id="signup">Search</button>
+            </form>
+        </div>
+        <script src="/src/common/dark_mode_toggle.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="src/stats.js"></script>
         <script src="src/common/navbar.js"></script>
     </body>
 </html>

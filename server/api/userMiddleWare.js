@@ -137,5 +137,11 @@ const UserMiddleware = {
       res.end();
     }
   },
+
+  
+  searchUserMiddleware: async function(req, res, next){
+    console.log("get user search request for user:");
+    console.log(req.query.username);
+  },
 }
 module.exports = UserMiddleware;
