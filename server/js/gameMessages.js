@@ -3,7 +3,7 @@
 const internalGameFunctions = require("./internalGameFunctions.js");
 const Timer = require("./timers.js");
 const computerPlayer = require("./computerPlayer.js");
-const GameModel = require("../models/game.js");
+const GameModel = require("../models/Game.js");
 const mongoose = require('mongoose');
 require('dotenv').config();
 const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)

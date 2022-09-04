@@ -1,5 +1,6 @@
 const express = require('express');
 const UserModel = require("../models/User");
+const GameModel = require("../models/Game.js");
 const bcrypt = require("bcryptjs");
 const mongoose = require('mongoose');
 
@@ -140,8 +141,15 @@ const UserMiddleware = {
 
   
   searchUserMiddleware: async function(req, res, next){
+    let responseObj = {error: "none", games: {}};
     console.log("get user search request for user:");
     console.log(req.query.username);
+    let result = await GameModel.find({usernames: req.query.username}); // select games with username query in usernames array
+    console.log('result: ')
+    console.log(result);
+    responseObj.games = result;
+    return res.json(responseObj);
+
   },
 }
 module.exports = UserMiddleware;

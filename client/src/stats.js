@@ -1,3 +1,7 @@
+const displayError = (err) => {
+    return true;
+}
+
 const onSearch = (e) => {
     e.preventDefault();
     let usernameToSearch = document.querySelector('#search-username').value;
@@ -9,9 +13,10 @@ const onSearch = (e) => {
         })
         .then(function(response){
             response.json().then(function(json){
-                let success = displayLoginError(json.error);
+                let success = displayError(json.error);
                 console.log('Success:', json);
                 if(success){
+                    document.body.insertAdjacentHTML("beforeend", `<p>${JSON.stringify(json.games)}</p>`);
                     //populate page with results
                 }
             })
