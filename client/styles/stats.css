@@ -1,0 +1,70 @@
+:root {
+    --main-bg-color: white;
+    --main-text-color: black;
+    --button-bg-color: #4897ff;
+    --button-hover-bg-color: #79b2fc;
+    --standard-box-shadow: rgba(0, 0, 0, 0.65) 1px 2px 6px;
+    --standard-section-divider: 2px solid #8d8d8d;
+}
+body {
+    font-family: "Helvetica Neue", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: var(--main-text-color);
+    background-color: var(--main-bg-color);
+}
+
+table, th, td{
+    border: 1px solid var(--main-text-color);
+    border-collapse: collapse;
+}
+
+th, td{
+    padding: 5px;
+}
+
+input {
+    outline: none;
+    font-size: 1.0rem;
+}
+
+button {
+    font-size: 1rem;
+    padding: 3px 15px;
+    color: var(--main-bg-color);
+    background-color: var(--button-bg-color);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    box-shadow: var(--standard-box-shadow);
+    transition: all 150ms ease-in;
+    outline: none;
+    height: 25px;
+    white-space: nowrap;
+  }
+  
+  button:hover {
+    background-color: var(--button-hover-bg-color);
+  }
+
+#content{
+    margin-top: 43px;
+}
+
+#search-form, #all-stats-controls{
+    width:fit-content;
+    padding-top: 15px;
+    margin: 0px auto;
+}
+
+
+/*--------------- Dark mode styles-------------------*/
+body.dark-mode{
+    --main-bg-color: rgb(28, 28, 28);
+    --main-text-color: white;
+    --standard-box-shadow: rgba(0, 0, 0, 0.95) 1px 2px 6px;
+    /*--standard-border-color: rgb(92, 92, 92);*/
+    --standard-empty-tile-color: #adad72;
+    --tile-bank-single-color: #f8f8bc;
+  }

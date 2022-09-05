@@ -6,16 +6,28 @@
         and play with other people online.">
         <meta name="keywords" content="Acquire, game, board, boardgame, board-game, multiplayer, computer, internet, fun, competetitive, Sid, Sackson, Hasbro, Avalon, Hill, merger, hotel, chain, stock, share, tile, grid, rules, rulebook, poker, risk, monopoly, tabletop, timed, tlstyer, acquisition">
         <title>Online Acquire, About the board game</title>
-        <link rel="stylesheet" href="./styles/about.css" />
+        <link rel="stylesheet" href="./styles/stats.css" />
         <link rel="stylesheet" href="./styles/topnav.css" />
         <link rel="stylesheet" href="./styles/dark_mode_toggle.css" />
     </head>
     <body class="dark-mode">
-        <div class="chat-wrapper">
+        <div id="content">
+            <div id="all-stats-controls">
+                <span>See all stats: </span>
+                <button class="game-type-selector" value="2">2 Player</button>
+                <button class="game-type-selector" value="3">3 Player</button>
+                <button class="game-type-selector" value="4">4 Player</button>
+                <button class="game-type-selector" value="5">5 Player</button>
+                <button class="game-type-selector" value="6">6 Player</button>
+            </div>
             <form id="search-form">
+                <span>Find a user: </span>
                 <input id="search-username" autocomplete="off" placeholder="username" />
                 <button id="signup">Search</button>
             </form>
+            
+
+            <div></div>
         </div>
         <script src="/src/common/dark_mode_toggle.js"></script>
         <script src="/socket.io/socket.io.js"></script>

@@ -439,6 +439,11 @@ const myTurnStateUpdater = (game) => {
         document.querySelector('.chain-controls-container').style.display = 'none';
     }
     else if(game.usernames[game.state.turn] === localStorage.username){
+        if(['playTile', 'disposeShares'].includes(game.state.expectedNextAction)){
+            //play turn indicator audio
+            var audio = new Audio('audio/beep3.mp3');
+            audio.play();
+        }
         if(game.state.expectedNextAction === 'disposeShares'){
             prepareToDisposeShares(game);
         }
