@@ -20,6 +20,9 @@ const userSchema = new Schema({
         type: Date, 
         default: Date.now
     }, 
+    associated_ip_addresses: {
+        type: [String]
+    },
     p2_skill: {
         type: [Number],
         default: [25.0, 25.0/3.0] // TrueSkill skill parameters: [mu, sigma]

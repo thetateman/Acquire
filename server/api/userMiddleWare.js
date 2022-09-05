@@ -59,7 +59,8 @@ const UserMiddleware = {
       user = new UserModel({
         username,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        associated_ip_addresses: [req.ip]
       });
       
       await user.save();
@@ -141,13 +142,36 @@ const UserMiddleware = {
 
   
   searchUserMiddleware: async function(req, res, next){
-    let responseObj = {error: "none", games: {}};
+    let responseObj = {error: "none", user: {}};
     console.log("get user search request for user:");
     console.log(req.query.username);
-    let result = await GameModel.find({usernames: req.query.username}); // select games with username query in usernames array
+    let selectString = 'username date_created games_stalled';
+    for(let i=2; i<7; i++){
+      selectString += ` p${i}_skill p${i}_record`;
+    }
+    let result = await UserModel.findOne({username: req.query.username}).select(selectString); 
     console.log('result: ')
     console.log(result);
-    responseObj.games = result;
+    responseObj.user = result;
+    return res.json(responseObj);
+
+  },
+
+  getLadderMiddleware: async function(req, res, next){
+    let responseObj = {error: "none", users: []};
+    console.log("got ladder request:");
+    console.log(req.query.numplayers);
+    let projectObj = {
+      "_id": 0,
+      username: 1,
+      date_created: 1,
+      games_stalled: 1,
+      [`p${req.query.numplayers}_skill`]: 1,
+      [`p${req.query.numplayers}_record`]: 1,
+    }
+    let result = await UserModel.aggregate([{"$match":{"$expr":{"$gt":[{"$sum":`$p${req.query.numplayers}_record`}, 0]}}}, {"$project": projectObj}]); 
+    console.log('result: ')
+    responseObj.users = result;
     return res.json(responseObj);
 
   },

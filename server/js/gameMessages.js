@@ -4,6 +4,7 @@ const internalGameFunctions = require("./internalGameFunctions.js");
 const Timer = require("./timers.js");
 const computerPlayer = require("./computerPlayer.js");
 const GameModel = require("../models/Game.js");
+const rankPlayers = require("./rankPlayers.js");
 const mongoose = require('mongoose');
 require('dotenv').config();
 const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
@@ -208,6 +209,7 @@ const gameMessages = {
         if(verbose){console.timeEnd('gameAction');}
         if(games[game_id].state.game_ended){
             //clean up game
+            rankPlayers.postGameAdjust(games[game_id]);
             gameMessages.saveGameToDatabase(games[game_id]);
         }
     },

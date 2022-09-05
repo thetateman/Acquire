@@ -1,8 +1,82 @@
 "use strict";
+const UserModel = require("../models/User.js");
 
 const trueskill = require("trueskill");
 const rankPlayers = {
-    tester: function(){
+    postGameAdjust: function(game){
+        let result = 'success';
+        //set beta to sigma (high luck element)
+        trueskill.SetParameters(25.0/3);
+        //get players from database
+        UserModel.find({username: {$in: game.usernames}}, function(err, players){
+            if(err){
+                console.log(err);
+                result = 'failedToFind';
+                return;
+            }
+            console.log(players);
+            if(players.length < 2){
+                result = 'notEnoughRegisteredPlayers';
+                return; 
+            }
+            for(let i=0; i<players.length; i++){
+                players[i].skill = players[i][`p${game.num_players}_skill`];
+                players[i].rank = game.usernames_ranked.indexOf(players[i].username);
+                players[i][`p${game.num_players}_record`][players[i].rank]++;
+                console.log("initial skill: ");
+                console.log(players[i].skill);
+            };
+            // Do the computation to find each player's new skill estimate.
+            
+            trueskill.AdjustPlayers(players);
+            // Update db
+            players.forEach((player) => {
+                console.log("later skill: ")
+                console.log(player.skill);
+                UserModel.updateOne({username: player.username}, {
+                    $set: {
+                        [`p${game.num_players}_skill`]: player.skill, 
+                        [`p${game.num_players}_record`]: player[`p${game.num_players}_record`]
+                    }
+                }, function(updateErr, updateDocs){
+                    if(updateErr){
+                        console.log(updateErr);
+                    }
+                    else{
+                        console.log(updateDocs);
+                    }
+                });
+
+
+            });
+        })
+        //trueskill.AdjustPlayers([alice, bob, darren]);
+    },
+    tester: async function(){
+        let players = await UserModel.find({username: {$in: ['tate', 'test0']}});
+        console.log(players);
+            if(players.length < 2){
+                result = 'notEnoughRegisteredPlayers';
+                return; 
+            }
+        players.forEach((player) => {
+            console.log(player);
+            player.gamer = "afasdfa";
+            UserModel.updateOne({username: player.username}, {
+                $set: {email: `test${player.username}`}
+            }, function(updateErr, updateDocs){
+                if(updateErr){
+                    console.log(updateErr);
+                    console.log("here")
+                }
+                else{
+                    console.log(updateDocs);
+                }
+            });
+
+
+        });
+        /*
         let alice = {}
         alice.skill = [25.0, 25.0/3.0]
         
@@ -50,6 +124,7 @@ const rankPlayers = {
         console.log(chris.skill);
         console.log("darren:");
         console.log(darren.skill);
+        */
     }
 };
 
