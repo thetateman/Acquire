@@ -169,7 +169,6 @@ const computerPlayer = {
         
         preferenceRankedChainsToBuy.forEach((chain) => {
             if(numSharesAdded <= 2 && !game.state.available_chains.includes(chain)){
-                console.log(chain);
                 let maxPurchasableShares = Math.floor((game.state.player_states[game.state.turn].cash - spentCash) / game.state.share_prices[chain]);
                 if(maxPurchasableShares > 3 - numSharesAdded){
                     maxPurchasableShares = 3 - numSharesAdded;
