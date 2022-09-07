@@ -63,6 +63,27 @@ const userSchema = new Schema({
         type: [Number],
         default: [0, 0, 0, 0, 0, 0]
     },
+    p2games_stalled: {
+        type: Number,
+        default: 0
+    },
+    p3games_stalled: {
+        type: Number,
+        default: 0
+    },
+    p4games_stalled: {
+        type: Number,
+        default: 0
+    },
+    p5games_stalled: {
+        type: Number,
+        default: 0
+    },
+
+    p6games_stalled: {
+        type: Number,
+        default: 0
+    }
     
     
 });

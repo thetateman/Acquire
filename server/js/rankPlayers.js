@@ -23,8 +23,9 @@ const rankPlayers = {
                 players[i].skill = players[i][`p${game.num_players}_skill`];
                 players[i].rank = game.usernames_ranked.indexOf(players[i].username);
                 players[i][`p${game.num_players}_record`][players[i].rank]++;
-                console.log("initial skill: ");
-                console.log(players[i].skill);
+                if(game.players_timed_out.includes(players[i].username)){
+                    players[i][`p${game.num_players}games_stalled`]++;
+                }
             };
             // Do the computation to find each player's new skill estimate.
             
@@ -36,7 +37,8 @@ const rankPlayers = {
                 UserModel.updateOne({username: player.username}, {
                     $set: {
                         [`p${game.num_players}_skill`]: player.skill, 
-                        [`p${game.num_players}_record`]: player[`p${game.num_players}_record`]
+                        [`p${game.num_players}_record`]: player[`p${game.num_players}_record`],
+                        [`p${game.num_players}games_stalled`]: player[`p${game.num_players}games_stalled`]
                     }
                 }, function(updateErr, updateDocs){
                     if(updateErr){

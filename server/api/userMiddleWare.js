@@ -145,9 +145,9 @@ const UserMiddleware = {
     let responseObj = {error: "none", user: {}};
     console.log("get user search request for user:");
     console.log(req.query.username);
-    let selectString = 'username date_created games_stalled';
+    let selectString = 'username date_created';
     for(let i=2; i<7; i++){
-      selectString += ` p${i}_skill p${i}_record`;
+      selectString += ` p${i}_skill p${i}_record p${i}games_stalled`;
     }
     let result = await UserModel.findOne({username: req.query.username}).select(selectString); 
     console.log('result: ')
@@ -165,7 +165,7 @@ const UserMiddleware = {
       "_id": 0,
       username: 1,
       date_created: 1,
-      games_stalled: 1,
+      [`p${req.query.numplayers}games_stalled`]: 1,
       [`p${req.query.numplayers}_skill`]: 1,
       [`p${req.query.numplayers}_record`]: 1,
     }
