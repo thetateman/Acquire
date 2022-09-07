@@ -8,7 +8,6 @@ const rankPlayers = require("./rankPlayers.js");
 const mongoose = require('mongoose');
 require('dotenv').config();
 const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
-.then(()=>{})
 .catch(e=>console.error(e));
 
 const gameMessages = {
@@ -209,7 +208,7 @@ const gameMessages = {
         if(verbose){console.timeEnd('gameAction');}
         if(games[game_id].state.game_ended){
             //clean up game
-            if(game.num_players > 1){ // db and trueskill functions not set up to handle single player games
+            if(games[game_id].num_players > 1){ // db and trueskill functions not set up to handle single player games
                 rankPlayers.postGameAdjust(games[game_id]); //updates player skill level and record in db
                 gameMessages.saveGameToDatabase(games[game_id]);
             }
@@ -279,9 +278,8 @@ const gameMessages = {
             networths: game.final_net_worths,
             players_timed_out: game.players_timed_out,
         });
-        await completedGame.save().then(savedDoc => {
-            console.log(savedDoc);
-        });
+        await completedGame.save()
+        .catch(err => console.error(err));
     }
 }
 module.exports = gameMessages;

@@ -159,8 +159,6 @@ const UserMiddleware = {
 
   getLadderMiddleware: async function(req, res, next){
     let responseObj = {error: "none", users: []};
-    console.log("got ladder request:");
-    console.log(req.query.numplayers);
     let projectObj = {
       "_id": 0,
       username: 1,
@@ -168,9 +166,15 @@ const UserMiddleware = {
       [`p${req.query.numplayers}games_stalled`]: 1,
       [`p${req.query.numplayers}_skill`]: 1,
       [`p${req.query.numplayers}_record`]: 1,
+    };
+    let result;
+    try{
+      result = await UserModel.aggregate([{"$match":{"$expr":{"$gt":[{"$sum":`$p${req.query.numplayers}_record`}, 0]}}}, {"$project": projectObj}]); 
     }
-    let result = await UserModel.aggregate([{"$match":{"$expr":{"$gt":[{"$sum":`$p${req.query.numplayers}_record`}, 0]}}}, {"$project": projectObj}]); 
-    console.log('result: ')
+    catch(err){
+      console.error("Problem getting users for ladder");
+      console.err(err);
+    }  
     responseObj.users = result;
     return res.json(responseObj);
 
