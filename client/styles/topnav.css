@@ -8,6 +8,9 @@ body {
 .topnav {
     background-color: rgb(14, 14, 14);
     overflow: hidden;
+}
+
+.topnav.fixed {
     position: fixed;
     top: 0px;
     left: 0px;

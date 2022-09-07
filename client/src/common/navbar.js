@@ -68,6 +68,9 @@ const logout = () => {
     if(page === ''){
         page = 'lobby'; // root redirects to lobby
     }
+    if(['about', 'stats'].includes(page)){
+        document.querySelector('.topnav').classList.toggle('fixed');
+    }
     try{
         document.querySelector(`.topnav a[href='/${page}']`).classList.toggle('active');
     }

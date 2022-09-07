@@ -23,6 +23,9 @@ const getLadder = (numPlayers) => (e) => {
                         if(!user.hasOwnProperty(`p${numPlayers}_skill`)){
                             user[`p${numPlayers}_skill`] = [25.0, 25.0/3.0];
                         }
+                        if(!user.hasOwnProperty(`p${numPlayers}games_stalled`)){
+                            user[`p${numPlayers}games_stalled`] = 0;
+                        }
                         if(!user.hasOwnProperty('date_created')){
                             user.date_created = '0000-00-00';
                         }
@@ -47,6 +50,9 @@ const getLadder = (numPlayers) => (e) => {
                             recordText += record[j].toString();
                         }
 
+                        let games_stalled = users[i][`p${numPlayers}games_stalled`];
+                        let games_stalled_percent = Math.round(10000*(games_stalled/recordSum))/100;
+
                         let mu = users[i][`p${numPlayers}_skill`][0];
                         let muRounded = Math.round(100*mu)/100;
                         let sigma = users[i][`p${numPlayers}_skill`][1];
@@ -61,8 +67,8 @@ const getLadder = (numPlayers) => (e) => {
                                 <td>${muRounded} ± ${ratingRangeRounded}</td>
                                 <td>${recordSum}</td>
                                 <td>${recordText}</td>
-                                <td></td>
-                                <td></td>
+                                <td>${games_stalled}</td>
+                                <td>${games_stalled_percent}%</td>
                                 <td>${users[i].date_created.substring(0,10)}</td>
                             </tr>
                         `);
@@ -131,6 +137,8 @@ const onSearch = (e) => {
                                 recordText += record[j].toString();
                             }
                             
+                            let games_stalled = json.user[`p${i}games_stalled`];
+                            let games_stalled_percent = Math.round(10000*(games_stalled/recordSum))/100;
 
                             let mu = json.user[`p${i}_skill`][0];
                             let muRounded = Math.round(100*mu)/100;
@@ -146,8 +154,8 @@ const onSearch = (e) => {
                                 <td>${muRounded} ± ${ratingRangeRounded}</td>
                                 <td>${recordSum}</td>
                                 <td>${recordText}</td>
-                                <td></td>
-                                <td></td>
+                                <td>${games_stalled}</td>
+                                <td>${games_stalled_percent}%</td>
                                 <td>${json.user.date_created.substring(0,10)}</td>
                             </tr>
                             `);
