@@ -134,23 +134,20 @@ const updateLobby = (update) => {
     }
 };
 
-const displayLobbyList = () => {
-    document
-    .querySelector('.lobby-header-container')
-    .classList.toggle('active');
-    const caret = document.querySelector('#collapse-caret');
-    const lobbyList = document.querySelector('#lobby-user-list');
-    if(lobbyList.style.maxHeight){
-        lobbyList.style.maxHeight = null;
+const displayUserList = (event) => {
+    console.log(event.currentTarget);
+    event.currentTarget.classList.toggle('active');
+    const caret = event.currentTarget.querySelector('.collapse-caret');
+    const userList = event.currentTarget.parentNode.querySelector('.user-list');
+    if(userList.style.maxHeight){
+        userList.style.maxHeight = null;
         caret.textContent = '>';
     }
     else {
-        lobbyList.style.maxHeight = lobbyList.scrollHeight + "px";
+        userList.style.maxHeight = userList.scrollHeight + "px";
         caret.textContent = 'v';
     }
 };
-
-
 
 (() => {
     const sock = io();
@@ -168,8 +165,7 @@ const displayLobbyList = () => {
     .addEventListener('submit', onNewGame(sock));
 
     document
-    .querySelector('.lobby-header-container')
-    .addEventListener('click', displayLobbyList);
+    .querySelectorAll('.header-container').forEach(header => header.addEventListener('click', displayUserList));
     /*
     document
     .querySelector('#join1')

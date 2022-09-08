@@ -14,6 +14,10 @@ li {
     padding-bottom: 5px;
 }
 
+p, ul, ol, h4{
+    margin-left: 20px;
+}
+
 .content {
     margin: 58px 0px 0px 0px;
     padding: 0px 10px;

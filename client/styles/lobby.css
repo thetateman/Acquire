@@ -20,6 +20,7 @@ body {
 
 button {
   font-size: 1rem;
+  font-weight: bold;
   padding: 3px 15px;
   color: var(--main-bg-color);
   background-color: var(--button-bg-color);
@@ -98,7 +99,7 @@ button:hover {
 .lobby-container {
   border-bottom: var(--standard-section-divider);
 }
-.lobby-header-container {
+.lobby-header-container, .leader-board-header-container {
   display: flex;
   flex-direction: row;
   flex-grow: 1;
@@ -114,11 +115,11 @@ button:hover {
   box-shadow: var(--standard-box-shadow);
 }
 
-.active, .lobby-header-container:hover {
+.active, .lobby-header-container:hover, .leader-board-header-container:hover {
   background-color: #79b2fc;
 }
 
-#collapse-caret {
+.collapse-caret {
   border: 1px solid lightskyblue;
 }
 
@@ -127,7 +128,7 @@ button:hover {
   padding: 0px 5px;
 }
 
-#lobby-user-list {
+.user-list {
   max-height: 0px;
   overflow: hidden;
   transition: max-height .3s ease-out;
