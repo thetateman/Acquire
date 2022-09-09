@@ -1,6 +1,5 @@
 :root {
   height: 100%;
-  user-select: none;
   --main-bg-color: white;
   --main-text-color: black;
   --button-bg-color: #4897ff;
@@ -203,10 +202,13 @@ a {
 #messages {
   height: 96.2%;
   overflow-y: scroll;
+  padding-top: 10px;
+  box-sizing: border-box;
 }
 
 #messages li {
   word-wrap: break-word;
+  padding: 0px 0px 10px 8px;
 }
 
 #chat-form {

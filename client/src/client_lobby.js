@@ -45,15 +45,21 @@ const updateGames = (sock) => (update) => {
             playerList += `<li inGame="${inGame}" username="${username}">${username}${watchingLabel}</li>`;
         });
         playerList += '</ul>';
+        let joinButton = '';
+        if(!update.game.game_started){
+            joinButton = (`
+                <a href="/game?gameid=${id}">
+                    <button id="join${id}">Join</button>
+                </a>
+            `);
+        }
         const gameElements = 
             `<li gamenum="${id}">
                 <span class="game-label">Game #${id}</span>
                 <a href="/game?gameid=${id}">
                     <button id="watch${id}">Watch</button>
                 </a>
-                <a href="/game?gameid=${id}">
-                    <button id="join${id}">Join</button>
-                </a>
+                ${joinButton}
                 ${playerList}
             </li>`;
         document.querySelector('#games').insertAdjacentHTML("afterbegin", gameElements);

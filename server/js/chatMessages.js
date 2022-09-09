@@ -43,7 +43,7 @@ const chatMessages = {
                 mentions.push(text.substring(atIndicies[i] + 1, spacesAfter[i]));
             }
 
-            const playerMentions = mentions.filter((mention) => !['server', 'lobby', 'everyone'].includes(mention));
+            const playerMentions = mentions.filter((mention) => !['server', 'lobby', 'everyone', 'SERVER'].includes(mention));
 
             if(mentions.includes('everyone') || playerMentions.length > 0){
                 io.emit('message', {

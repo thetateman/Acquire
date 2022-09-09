@@ -1,13 +1,5 @@
 const log = (messageObj) => {
-    // find location: string should be in the same format as lastKnownLocation on server, and origin in message objects
-    let location = window.location.href.split("/")[window.location.href.split("/").length - 1];
-    if(location === ''){
-        location = 'lobby'; // root redirects to lobby
-    }
-    else if(location.includes('game')){
-        location = 'game' + window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1];
-    }
-
+    let location = getLocation();
     let messageContentSpan = `<span>${messageObj.message_content}</span>`;
 
     if(JSON.parse(localStorage.muteList).includes(messageObj.sender)){
@@ -16,7 +8,7 @@ const log = (messageObj) => {
     }
     if(JSON.parse(localStorage.muteList).includes('everyone')){
         //player messages are muted
-        if(!['server', 'COMMAND_RUN', localStorage.username].includes(messageObj.sender)){
+        if(!['server', 'COMMAND_RUN', 'SERVER', localStorage.username].includes(messageObj.sender)){
             return false;
         }
     }
@@ -31,13 +23,13 @@ const log = (messageObj) => {
 
     // determine styles for messages
     let messageColor;
-    if(['server', 'COMMAND_RUN'].includes(messageObj.sender)){
+    if(['server', 'COMMAND_RUN', 'SERVER'].includes(messageObj.sender)){
         messageColor = 'var(--main-text-color);';
     }
     else{
         messageColor = '#006eff';
     }
-    const playerMentions = messageObj.mentions.filter((mention) => !['server', 'lobby', 'everyone'].includes(mention));
+    const playerMentions = messageObj.mentions.filter((mention) => !['server', 'lobby', 'everyone', 'SERVER'].includes(mention));
     if(playerMentions.length > 0){
         if(playerMentions.includes(localStorage.username)){
             messageContentSpan = `<span style="background-color:yellow">${messageObj.message_content}</span>`;
@@ -69,12 +61,7 @@ const log = (messageObj) => {
 const onChatSubmitted = (sock) => (e) => {
     e.preventDefault();
 
-    // find location: string should be in the same format as lastKnownLocation on server, and origin in message objects
-    let location = window.location.href.split("/")[window.location.href.split("/").length - 1];
-    if(location.includes('game')){
-        location = 'game' + window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1];
-    }
-
+    let location = getLocation();
     const input = document.querySelector('#chat-input');
     let text = input.value;
     input.value = '';
@@ -120,6 +107,18 @@ const onChatSubmitted = (sock) => (e) => {
     sock.emit('message', text);
 };
 
+const getLocation = () => {
+    // find location: string should be in the same format as lastKnownLocation on server, and origin in message objects
+    let location = window.location.href.split("/")[window.location.href.split("/").length - 1];
+    if(location === ''){
+        location = 'lobby'; // root redirects to lobby
+    }
+    else if(location.includes('game')){
+        location = 'game' + window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1];
+    }
+    return location;
+}
+
 (() => {
     if(!('muteList' in localStorage)){
         localStorage.muteList = JSON.stringify([]);
@@ -131,4 +130,17 @@ const onChatSubmitted = (sock) => (e) => {
     document
     .querySelector('#chat-form')
     .addEventListener('submit', onChatSubmitted(sock));
+
+    if(getLocation() === 'lobby'){
+        let welcomeMessage = (`Hi ${localStorage.username}, welcome to OnlineAcquire.com!<br><br><br>
+        You can start a new game over here >>>><br><br><br>
+        Or join a game waiting for players >>>><br><br><br>
+        Type /help in the chat bar to get info about commands you can run in the chat.`);
+        log({
+            sender: 'SERVER',
+            origin: 'lobby',
+            'mentions': [],
+            message_content: welcomeMessage});
+    }
+    
 })();

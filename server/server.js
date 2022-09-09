@@ -154,16 +154,18 @@ io.on('connection', (sock) => {
         userStatuses[sock.request.session.username] = 'unknown';
     }
 
+    if(!connectedUsers.includes(sock.request.session.username)){
+        //welcome message
+        console.log('sending welcome message');
+        io.in('lobby').emit('message', {
+            sender: 'SERVER',
+            origin: 'lobby',
+            mentions: [],
+            message_content: `${sock.request.session.username} connected.`});
+    }
+    console.log("pushed");
     connectedUsers.push(sock.request.session.username);
 
-    //welcome message
-    /*
-    io.emit('message', {
-        sender: 'server',
-        origin: 'lobby',
-        mentions: [],
-        message_content: `${sock.request.session.username} connected.`});
-    */
     // Event listeners
     // Misc
     sock.on('usernameRequest', () => {
@@ -195,7 +197,25 @@ io.on('connection', (sock) => {
         }
         sock.request.session.lastKnownLocation = 'disconnected';
         userStatuses[sock.request.session.username] = 'disconnected';
-        connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
+        setTimeout(() => {
+            const usernameIndex = connectedUsers.indexOf(sock.request.session.username);
+            if (usernameIndex > -1){
+                 connectedUsers.splice(usernameIndex, 1);
+            }
+            //connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
+            setTimeout(() => {
+                if(!connectedUsers.includes(sock.request.session.username)){
+                    //user disconnected from the site
+                    io.in('lobby').emit('message', {
+                        sender: 'SERVER',
+                        origin: 'lobby',
+                        mentions: [],
+                        message_content: `${sock.request.session.username} disconnected.`});
+                }
+            }, 1000);
+            console.log('removed user');
+        }, 1000);
+        //connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
     });
 });
 
