@@ -108,7 +108,6 @@ const updateLobby = (update) => {
     const lobbyHeaderContainer = document.querySelector('.lobby-header-container');
     if(update.action === 'add'){
         update.users.forEach((username) => {
-            console.log('here')
             let usernameDOMElement = userListNode.querySelector(`[username="${username}"]`);
             if(!usernameDOMElement){
                 userListNode.insertAdjacentHTML('beforeend', `<li username="${username}">${username}</li>`);
@@ -134,11 +133,26 @@ const updateLobby = (update) => {
     }
 };
 
-const displayUserList = (event) => {
-    console.log(event.currentTarget);
-    event.currentTarget.classList.toggle('active');
-    const caret = event.currentTarget.querySelector('.collapse-caret');
-    const userList = event.currentTarget.parentNode.querySelector('.user-list');
+const onUserListClick = (event) => {
+    displayUserList(event.currentTarget);
+}
+
+const displayUserList = (currentTarget) => {
+    if(currentTarget.classList.contains('leader-board-header-container')){
+        document.querySelectorAll('.leader-board-container').forEach((container) => {
+            let userList = container.querySelector('.user-list');
+            let caret = container.querySelector('.collapse-caret');
+            let header = container.querySelector('.leader-board-header-container');
+            if(userList.style.maxHeight){
+                userList.style.maxHeight = null;
+                caret.textContent = '>';
+                header.classList.toggle('active');
+            }
+        });
+    }
+    currentTarget.classList.toggle('active');
+    const caret = currentTarget.querySelector('.collapse-caret');
+    const userList = currentTarget.parentNode.querySelector('.user-list');
     if(userList.style.maxHeight){
         userList.style.maxHeight = null;
         caret.textContent = '>';
@@ -148,6 +162,42 @@ const displayUserList = (event) => {
         caret.textContent = 'v';
     }
 };
+
+const addUsersToLeaderBoards = () => {
+    fetch(`/api/getLadder?numplayers=0`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        })
+        .then(function(response){
+            response.json().then(function(json){
+                let success = true;
+                console.log('Success:', json);
+                if(success){
+                    localStorage.leaderBoards = json.users;
+                    for(let i = 0; i < 5; i++){
+                        let usernames = json.users[i].map(user => user.username);
+                        console.log(usernames);
+                        let usernameListHTML = '';
+                        usernames.forEach((username) => {
+                            usernameListHTML += `<li>${username}</li>`;
+                        });
+                        document.querySelector(`#leader-board-${i+2} .user-list`)
+                        .insertAdjacentHTML('afterbegin', usernameListHTML);
+                    }
+                    displayUserList(document.querySelector(`.leader-board-header-container[num="4"]`));
+                }
+                    
+            })
+            .catch((error) => {
+                console.error('Got response, but had issue processing it: ', error);
+            })
+        })
+        .catch((error) => {
+        console.error('Error:', error);
+    });
+}
 
 (() => {
     const sock = io();
@@ -159,13 +209,14 @@ const displayUserList = (event) => {
     
     sock.emit('gameRequest', "all");
     sock.emit('joinLobby');
+    addUsersToLeaderBoards();
     let currentUser = localStorage.getItem('username'); //There has to be a better way to do this
     document
     .querySelector('#new-game-form')
     .addEventListener('submit', onNewGame(sock));
 
     document
-    .querySelectorAll('.header-container').forEach(header => header.addEventListener('click', displayUserList));
+    .querySelectorAll('.header-container').forEach(header => header.addEventListener('click', onUserListClick));
     /*
     document
     .querySelector('#join1')

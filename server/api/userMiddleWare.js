@@ -143,41 +143,101 @@ const UserMiddleware = {
   
   searchUserMiddleware: async function(req, res, next){
     let responseObj = {error: "none", user: {}};
-    console.log("get user search request for user:");
-    console.log(req.query.username);
     let selectString = 'username date_created';
     for(let i=2; i<7; i++){
       selectString += ` p${i}_skill p${i}_record p${i}games_stalled`;
     }
     let result = await UserModel.findOne({username: req.query.username}).select(selectString); 
-    console.log('result: ')
-    console.log(result);
     responseObj.user = result;
     return res.json(responseObj);
 
   },
 
   getLadderMiddleware: async function(req, res, next){
-    let responseObj = {error: "none", users: []};
-    let projectObj = {
-      "_id": 0,
-      username: 1,
-      date_created: 1,
-      [`p${req.query.numplayers}games_stalled`]: 1,
-      [`p${req.query.numplayers}_skill`]: 1,
-      [`p${req.query.numplayers}_record`]: 1,
-    };
     let result;
+    let resultCountLimit;
+    let projectObj = {};
+    let responseObj = {error: "none", users: []};
+    const numPlayersCode = parseInt(req.query.numplayers, 10);
+    if(numPlayersCode === 0){
+      for(let i = 2; i < 7; i++){
+        responseObj.users.push(await UserMiddleware.getSimpleLadder(i));
+      }
+      return res.json(responseObj);
+    }
+    let numPlayers = numPlayersCode;
+    if(numPlayersCode < 0){
+      numPlayers = numPlayersCode * -1;
+      result = await UserMiddleware.getSimpleLadder(numPlayers);
+      responseObj.users = result;
+      return res.json(responseObj);
+    }
+    else if(1 < numPlayersCode < 7){
+      resultCountLimit = 99999;
+      projectObj = {
+        "_id": 0,
+        username: 1,
+        date_created: 1,
+        [`p${numPlayers}games_stalled`]: 1,
+        [`p${numPlayers}_skill`]: 1,
+        [`p${numPlayers}_record`]: 1,        
+        conSkill: { // calculate conservative skill estimate
+          $sum: [
+            {$arrayElemAt: [`$p${numPlayers}_skill`, 0]},
+            {$multiply: [
+              {$arrayElemAt: [`$p${numPlayers}_skill`, 1]}, {$literal: -3}
+            ]}
+          ]
+        }
+      };
+    }
+    
     try{
-      result = await UserModel.aggregate([{"$match":{"$expr":{"$gt":[{"$sum":`$p${req.query.numplayers}_record`}, 0]}}}, {"$project": projectObj}]); 
+      result = await UserModel.aggregate([
+        {"$match":{"$expr":{"$gt":[{"$sum":`$p${numPlayers}_record`}, 0]}}},
+        {"$project": projectObj},
+        {"$sort":{conSkill: -1, _id: -1}}, // Return users sorted by conservative skill estimate
+        {"$limit": resultCountLimit}
+      ]); 
     }
     catch(err){
       console.error("Problem getting users for ladder");
-      console.err(err);
+      console.error(err);
     }  
     responseObj.users = result;
     return res.json(responseObj);
 
+  },
+
+  getSimpleLadder: async function(numPlayers){
+    let result;
+    const resultCountLimit = 50;
+    const projectObj = {
+        "_id": 0,
+        username: 1,       
+        conSkill: { // calculate conservative skill estimate
+          $sum: [
+            {$arrayElemAt: [`$p${numPlayers}_skill`, 0]},
+            {$multiply: [
+              {$arrayElemAt: [`$p${numPlayers}_skill`, 1]}, {$literal: -3}
+            ]}
+          ]
+        }
+      };
+
+    try{
+      result = await UserModel.aggregate([
+        {"$match":{"$expr":{"$gt":[{"$sum":`$p${numPlayers}_record`}, 0]}}},
+        {"$project": projectObj},
+        {"$sort":{conSkill: -1, _id: -1}}, // Return users sorted by conservative skill estimate
+        {"$limit": resultCountLimit}
+      ]); 
+    }
+    catch(err){
+      console.error("Problem getting users for ladder");
+      console.error(err);
+    } 
+    return result;
   },
 }
 module.exports = UserMiddleware;

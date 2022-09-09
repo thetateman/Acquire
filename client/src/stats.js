@@ -31,6 +31,7 @@ const getLadder = (numPlayers) => (e) => {
                         }
                     });
                     //sort users on rating (mu - 3*sigma)
+                    /*
                     users.sort((a, b) => {
                         if(a[`p${numPlayers}_skill`][0] - 3*a[`p${numPlayers}_skill`][1] < b[`p${numPlayers}_skill`][0] - 3*b[`p${numPlayers}_skill`][1]){
                             return 1;
@@ -39,6 +40,7 @@ const getLadder = (numPlayers) => (e) => {
                             return -1
                         }
                     });
+                    */
                     for(let i = 0; i < users.length; i++){
                         let record = users[i][`p${numPlayers}_record`];
                         let recordSum = record.reduce((partialSum, a) => partialSum + a, 0);
