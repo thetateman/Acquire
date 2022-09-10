@@ -68,20 +68,28 @@ const gameMessages = {
                     sock.emit('gameResponse', "none");
                 }
                 else{ // Whenever a user hits a game page (for a game that exists). TODO: move this code somewhere more logical.
+                    const requestedGame = games[parseInt(gameID, 10)];
                     let watcher = false;
-                    games[parseInt(gameID, 10)].num_connected_players++;
-                    if(!games[parseInt(gameID, 10)].usernames.includes(requestingUser)){
-                        games[parseInt(gameID, 10)].watchers.push(requestingUser);
+                    requestedGame.num_connected_players++;
+                    if(!requestedGame.usernames.includes(requestingUser)){
+                        requestedGame.watchers.push(requestingUser);
                         watcher = true;
                     }
                     // Unset inactive_since
-                    games[parseInt(gameID, 10)].inactive_since = new Date(8640000000000000).getTime();
-                    const requestedGameCopy = this.getSendableGame(games[parseInt(gameID, 10)], requestingUser);
-                    sock.emit('gameResponse', requestedGameCopy);
+                    requestedGame.inactive_since = new Date(8640000000000000).getTime();
+                    
+                    // Get details on players
+                    let usernameDetails = {};
+                    requestedGame.usernames.forEach((username) => {
+                        usernameDetails[username] = {'username': username, location: userStatuses[username], admin: false};
+                    });
+                    
+                    const requestedGameCopy = this.getSendableGame(requestedGame, requestingUser);
+                    sock.emit('gameResponse', {game: requestedGameCopy, playerDetails: usernameDetails});
                     sock.data.username = requestingUser;
                     sock.request.session.lastKnownLocation = `game${gameID}`;
                     userStatuses[sock.request.session.username] = `game${gameID}`;
-                    io.in('lobby').emit('gameListUpdate', {action: 'addPlayer', game: {id: gameID}, username: sock.request.session.username, watcher: watcher, admin: false});
+                    io.in('lobby').in(gameID).emit('gameListUpdate', {action: 'addPlayer', game: {id: gameID}, username: sock.request.session.username, watcher: watcher, admin: false});
                     sock.join(gameID); //typeOf(gameID) = string
                 }
             }
@@ -152,6 +160,7 @@ const gameMessages = {
                 joining_player: sock.request.session.username,
                 player_num: playerNum,
                 player_data: games[game_id].state.player_states[playerNum],
+                game: games[game_id],
                 // Not sure if we need to send player data or not,
                 // is there any case where we could not infer all the data on the client-side?
             };

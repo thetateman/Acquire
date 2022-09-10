@@ -295,6 +295,11 @@ a {
     position: relative;
 }
 
+.stats-board span.disconnected {
+    font-style: italic;
+    color: gray;
+}
+
 .stats-board td:nth-child(1) {
     text-align: left;
 }

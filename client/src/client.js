@@ -333,10 +333,11 @@ const startGame = (sock) => (e) => {
     document.querySelector("#start-game-button").style.display = 'none';
 };
 
-const populateGame = (sock) => (game) => {
+const populateGame = (sock) => (data) => {
+    const game = data.game;
     localStorage.setItem('gameState', JSON.stringify(game.state));
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0"));
-    generateStatsTable(game);
+    generateStatsTable(game, data.playerDetails);
     updateGameBoard(game);
     if(!game.state.game_started && game.usernames[0] === localStorage.username){
         document.querySelector('#start-game-button').style.display = 'block';
@@ -348,6 +349,7 @@ const populateGame = (sock) => (game) => {
         }
         statsTableUsernameStyleUpdater(game);
     }
+    announceGame(game);
     //TODO: Reveal hidden elements if necessary (dispose-shares-table).
     // Normally this state is updated on updateGame calls, but we should update in the same way on page load.
     // updateClientState(game.state.expectedNextAction, game.state.turn)
@@ -483,13 +485,14 @@ const updateGame = (sock) => (gameUpdate) => {
         }
     } 
     else if(gameUpdate.type === 'joinGame'){
+
         if(gameUpdate.joining_player !== localStorage.getItem('username')){ // if joining player != current user. (Data will have been added already.)
             // Add a new player to the stats table.
             let chainData = "";
             const i = gameUpdate.player_num;
             // build player data row, setting row and column attributes for easy access when updating.
             chains.forEach((chain) => {chainData += `<td row="${i}" column="${chain}">${gameUpdate.player_data[chain]}</td>`});
-            let newPlayerRow = `<tr><td row="${i}" column="username">${gameUpdate.joining_player}<span class="total-time">${document.querySelector('.total-time').textContent}</span></td>`+ chainData +
+            let newPlayerRow = `<tr><td row="${i}" column="username"><span class="username">${gameUpdate.joining_player}</span><span class="total-time">${document.querySelector('.total-time').textContent}</span></td>`+ chainData +
             `<td row="${i}" column="cash">${gameUpdate.player_data['cash']}</td>` +
             `<td row="${i}" column="net">${gameUpdate.player_data['net_worth']}</td></tr>`;
             document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("beforebegin", newPlayerRow);
@@ -498,6 +501,7 @@ const updateGame = (sock) => (gameUpdate) => {
             let playerRowsHeight = (i + 1) * 1.85;
             document.querySelector('.chain-chat-action-container').style.height = `${27 - playerRowsHeight}vw`;
         }
+        announceGame(gameUpdate.game);
     }
     else if(gameUpdate.type === 'startGame'){
         updateGameBoard();
@@ -523,14 +527,21 @@ const updateGame = (sock) => (gameUpdate) => {
                 }
             });
         }
-}
+    }
 };
 
-const generateStatsTable = (game) => {
+const generateStatsTable = (game, playerDetails) => {
     
     let playerRows = ""; // Populate player data: usernames, time remaining, chains, cash.
     let totalSecondsRemainingArr = [];
     for(let i=0; i<game.num_players; i++){
+        let username = game.usernames[i];
+        // Determine if player is connected to the game
+        let connected = (playerDetails[username].location.split('game')[1] === game.id.toString());
+        let disconnectedClassString = '';
+        if(!connected && username !== localStorage.username){
+            disconnectedClassString = ' disconnected';
+        }
         // calculate total time remaining
         let playerState = game.state.player_states[i];
         let totalSecondsRemaining;
@@ -551,7 +562,7 @@ const generateStatsTable = (game) => {
         let chainData = "";
         // build player data row, setting row and column attributes for easy access when updating.
         chains.forEach((chain) => {chainData += `<td row="${i}" column="${chain}">${playerState[chain]}</td>`});
-        playerRows += `<tr><td row="${i}" column="username">${game.usernames[i]}<span class="total-time" style="color:${timerColor}">${getReadableTimer(totalSecondsRemaining)}</span></td>`
+        playerRows += `<tr><td row="${i}" column="username"><span class="username${disconnectedClassString}">${game.usernames[i]}</span><span class="total-time" style="color:${timerColor}">${getReadableTimer(totalSecondsRemaining)}</span></td>`
         + chainData +
         `<td row="${i}" column="cash">${playerState['cash']}</td>` +
         `<td row="${i}" column="net">${playerState['net_worth']}</td></tr>`;
@@ -590,7 +601,7 @@ const updateStatsTable = (game) => {
         }
         totalSecondsRemainingArr.push(totalSecondsRemaining);
         //update the elements
-        document.querySelector(`[row="${i}"][column="username"]`).innerHTML = `${game.usernames[i]}<span class="total-time">${getReadableTimer(totalSecondsRemaining)}</span>`;
+        document.querySelector(`[row="${i}"][column="username"]`).innerHTML = `<span class="username">${game.usernames[i]}</span><span class="total-time">${getReadableTimer(totalSecondsRemaining)}</span>`;
         if(totalSecondsRemaining < 30){
             document.querySelector(`[row="${i}"][column="username"] .total-time`).style.color = 'red';
         }
@@ -777,12 +788,90 @@ const postGameMessage = (gameUpdate) => {
         }
         localStorage.previousTurn = gameUpdate.game.state.turn;
     }
+    if(gameUpdate.type === 'joinGame') return;
     const newMessage = `${deadTileFlag}<li>${usernameSpan} ${messageContentSpan}</li>${sectionEnd}`;
     
     parent.insertAdjacentHTML('beforeend', newMessage);
     parent.scrollTop = parent.scrollHeight;
 
-}
+};
+
+const gameListUpdate = (update) => {
+    let newMessage;
+    console.log(update);
+    let usernameSpan = `<span>${update.username}</span>`;
+    if(update.action === 'addPlayer'){
+        if(update.watcher){
+            newMessage = `<li>${usernameSpan} is watching.</li>`;
+        }
+        else{
+            newMessage = `<li>${usernameSpan} joined the game.</li>`;
+            let usernameElement;
+            document.querySelectorAll('.stats-board [column="username"] .username')
+            .forEach((element) => {
+                if(element.textContent === update.username){
+                    usernameElement = element;
+                }
+            });
+            if(usernameElement){
+                if(usernameElement.classList.contains('disconnected')){
+                    newMessage = `<li>${usernameSpan} rejoined.</li>`;
+                    usernameElement.classList.toggle('disconnected');
+                }
+            }
+        }
+
+    }
+    else if(update.action === 'removePlayer' || update.action === 'playerDisconnected'){
+        if(update.action === 'playerDisconnected'){ // not watcher
+            let usernameElement;
+            document.querySelectorAll('.stats-board [column="username"] .username')
+            .forEach((element) => {
+                if(element.textContent === update.username){
+                    usernameElement = element;
+                }
+            });
+            console.log(usernameElement);
+            if(usernameElement){
+                usernameElement.classList.toggle('disconnected');
+            }
+
+        }
+        newMessage = `<li>${usernameSpan} left.</li>`;
+    }
+    else{
+        console.log("Shouldn't be here...");
+    }
+    // generate chat message about game update
+    const parent = document.querySelector('#messages');
+    parent.insertAdjacentHTML('beforeend', newMessage);
+    parent.scrollTop = parent.scrollHeight;
+};
+
+const announceGame = (game) => {
+    if(document.querySelector('#game-status-message')){
+        document.querySelector('#game-status-message').remove();
+    }
+    let gameStatus;
+    if(game.state.game_started){
+        if(game.state.game_ended){
+            gameStatus = 'Finished.';
+        }
+        else{
+            gameStatus = 'In progress.';
+        }
+    }
+    if(game.num_players < game.max_players){
+        gameStatus = 'Waiting for players...';
+    }
+    else{
+        gameStatus = `Waiting for ${game.creator} to start the game.`;
+    }
+    const newMessage = `<li id="game-status-message"><b>Game #${game.id}: ${gameStatus}</b></li>`;
+    const parent = document.querySelector('#messages');
+    parent.insertAdjacentHTML('afterbegin', newMessage);
+    parent.scrollTop = parent.scrollHeight;
+};
 
 (() => {
     const sock = io();
@@ -791,6 +880,7 @@ const postGameMessage = (gameUpdate) => {
     addBoard();
     sock.on('gameResponse', populateGame(sock));
     sock.on('gameUpdate', updateGame(sock));
+    sock.on('gameListUpdate', gameListUpdate);
     
     document.querySelectorAll('.game-board td')
     .forEach(e => e.addEventListener('click', function() {tileClickHandler(e, sock);}));

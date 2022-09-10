@@ -63,7 +63,9 @@ const updateGames = (sock) => (update) => {
                 ${playerList}
             </li>`;
         document.querySelector('#games').insertAdjacentHTML("afterbegin", gameElements);
-        document.querySelector(`#join${id}`).addEventListener('click', onJoinGame(id, sock));
+        if(joinButton !== ''){
+            document.querySelector(`#join${id}`).addEventListener('click', onJoinGame(id, sock));
+        }
     }
     else if(update.action === 'removeGame'){
         document.querySelector(`#games [gamenum="${update.game}"]`).remove();

@@ -181,10 +181,10 @@ io.on('connection', (sock) => {
             const gameDisconnectedFrom = sock.request.session.lastKnownLocation.split('game')[1];
             if(games[gameDisconnectedFrom].watchers.includes(sock.request.session.username)){
                 games[gameDisconnectedFrom].watchers = games[gameDisconnectedFrom].watchers.filter((watcher) => watcher !== sock.request.session.username);
-                io.in('lobby').emit('gameListUpdate', {action: 'removePlayer', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
+                io.in('lobby').in(gameDisconnectedFrom).emit('gameListUpdate', {action: 'removePlayer', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
             }
             else{
-                io.in('lobby').emit('gameListUpdate', {action: 'playerDisconnected', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
+                io.in('lobby').in(gameDisconnectedFrom).emit('gameListUpdate', {action: 'playerDisconnected', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
             }
             games[gameDisconnectedFrom].num_connected_players--;
             // Leave the room for the game
