@@ -68,7 +68,10 @@ const logout = () => {
     if(page === ''){
         page = 'lobby'; // root redirects to lobby
     }
-    if(['about', 'stats'].includes(page)){
+    if(page === 'lobby'){
+        document.querySelector('.topnav').style.overflow = 'unset';
+    }
+    if(['about'].includes(page)){
         document.querySelector('.topnav').classList.toggle('fixed');
     }
     try{

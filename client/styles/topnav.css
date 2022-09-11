@@ -8,13 +8,14 @@ body {
 .topnav {
     background-color: rgb(14, 14, 14);
     overflow: hidden;
+    width: 100%;
+    z-index: 1000;
 }
 
 .topnav.fixed {
     position: fixed;
     top: 0px;
     left: 0px;
-    width: 100%;
 }
 
 /* Style the links inside the navigation bar */
