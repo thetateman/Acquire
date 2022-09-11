@@ -92,6 +92,9 @@ const onChatSubmitted = (sock) => (e) => {
         else if(text.indexOf('unhidestats') === 1){
             localStorage.hideStats = 'false';
         }
+        else if(text.indexOf('help') === 1){
+            text += '<br><br>You can use the following commands:<br><br>/mute <username> - block messages from a user<br><br>/unmute <username> - unmute user<br><br>See the about page for more info.'
+        }
         else{
             text = 'invalid_command';
         }
