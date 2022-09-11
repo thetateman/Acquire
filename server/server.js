@@ -156,14 +156,12 @@ io.on('connection', (sock) => {
 
     if(!connectedUsers.includes(sock.request.session.username)){
         //welcome message
-        console.log('sending welcome message');
         io.in('lobby').emit('message', {
             sender: 'SERVER',
             origin: 'lobby',
             mentions: [],
             message_content: `${sock.request.session.username} connected.`});
     }
-    console.log("pushed");
     connectedUsers.push(sock.request.session.username);
 
     // Event listeners
@@ -202,7 +200,6 @@ io.on('connection', (sock) => {
             if (usernameIndex > -1){
                  connectedUsers.splice(usernameIndex, 1);
             }
-            //connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
             setTimeout(() => {
                 if(!connectedUsers.includes(sock.request.session.username)){
                     //user disconnected from the site
@@ -213,9 +210,7 @@ io.on('connection', (sock) => {
                         message_content: `${sock.request.session.username} disconnected.`});
                 }
             }, 1000);
-            console.log('removed user');
         }, 1000);
-        //connectedUsers = connectedUsers.filter((user) => user !== sock.request.session.username);
     });
 });
 
