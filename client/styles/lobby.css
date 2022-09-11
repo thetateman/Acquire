@@ -237,6 +237,22 @@ a {
   box-shadow: var(--standard-box-shadow);
 }
 
+/*--------------- Leader Boards -------------------*/
+
+.leader-board-container li{
+  padding: 4px 10px 4px 10px;
+}
+
+.leader-board-container li.top-5{
+  font-size: 21px;
+}
+
+span.rating{
+  display: inline-block;
+  width: 4rem;
+}
+
+
 /*--------------- Scroll bars -------------------*/
 body {
   scrollbar-color: #888 var(--main-bg-color);

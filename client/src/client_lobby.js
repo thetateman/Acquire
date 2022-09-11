@@ -186,11 +186,12 @@ const addUsersToLeaderBoards = () => {
                     localStorage.leaderBoards = json.users;
                     for(let i = 0; i < 5; i++){
                         let usernames = json.users[i].map(user => user.username);
-                        console.log(usernames);
                         let usernameListHTML = '';
-                        usernames.forEach((username) => {
-                            usernameListHTML += `<li>${username}</li>`;
-                        });
+                        for(let j = 0; j < 15 && j < usernames.length; j++){
+                            const skillRating = Math.round(100*(json.users[i][j].conSkill))/100;
+                            const topFiveClass = j < 5 ? ' top-5' : '';
+                            usernameListHTML += `<li class="username${topFiveClass}"><span class="rating">(${skillRating})</span> ${usernames[j]}</li>`;
+                        }
                         document.querySelector(`#leader-board-${i+2} .user-list`)
                         .insertAdjacentHTML('afterbegin', usernameListHTML);
                     }
