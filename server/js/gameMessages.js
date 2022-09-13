@@ -120,6 +120,7 @@ const gameMessages = {
                 "action": "addGame",
                 "game": gameSummary
             }
+            sock.emit('forceRedirect', newGameID);
             io.in('lobby').emit('gameListUpdate', updateObject);
              
         });

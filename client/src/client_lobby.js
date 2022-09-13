@@ -269,6 +269,7 @@ const addUsersToLeaderBoards = () => {
     sock.on('gameResponse', loadGames(sock));
     sock.on('gameListUpdate', updateGames(sock));
     sock.on('lobbyUpdate', updateLobby);
+    sock.on('forceRedirect', gameID => location.href = `game?gameid=${gameID}`);
     
     
     sock.emit('gameRequest', "all");
