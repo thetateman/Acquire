@@ -43,16 +43,23 @@ const updateGames = (sock) => (update) => {
         });
         playerList += '</ul>';
         let joinButton = '';
+        let watchButtonText = 'Watch';
+        if(update.game.usernames.includes(localStorage.username)){
+            watchButtonText = 'Rejoin';
+        }
         let gameStatus = '';
         if(!update.game.game_started){
             console.log(update.game);
             if(update.game.usernames.length < update.game.max_players){
                 gameStatus = `Waiting for players (${update.game.usernames.length} of ${update.game.max_players})`;
-                joinButton = (`
+                if(watchButtonText !== 'Rejoin'){
+                    joinButton = (`
                     <a href="/game?gameid=${id}">
                         <button id="join${id}">Join</button>
                     </a>
-                `);
+                    `);
+                }
+                
             }
             else{
                 gameStatus = 'Starting';
@@ -70,7 +77,7 @@ const updateGames = (sock) => (update) => {
             `<li gamenum="${id}">
                 <span class="game-label">Game #${id}</span> | <span class="game-status">${gameStatus}</span>
                 <a href="/game?gameid=${id}">
-                    <button id="watch${id}">Watch</button>
+                    <button id="watch${id}">${watchButtonText}</button>
                 </a>
                 ${joinButton}
                 ${playerList}
