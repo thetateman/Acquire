@@ -30,19 +30,16 @@ const loadGames = (sock) => (games) => {
 
 const updateGames = (sock) => (update) => {
     if(update.action === 'addGame'){
+        console.log(update);
         const id = update.game.id;
+        let numPlayers = update.game.usernames.length;
         let playerList = '<ul class="player-list">';
         update.game.usernames.forEach((username) => {
-            let watchingLabel = '';
-            let inGame;
-            if(update.game.playerDetails[username].location === 'watcher'){
-                watchingLabel = ' (watching)';
-                inGame = true;
-            }
-            else{
-                inGame = update.game.playerDetails[username].location.substring(4) === id.toString();
-            }
-            playerList += `<li inGame="${inGame}" username="${username}">${username}${watchingLabel}</li>`;
+            let inGame = update.game.playerDetails[username].location.substring(4) === id.toString();
+            playerList += `<li inGame="${inGame}" username="${username}">${username}</li>`;
+        });
+        update.game.watchers.forEach((username) => {
+            playerList += `<li inGame="true" username="${username}">${username} (watching)</li>`;
         });
         playerList += '</ul>';
         let joinButton = '';
@@ -88,9 +85,15 @@ const updateGames = (sock) => (update) => {
         document.querySelector(`[gamenum="${update.game.id}"] [username="${update.username}"]`).remove();
     }
     else if(update.action === 'playerDisconnected'){ 
-        document.querySelector(`[gamenum="${update.game.id}"] [username="${update.username}"]`).setAttribute('inGame', 'false');
-        //TODO: This fires whenever a user leaves a game page, whether or not they were a game player
-        // should probably handle this case separately.
+        try{
+            document.querySelector(`[gamenum="${update.game.id}"] [username="${update.username}"]`).setAttribute('inGame', 'false');
+            //TODO: This fires whenever a user leaves a game page, whether or not they were a game player
+            // should probably handle this case separately.
+        }
+        catch(err){
+            console.log(err);
+        }
+        
     }
     else{
         console.log("Unexpected message, better look into this...");

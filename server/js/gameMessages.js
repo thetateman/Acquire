@@ -45,16 +45,14 @@ const gameMessages = {
             if(gameID === "all"){
                 //TODO: add additional game data to summaries
                 let gameSummaries = {};
-                let usernameDetails = {};
                 for (const [key, value] of Object.entries(games)) {
+                    let usernameDetails = {};
                     value.usernames.forEach((username) => {
                         usernameDetails[username] = {'username': username, location: userStatuses[username], admin: false};
                     });
-                    value.watchers.forEach((watcher) => {
-                        usernameDetails[watcher] = {'username': watcher, location: 'watcher', admin: false};
-                    });
                     gameSummaries[key] = {
-                        usernames: value.usernames.concat(value.watchers),
+                        usernames: value.usernames, 
+                        watchers: value.watchers,
                         playerDetails: usernameDetails,
                         max_players: value.max_players,
                         game_started: value.state.game_started,
@@ -102,6 +100,7 @@ const gameMessages = {
             const gameSummary = {
                 id: newGameID,
                 usernames: games[newGameID].usernames,
+                watchers: games[newGameID].watchers,
                 playerDetails: usernameDetails,
                 max_players: games[newGameID].max_players,
                 game_started: games[newGameID].state.game_started,
