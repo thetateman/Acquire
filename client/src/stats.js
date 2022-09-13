@@ -1,10 +1,23 @@
 const displayError = (err) => {
+    if(err === 'userNotFound'){
+        let errorMessage = `<p class="error">Could not find that username :(</p>`;
+        document.body.insertAdjacentHTML("beforeend", errorMessage);
+    }
+    
+    if(err !== 'none'){
+        return false;
+    }
     return true;
 }
 
 const getLadder = (numPlayers) => (e) => {
     e.preventDefault();
-    console.log(numPlayers);
+
+    // Remove old html
+    document.querySelectorAll('#stats-table').forEach(table => table.remove());
+    document.querySelectorAll('.error').forEach(error => error.remove());
+
+    // Request player Ladder
     fetch(`/api/getLadder?numplayers=${numPlayers}`, {
         method: 'GET',
         headers: {
@@ -92,9 +105,6 @@ const getLadder = (numPlayers) => (e) => {
                     </thead> 
                     <tbody>${userRows}</tbody>
                     `);
-                    if(document.querySelector('#stats-table')){
-                        document.querySelector('#stats-table').remove();
-                    }
                     document.body.insertAdjacentHTML("beforeend", statsTable);
                 }
                 
@@ -111,6 +121,11 @@ const getLadder = (numPlayers) => (e) => {
 
 const onSearch = (e) => {
     e.preventDefault();
+
+    // Remove old html
+    document.querySelectorAll('#stats-table').forEach(table => table.remove());
+    document.querySelectorAll('.error').forEach(error => error.remove());
+    
     let usernameToSearch = document.querySelector('#search-username').value;
     fetch(`/api/searchUser?username=${usernameToSearch}`, {
         method: 'GET',
@@ -179,10 +194,6 @@ const onSearch = (e) => {
                     </thead> 
                     <tbody>${gameTypeRows}</tbody>
                     `);
-                    console.log(statsTable);
-                    if(document.querySelector('#stats-table')){
-                        document.querySelector('#stats-table').remove();
-                    }
                     document.body.insertAdjacentHTML("beforeend", statsTable);
 
                 }

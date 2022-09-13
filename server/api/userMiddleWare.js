@@ -148,6 +148,9 @@ const UserMiddleware = {
       selectString += ` p${i}_skill p${i}_record p${i}games_stalled`;
     }
     let result = await UserModel.findOne({username: req.query.username}).select(selectString); 
+    if(!result){
+      responseObj.error = 'userNotFound';
+    }
     responseObj.user = result;
     return res.json(responseObj);
 

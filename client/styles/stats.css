@@ -63,6 +63,14 @@ button {
     margin: 20px auto;
 }
 
+.error{
+    width: fit-content;
+    margin: 20px auto;
+    color: red;
+    font-size: 19px;
+    font-weight: bold;
+}
+
 
 /*--------------- Dark mode styles-------------------*/
 body.dark-mode{
