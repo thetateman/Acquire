@@ -43,16 +43,32 @@ const updateGames = (sock) => (update) => {
         });
         playerList += '</ul>';
         let joinButton = '';
+        let gameStatus = '';
         if(!update.game.game_started){
-            joinButton = (`
-                <a href="/game?gameid=${id}">
-                    <button id="join${id}">Join</button>
-                </a>
-            `);
+            console.log(update.game);
+            if(update.game.usernames.length < update.game.max_players){
+                gameStatus = `Waiting for players (${update.game.usernames.length} of ${update.game.max_players})`;
+                joinButton = (`
+                    <a href="/game?gameid=${id}">
+                        <button id="join${id}">Join</button>
+                    </a>
+                `);
+            }
+            else{
+                gameStatus = 'Starting';
+            }
+        }
+        else{
+            if(update.game.game_ended){
+                gameStatus = 'Completed';
+            }
+            else{
+                gameStatus = 'In Progress';
+            }
         }
         const gameElements = 
             `<li gamenum="${id}">
-                <span class="game-label">Game #${id}</span>
+                <span class="game-label">Game #${id}</span> | <span class="game-status">${gameStatus}</span>
                 <a href="/game?gameid=${id}">
                     <button id="watch${id}">Watch</button>
                 </a>
@@ -69,6 +85,7 @@ const updateGames = (sock) => (update) => {
     }
     else if(update.action === 'addPlayer'){ //add a username to a game
         let usernameDOMElement = document.querySelector(`[gamenum="${update.game.id}"] [username="${update.username}"]`);
+        let gameStatusSpan = document.querySelector(`[gamenum="${update.game.id}"] .game-status`);
         if(usernameDOMElement){ //user already in this player list: user is probably re-connecting
             usernameDOMElement.setAttribute('inGame', 'true'); //Different styles for users in and out of games
         }
@@ -76,6 +93,20 @@ const updateGames = (sock) => (update) => {
             let watchingLabel = '';
             if(update.watcher){
                 watchingLabel = ' (watching)';
+            }
+            else{
+                if(update.game.usernames.length >= update.game.max_players){
+                    try{
+                        document.querySelector(`#join${update.game.id}`).parentNode.remove();
+                    }
+                    catch(err){
+                        console.log("Couldn't remove join link");
+                    }
+                    gameStatusSpan.innerHTML = 'Starting...';
+                }
+                else{
+                    gameStatusSpan.innerHTML = `Waiting for players (${update.game.usernames.length} of ${update.game.max_players})`;
+                }
             }
             let newPlayer = `<li username="${update.username}">${update.username}${watchingLabel}</li>`;
             document.querySelector(`[gamenum="${update.game.id}"] .player-list`).insertAdjacentHTML('beforeend', newPlayer);
@@ -95,10 +126,24 @@ const updateGames = (sock) => (update) => {
         }
         
     }
+    else if(update.action === 'gameStarted'){
+        let gameStatusSpan = document.querySelector(`[gamenum="${update.game.id}"] .game-status`);
+        gameStatusSpan.innerHTML = "In Progress";
+
+    }
+    else if(update.action === 'gameEnded'){
+        let gameStatusSpan = document.querySelector(`[gamenum="${update.game.id}"] .game-status`);
+        gameStatusSpan.innerHTML = "Completed";
+    }
     else{
         console.log("Unexpected message, better look into this...");
     }
-}
+};
+
+const getGameStatus = (gameSummary) => {
+
+};
+
 const onNewGame = (sock) => (e) => {
     e.preventDefault();
     let numPlayers = document.querySelector('#num-players').value;

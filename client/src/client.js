@@ -483,6 +483,9 @@ const updateGame = (sock) => (gameUpdate) => {
             updateTileBank(gameUpdate.game, sock);
             myTurnStateUpdater(gameUpdate.game);
         }
+        if(gameUpdate.type === 'startGame'){
+            announceGame(gameUpdate.game);
+        }
     } 
     else if(gameUpdate.type === 'joinGame'){
 
@@ -502,11 +505,6 @@ const updateGame = (sock) => (gameUpdate) => {
             document.querySelector('.chain-chat-action-container').style.height = `${27 - playerRowsHeight}vw`;
         }
         announceGame(gameUpdate.game);
-    }
-    else if(gameUpdate.type === 'startGame'){
-        updateGameBoard();
-        updateStatsTable();
-        updateTileBank(gameUpdate.game, sock);
     }
     else {
         console.log("Got unrecognized game update...")
@@ -861,11 +859,13 @@ const announceGame = (game) => {
             gameStatus = 'In progress.';
         }
     }
-    if(game.num_players < game.max_players){
-        gameStatus = 'Waiting for players...';
-    }
     else{
-        gameStatus = `Waiting for ${game.creator} to start the game.`;
+        if(game.num_players < game.max_players){
+            gameStatus = 'Waiting for players...';
+        }
+        else{
+            gameStatus = `Waiting for ${game.creator} to start the game.`;
+        }
     }
     const newMessage = `<li id="game-status-message"><b>Game #${game.id}: ${gameStatus}</b></li>`;
     const parent = document.querySelector('#messages');

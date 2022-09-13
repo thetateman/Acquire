@@ -87,7 +87,17 @@ const gameMessages = {
                     sock.data.username = requestingUser;
                     sock.request.session.lastKnownLocation = `game${gameID}`;
                     userStatuses[sock.request.session.username] = `game${gameID}`;
-                    io.in('lobby').in(gameID).emit('gameListUpdate', {action: 'addPlayer', game: {id: gameID}, username: sock.request.session.username, watcher: watcher, admin: false});
+                    io.in('lobby').in(gameID).emit('gameListUpdate', {
+                        action: 'addPlayer', 
+                        game: {
+                            id: gameID,
+                            usernames: requestedGame.usernames,
+                            max_players: requestedGame.max_players
+                        },
+                        username: sock.request.session.username,
+                        watcher: watcher,
+                        admin: false
+                    });
                     sock.join(gameID); //typeOf(gameID) = string
                 }
             }
@@ -201,6 +211,7 @@ const gameMessages = {
                 }
             }
             gameMessages.emitGameToPlayers(games, game_id, updateType, io);
+            io.in('lobby').emit('gameListUpdate', {action: "gameStarted", game: {id: game_id}});
         }
         else{
             if(games[game_id].state.player_states[games[game_id].state.turn].out_of_total_time ||
@@ -216,6 +227,7 @@ const gameMessages = {
         if(verbose){console.timeEnd('gameAction');}
         if(games[game_id].state.game_ended){
             //clean up game
+            io.in('lobby').emit('gameListUpdate', {action: "gameEnded", game: {id: game_id}});
             if(games[game_id].num_players > 1){ // db and trueskill functions not set up to handle single player games
                 rankPlayers.postGameAdjust(games[game_id]); //updates player skill level and record in db
                 gameMessages.saveGameToDatabase(games[game_id]);
