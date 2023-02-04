@@ -60,12 +60,12 @@ const sessionStore = new MongoStore({
 });
 
 const sessionMiddleware = session({
-    secret: 'some secret', //TODO: CHANGE THIS
+    secret: process.env.SECRET, //TODO: CHANGE THIS
     resave: false,
     saveUninitialized: true,
     store: sessionStore,
     cookie: {
-        maxAge: 1000 * 60 * 60 * 24
+        maxAge: 1000 * 60 * 60 * 24 * 90
     }
 });
 
