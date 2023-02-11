@@ -358,13 +358,13 @@ const internalGameFunctions = {
         }
         //Turn over, pause time.
         //game.state.player_states[game.state.turn].out_of_action_time = false;
-        game.state.player_states[game.state.turn].timerTotal.pause();
+        if(game.state.player_states[game.state.turn].hasOwnProperty('timerTotal')) game.state.player_states[game.state.turn].timerTotal.pause();
         //game.state.player_states[game.state.turn].timerAction.reset();
         //game.state.player_states[game.state.turn].timerAction.pause();
         //increment turn
         game.state.play_count++;
         game.state.turn = game.state.play_count % game.num_players;
-        game.state.player_states[game.state.turn].timerTotal.resume();
+        if(game.state.player_states[game.state.turn].hasOwnProperty('timerTotal')) game.state.player_states[game.state.turn].timerTotal.resume();
         //game.state.player_states[game.state.turn].timerAction.resume();
 
         //determine if new player has a playable tile

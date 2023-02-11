@@ -4,21 +4,31 @@ const sharedGameFunctions = require("./sharedGameFunctions.js");
 
 const computerPlayer = {
 
-    getMoveSet: function(game){
+    getMoveSet: function(state){
 
     },
 
-    simulateMove: function(game, move) {
-        return nextState;
+    simulateMove: function(state, move) {
+        // copy state
+
+        let stateCopy = JSON.parse(JSON.Stringify(state));
+
+        // FOR NOW:  do all moves except the tile placing
+        
+        
+        // Do tile placing
+
+
+        //return nextState;
 
     },
 
-    evaluateState: function(game) {
+    evaluateState: function(state) {
 
     },
 
-    buildGameTree: function(game, max_depth){
-        let nodes = [[game]];
+    buildstateTree: function(state, max_depth){
+        let nodes = [[state]];
         let i = 0;
         while(i < max_depth){
             let currentMoveSet = [];
@@ -27,7 +37,7 @@ const computerPlayer = {
             });
             nodes.push([]);
             currentMoveSet.forEach((move) => {
-                nodes[i + 1].push(this.simulateMove(game, move))
+                nodes[i + 1].push(this.simulateMove(state, move))
             });
             i++;
         }

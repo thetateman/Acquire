@@ -244,6 +244,12 @@ if(verbose){
     console.log(games[updateID].usernames);
     
     console.log(internalGameFunctions.updateGame(games[updateID], 'tate', "startGame", {}));
+    for(let i = 0 ; i<200; i++){
+        //computerPlayer.makeNextMove(games[updateID]);
+        if(games[updateID].state.game_ended) break;
+        console.log(internalGameFunctions.updateGame(games[updateID], games[updateID].usernames[games[updateID].state.turn], games[updateID].state.expectedNextAction, computerPlayer.makeNextMove(games[updateID]), {admin: false, verbose: true}));
+
+    }
 
     /*
     console.log(internalGameFunctions.updateGame(games[updateID], 7655, "startGame", {}));
