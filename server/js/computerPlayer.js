@@ -3,6 +3,37 @@
 const sharedGameFunctions = require("./sharedGameFunctions.js");
 
 const computerPlayer = {
+
+    getMoveSet: function(game){
+
+    },
+
+    simulateMove: function(game, move) {
+        return nextState;
+
+    },
+
+    evaluateState: function(game) {
+
+    },
+
+    buildGameTree: function(game, max_depth){
+        let nodes = [[game]];
+        let i = 0;
+        while(i < max_depth){
+            let currentMoveSet = [];
+            nodes[i].forEach((node) => {
+                currentMoveSet.concat(this.getMoveSet(node))
+            });
+            nodes.push([]);
+            currentMoveSet.forEach((move) => {
+                nodes[i + 1].push(this.simulateMove(game, move))
+            });
+            i++;
+        }
+
+    },
+
     makeNextMove: function(game){
         /**
         * Calculates *reasonable* next move in the game, for the player <game.state.turn>.
