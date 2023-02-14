@@ -17,6 +17,8 @@ const computerPlayer = require("./js/computerPlayer");
 const rankPlayers = require("./js/rankPlayers.js");
 const Timer = require("./js/timers.js");
 const userModel = require("./models/User");
+const HeuristicAgent = require("./js/HeuristicAgent");
+const RandomPlacerHeuristicAgent = require("./js/RandomPlacerHeuristicAgent");
 
 const MongoStore = require('connect-mongo')(session);
 
@@ -230,26 +232,70 @@ server.listen(8080, () => {
 //Create and edit some placeholder games for testing
 //TODO: updateGame unit tests
 if(verbose){
-    internalGameFunctions.createGame(games, 4, 1000 * 60 * 1, '4');
-    userStatuses['4'] = 'game1';
-    let updateID = internalGameFunctions.createGame(games, 6, 1000 * 60 * 1, 'tate');
-    userStatuses['tate'] = 'game2';
-    console.log(internalGameFunctions.updateGame(games[updateID], 7654, "joinGame", {}));
-    userStatuses['7654'] = 'game2';
-    console.log(internalGameFunctions.updateGame(games[updateID], 7653, "joinGame", {}));
-    userStatuses['7653'] = 'game2';
-    console.log(internalGameFunctions.updateGame(games[updateID], 7652, "joinGame", {}));
-    userStatuses['7652'] = 'game2';
+    // internalGameFunctions.createGame(games, 4, 1000 * 60 * 1, '4');
+    // userStatuses['4'] = 'game1';
 
-    console.log(games[updateID].usernames);
-    
-    console.log(internalGameFunctions.updateGame(games[updateID], 'tate', "startGame", {}));
-    for(let i = 0 ; i<200; i++){
-        //computerPlayer.makeNextMove(games[updateID]);
-        if(games[updateID].state.game_ended) break;
-        console.log(internalGameFunctions.updateGame(games[updateID], games[updateID].usernames[games[updateID].state.turn], games[updateID].state.expectedNextAction, computerPlayer.makeNextMove(games[updateID]), {admin: false, verbose: true}));
+    // let updateID = internalGameFunctions.createGame(games, 6, 1000 * 60 * 1, 'HeuristicAgent');
+    // userStatuses['HeuristicAgent'] = 'game2';
+    // console.log(internalGameFunctions.updateGame(games[updateID], "RandomPlacerHeuristicAgent", "joinGame", {}));
+    // userStatuses['RandomPlacerHeuristicAgent'] = 'game2';
+    // console.log(internalGameFunctions.updateGame(games[updateID], 7653, "joinGame", {}));
+    // userStatuses['7653'] = 'game2';
+    // console.log(internalGameFunctions.updateGame(games[updateID], 7652, "joinGame", {}));
+    // userStatuses['7652'] = 'game2';
 
+    //console.log(games[updateID].usernames);
+
+    //console.log(internalGameFunctions.updateGame(games[updateID], 'HeuristicAgent', "startGame", {}));
+    const myRandomAgent = new RandomPlacerHeuristicAgent();
+    const myHeuristicAgent = new HeuristicAgent();
+    //let movingAgent;
+    let autoGameIds = [];
+    let numGames = 1000;
+    console.time("create-auto-games");
+    for(let createGameIndex = 0; createGameIndex < numGames; createGameIndex++){
+        let updateID = internalGameFunctions.createGame(games, 6, 1000 * 60 * 1, 'HeuristicAgent');
+        internalGameFunctions.updateGame(games[updateID], "RandomPlacerHeuristicAgent", "joinGame", {});
+        internalGameFunctions.updateGame(games[updateID], 'HeuristicAgent', "startGame", {});
+        autoGameIds.push(updateID);
     }
+    console.timeEnd("create-auto-games");
+    console.time("auto-games");
+    for(let gameIndex = 0; gameIndex < numGames; gameIndex++) {
+        let updateID = autoGameIds[gameIndex]
+        for(let i = 0 ; i<200; i++){
+            if(games[updateID].state.game_ended) break;
+            if(games[updateID].usernames[games[updateID].state.turn] === 'HeuristicAgent'){
+                internalGameFunctions.updateGame(games[updateID], games[updateID].usernames[games[updateID].state.turn], games[updateID].state.expectedNextAction, myHeuristicAgent.makeNextMove(games[updateID]), {admin: false, verbose: false});
+            }
+            else if(games[updateID].usernames[games[updateID].state.turn] === 'RandomPlacerHeuristicAgent'){
+                internalGameFunctions.updateGame(games[updateID], games[updateID].usernames[games[updateID].state.turn], games[updateID].state.expectedNextAction, myRandomAgent.makeNextMove(games[updateID]), {admin: false, verbose: false});
+            }
+            //computerPlayer.makeNextMove(games[updateID]);
+            // if(games[updateID].state.game_ended) break;
+            // console.log(internalGameFunctions.updateGame(games[updateID], games[updateID].usernames[games[updateID].state.turn], games[updateID].state.expectedNextAction, computerPlayer.makeNextMove(games[updateID]), {admin: false, verbose: true}));
+    
+        }
+    }
+    console.timeEnd("auto-games");
+
+    //set user statuses so lobby page doesn't break
+    userStatuses['HeuristicAgent'] = `game${numGames - 1}`;
+    userStatuses['RandomPlacerHeuristicAgent'] = `game${numGames - 1}`;
+
+    let hWinCount = 0;
+    let rWinCount = 0;
+    Object.values(games).forEach((game) => {
+        if(game.hasOwnProperty("places")){
+            if(game.places[0].includes("HeuristicAgent")){
+                hWinCount++;
+            }
+            else {
+                rWinCount++;
+            }
+        } 
+    });
+    console.log(`Heuristic Agent won ${hWinCount} games.\nRandom Agent won ${rWinCount} games.`);
 
     /*
     console.log(internalGameFunctions.updateGame(games[updateID], 7655, "startGame", {}));
