@@ -335,7 +335,10 @@ const startGame = (sock) => (e) => {
 
 const populateGame = (sock) => (data) => {
     const game = data.game;
+    if(data.game.history) localStorage.history = JSON.stringify(data.game.history);
+   
     localStorage.setItem('gameState', JSON.stringify(game.state));
+    
     chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0"));
     generateStatsTable(game, data.playerDetails);
     updateGameBoard(game);
@@ -350,6 +353,7 @@ const populateGame = (sock) => (data) => {
         statsTableUsernameStyleUpdater(game);
     }
     announceGame(game);
+    
     //TODO: Reveal hidden elements if necessary (dispose-shares-table).
     // Normally this state is updated on updateGame calls, but we should update in the same way on page load.
     // updateClientState(game.state.expectedNextAction, game.state.turn)
@@ -535,7 +539,13 @@ const generateStatsTable = (game, playerDetails) => {
     for(let i=0; i<game.num_players; i++){
         let username = game.usernames[i];
         // Determine if player is connected to the game
-        let connected = (playerDetails[username].location.split('game')[1] === game.id.toString());
+        let connected;
+        if(!playerDetails){
+            connected = false;
+        }
+        else{
+            connected = (playerDetails[username].location.split('game')[1] === game.id.toString());
+        }
         let disconnectedClassString = '';
         if(!connected && username !== localStorage.username){
             disconnectedClassString = ' disconnected';
@@ -878,7 +888,7 @@ const announceGame = (game) => {
     window.active_socket_conn = sock;
 
     addBoard();
-    sock.on('gameResponse', populateGame(sock));
+    //sock.on('gameResponse', populateGame(sock));
     sock.on('gameUpdate', updateGame(sock));
     sock.on('gameListUpdate', gameListUpdate);
     

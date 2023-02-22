@@ -4,16 +4,34 @@ const sharedGameFunctions = require("./sharedGameFunctions.js");
 
 const computerPlayer = {
 
-    getMoveSet: function(state){
-
-    },
+    // getMoveSet: function(game){
+    //     const abstractGameFeatures = this.getAbstractGameFeatures(game);
+    //    switch(game.state.expectedNextAction){
+    //     case 'playTile':
+    //         return this.getPlayTileMoveSet(game, abstractGameFeatures);
+    //     case 'purchaseShares':
+    //         return this.getPurchaseSharesMoveSet(game, abstractGameFeatures);
+    //     case 'chooseNewChain':
+    //         return this.getChooseNewChainMoveSet(game, abstractGameFeatures);
+    //     case 'chooseRemainingChain':
+    //         return this.getChooseRemainingChainMoveSet(game, abstractGameFeatures);
+    //     case 'chooseNextElimChain':
+    //         return this.getChooseNextElimChainMoveSet(game, abstractGameFeatures)
+    //     case 'disposeShares':
+    //         return this.getDisposeSharesMoveSet(game, abstractGameFeatures);
+    //     default:
+    //         return 'unexpectedActionType';
+    //    }
+    // },
 
     simulateMove: function(state, move) {
         // copy state
 
         let stateCopy = JSON.parse(JSON.Stringify(state));
 
+
         // FOR NOW:  do all moves except the tile placing
+        // OR: bundle all moves together as one level in the tree 
         
         
         // Do tile placing

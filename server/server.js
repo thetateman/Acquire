@@ -7,6 +7,7 @@ const socketio = require('socket.io');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const helmet = require('helmet');
+const fs = require("fs");
 
 const apiRouter = require("./api/api.router.js");
 const internalGameFunctions = require("./js/internalGameFunctions.js");
@@ -19,6 +20,13 @@ const Timer = require("./js/timers.js");
 const userModel = require("./models/User");
 const HeuristicAgent = require("./js/HeuristicAgent");
 const RandomPlacerHeuristicAgent = require("./js/RandomPlacerHeuristicAgent");
+const NNPlacerHeuristicAgent = require("./js/NNPlacerHeuristicAgent");
+const aiHelpers = require("./js/aiHelpers");
+const tfjs = require('@tensorflow/tfjs');
+const tfjs_node = require('@tensorflow/tfjs-node');
+
+const model = tfjs_node.loadLayersModel(`file://../model_1/model.json`);
+
 
 const MongoStore = require('connect-mongo')(session);
 
@@ -247,55 +255,116 @@ if(verbose){
     //console.log(games[updateID].usernames);
 
     //console.log(internalGameFunctions.updateGame(games[updateID], 'HeuristicAgent', "startGame", {}));
-    const myRandomAgent = new RandomPlacerHeuristicAgent();
-    const myHeuristicAgent = new HeuristicAgent();
-    //let movingAgent;
-    let autoGameIds = [];
-    let numGames = 1000;
-    console.time("create-auto-games");
-    for(let createGameIndex = 0; createGameIndex < numGames; createGameIndex++){
-        let updateID = internalGameFunctions.createGame(games, 6, 1000 * 60 * 1, 'HeuristicAgent');
-        internalGameFunctions.updateGame(games[updateID], "RandomPlacerHeuristicAgent", "joinGame", {});
-        internalGameFunctions.updateGame(games[updateID], 'HeuristicAgent', "startGame", {});
-        autoGameIds.push(updateID);
-    }
-    console.timeEnd("create-auto-games");
-    console.time("auto-games");
-    for(let gameIndex = 0; gameIndex < numGames; gameIndex++) {
-        let updateID = autoGameIds[gameIndex]
-        for(let i = 0 ; i<200; i++){
-            if(games[updateID].state.game_ended) break;
-            if(games[updateID].usernames[games[updateID].state.turn] === 'HeuristicAgent'){
-                internalGameFunctions.updateGame(games[updateID], games[updateID].usernames[games[updateID].state.turn], games[updateID].state.expectedNextAction, myHeuristicAgent.makeNextMove(games[updateID]), {admin: false, verbose: false});
-            }
-            else if(games[updateID].usernames[games[updateID].state.turn] === 'RandomPlacerHeuristicAgent'){
-                internalGameFunctions.updateGame(games[updateID], games[updateID].usernames[games[updateID].state.turn], games[updateID].state.expectedNextAction, myRandomAgent.makeNextMove(games[updateID]), {admin: false, verbose: false});
-            }
-            //computerPlayer.makeNextMove(games[updateID]);
-            // if(games[updateID].state.game_ended) break;
-            // console.log(internalGameFunctions.updateGame(games[updateID], games[updateID].usernames[games[updateID].state.turn], games[updateID].state.expectedNextAction, computerPlayer.makeNextMove(games[updateID]), {admin: false, verbose: true}));
     
+    async function runSelfPlayGames(games, numGames){
+        const myRandomAgent = new RandomPlacerHeuristicAgent();
+        const myHeuristicAgent = new HeuristicAgent();
+        const myNNAgent = new NNPlacerHeuristicAgent();
+        await myNNAgent.init();
+        let autoGameIds = [];
+        console.time("create-auto-games");
+        let aiPlayers = ["NNPlacerHeuristicAgent", "RandomAgent"]; 
+        //"RandomPlayerHeuristicAgent2", "HeuristicAgent"];
+        for(let createGameIndex = 0; createGameIndex < numGames; createGameIndex++){
+            let updateID = internalGameFunctions.createGame(games, 6, 1000 * 60 * 1, aiPlayers[0]);
+            for(let i = 1; i < aiPlayers.length; i++){
+                internalGameFunctions.updateGame(games[updateID], aiPlayers[i], "joinGame", {});
+            }
+            internalGameFunctions.updateGame(games[updateID], aiPlayers[0], "startGame", {});
+            autoGameIds.push(updateID);
+        }
+        console.timeEnd("create-auto-games");
+        console.time("auto-games");
+        let writer = fs.createWriteStream('../training_output/state_history.csv', {start: 0});
+        for(let gameIndex = 0; gameIndex < numGames; gameIndex++) {
+            let updateID = autoGameIds[gameIndex]
+            let movingAgent;
+            let stateHistory = [];
+            for(let i = 0; i<500; i++){
+                switch(games[updateID].usernames[games[updateID].state.turn].charAt(0)){
+                    case 'H':
+                        movingAgent = myHeuristicAgent;
+                        break;
+                    case 'R':
+                        movingAgent = myRandomAgent;
+                        break;
+                    case 'N':
+                        movingAgent = myNNAgent;
+                        break;
+                    default:
+                        console.error("That agent is not defined.");
+                        break;
+                };
+                if(games[updateID].state.game_ended) break;
+
+                let nextMove = await movingAgent.makeNextMove(games[updateID]);
+                internalGameFunctions.updateGame(games[updateID], games[updateID].usernames[games[updateID].state.turn], games[updateID].state.expectedNextAction, nextMove, {admin: false, verbose: false});
+                if(i>60) stateHistory.push(aiHelpers.stateToVector(games[updateID].state));
+                //console.log(`finished ply ${i}`);
+                
+
+
+                //computerPlayer.makeNextMove(games[updateID]);
+                // if(games[updateID].state.game_ended) break;
+                // console.log(internalGameFunctions.updateGame(games[updateID], games[updateID].usernames[games[updateID].state.turn], games[updateID].state.expectedNextAction, computerPlayer.makeNextMove(games[updateID]), {admin: false, verbose: true}));
+        
+            }
+            // label states in state history
+
+            let numPlayers = games[updateID].usernames.length;
+            let ranks = [];
+            for(let user = 0; user < numPlayers; user++){
+                let place;
+                for(place = 0; place < numPlayers; place++){
+                    if(games[updateID].places[place].includes(games[updateID].usernames[user])) break;
+                }
+                
+                ranks.push(place + 1);
+            }
+            let labels = [];
+            ranks.forEach(rank => {
+                let label = (numPlayers - rank) / (numPlayers - 1);
+                labels.push(label);
+            });
+            stateHistory.forEach(state => {
+                // label: 0.0 = last place | 1.0 = first place
+                // TODO handle ties
+                
+                state.push(labels[state[state.length - 1]]);
+                // model.then(result => result.predict(tfjs.tensor([state.slice(0, -1)]))).then(prediction => (prediction.array().then(array => console.log(array))));
+                writer.write(state.toString() + '\n');
+            });
+            
+        }
+        console.timeEnd("auto-games");
+        //set user statuses so lobby page doesn't break
+        aiPlayers.forEach(player => {
+            userStatuses[player] = `game${numGames - 1}`;
+        });
+        
+        let placeCounts = {};
+        for(let i = 0; i < aiPlayers.length; i++){
+            placeCounts[aiPlayers[i]] = new Array(aiPlayers.length).fill(0);
+        }
+
+        Object.values(games).forEach((game) => {
+            if(game.hasOwnProperty("places")){
+                for(let i = 0; i < aiPlayers.length; i++){
+                    for(let j = 0; j < aiPlayers.length; j++){
+                        if(game.places[i].includes(aiPlayers[j])){
+                            placeCounts[aiPlayers[j]][i]++;
+                        }
+                    }
+                }
+            } 
+        });
+        for(let i = 0; i < aiPlayers.length; i++){
+            console.log(`${aiPlayers[i]} record: \n${placeCounts[aiPlayers[i]]}\n`);
         }
     }
-    console.timeEnd("auto-games");
-
-    //set user statuses so lobby page doesn't break
-    userStatuses['HeuristicAgent'] = `game${numGames - 1}`;
-    userStatuses['RandomPlacerHeuristicAgent'] = `game${numGames - 1}`;
-
-    let hWinCount = 0;
-    let rWinCount = 0;
-    Object.values(games).forEach((game) => {
-        if(game.hasOwnProperty("places")){
-            if(game.places[0].includes("HeuristicAgent")){
-                hWinCount++;
-            }
-            else {
-                rWinCount++;
-            }
-        } 
+    runSelfPlayGames(games, 100).then(() => {
+        
     });
-    console.log(`Heuristic Agent won ${hWinCount} games.\nRandom Agent won ${rWinCount} games.`);
 
     /*
     console.log(internalGameFunctions.updateGame(games[updateID], 7655, "startGame", {}));

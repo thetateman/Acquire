@@ -453,6 +453,7 @@ const internalGameFunctions = {
             players_timed_out: [],
             usernames:[],
             watchers:[],
+            history: [],
             state: {
                 game_started: false,
                 game_ended: false,
@@ -996,6 +997,9 @@ const internalGameFunctions = {
                 return "invalidUpdateType";
                 break;
         }
+        let {history, ...gameCopy} = game;
+        
+        game.history.push(JSON.parse(JSON.stringify(gameCopy)));
         return "success";
     },
 }
