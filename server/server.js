@@ -263,7 +263,7 @@ if(verbose){
         await myNNAgent.init();
         let autoGameIds = [];
         console.time("create-auto-games");
-        let aiPlayers = ["NNPlacerHeuristicAgent", "RandomAgent"]; 
+        let aiPlayers = ["HeuristicAgent", "NeuralNet"]; 
         //"RandomPlayerHeuristicAgent2", "HeuristicAgent"];
         for(let createGameIndex = 0; createGameIndex < numGames; createGameIndex++){
             let updateID = internalGameFunctions.createGame(games, 6, 1000 * 60 * 1, aiPlayers[0]);
@@ -330,7 +330,7 @@ if(verbose){
                 // label: 0.0 = last place | 1.0 = first place
                 // TODO handle ties
                 
-                state.push(labels[state[state.length - 1]]);
+                state = state.concat(labels);
                 // model.then(result => result.predict(tfjs.tensor([state.slice(0, -1)]))).then(prediction => (prediction.array().then(array => console.log(array))));
                 writer.write(state.toString() + '\n');
             });

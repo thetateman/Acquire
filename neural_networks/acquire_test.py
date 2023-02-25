@@ -30,6 +30,7 @@ import argparse
 import pickle
 
 import tensorflowjs as tfjs
+from create_cnn import *
 
 # Tensorflow 2.x way of doing things
 from tensorflow.keras.layers import InputLayer, Dense, Dropout, BatchNormalization
@@ -106,7 +107,7 @@ def args2string(args):
     
     :param args: Command line arguments
     '''
-    return "exp_%02d_hidden_%02d"%(args.exp, args.hidden)
+    return "exp_%02d"%(args.exp)
     
     
 ########################################################
@@ -123,34 +124,82 @@ def execute_exp(args):
    
     # load the dataset
     dataset = np.loadtxt('C:/Users/tates/Acquire/training_output/state_history.csv', delimiter=',')
+
+    ######################
+    # DATA PREPROCESSING #
+    ######################
+
     proportion_train = 0.8
     proportion_valid = 0.1
     proportion_test = 0.1
     n_train = math.floor(len(dataset) * proportion_train)
     n_valid = math.floor(len(dataset) * proportion_valid)
     n_test = math.floor(len(dataset) * proportion_test)
-    # split into input (X) and output (y) variables
-    data_train = dataset[0 : n_train]
-    data_valid = dataset[n_train : n_train + n_valid]
-    data_test = dataset[n_train + n_valid : len(dataset)]
-    train_x = data_train[:,0:len(dataset[0])-1]
-    train_y = data_train[:,len(dataset[0])-1]
-    print(len(train_x))
+
+    raw_board_dataset = dataset[:,0:1080]
+    board_dataset = raw_board_dataset.reshape(len(raw_board_dataset), 10, 9, 12, 1)
+    board_dataset_channels = np.empty((len(raw_board_dataset), 9, 12, 10), int)
+    for i, record in enumerate(board_dataset):
+        board_dataset_channels[i] = np.concatenate(record, axis=2)
+    print(board_dataset_channels[0][0])
+    print(np.shape(board_dataset_channels))
+    non_board_data = dataset[:,1080:len(dataset[0])]
+    
+    
+    # board
+    board_input_train = board_dataset_channels[0 : n_train]
+    board_input_valid = board_dataset_channels[n_train : n_train + n_valid]
+    board_input_test = board_dataset_channels[n_train + n_valid : ]
+    
+    
+    # non-board
+
+    data_train = non_board_data[0 : n_train]
+    data_valid = non_board_data[n_train : n_train + n_valid]
+    data_test = non_board_data[n_train + n_valid : ]
+    scalar_input_train = data_train[:,0:len(non_board_data[0])-2]
+    print(scalar_input_train[0])
+    train_y = data_train[:,len(non_board_data[0])-2:]
+    print(train_y[0])
     
 
-    valid_x = data_valid[:,0:len(dataset[0])-1]
-    valid_y = data_valid[:,len(dataset[0])-1]
+    scalar_input_valid = data_valid[:,0:len(non_board_data[0])-2]
+    valid_y = data_valid[:,len(non_board_data[0])-2:]
 
-    test_x = data_test[:,0:len(dataset[0])-1]
-    print(test_x)
+    scalar_input_test = data_test[:,0:len(non_board_data[0])-2]
     
-    test_y = data_test[:,len(dataset[0])-1]
-    print(test_y)
+    
+    test_y = data_test[:,len(non_board_data[0])-2:]
+    print(test_y[0])
+    
 
 
+    # cnn
+
+
+    # Build the model
+    
+
+    # Network config
+    # NOTE: this is very specific to our implementation of create_cnn_classifier_network()
+    #   List comprehension and zip all in one place (ugly, but effective).
+    #   Feel free to organize this differently
+    dense_layers = [{'units': i} for i in args.hidden]
+    conv_layers = [{'filters': f, 'kernel_size': (s,s), 'pool_size': (p,p), 'strides': (p,p)} if p > 1
+                   else {'filters': f, 'kernel_size': (s,s), 'pool_size': None, 'strides': None}
+                   for s, f, p, in zip(args.conv_size, args.conv_nfilters, args.pool)]
+    
+    print("Dense layers:", dense_layers)
+    print("Conv layers:", conv_layers)
+    # if args.deep == 0:
+    #     tensorArchitectures = [[[2], [2], [4], [4], [8], [8], [16], [16], [32]], [[50], [25]]]
+    # else:
+    #     tensorArchitectures = [[[10, 20], [4, 8]], [[30, 50], [10, 15]]]
+
+    model = create_cnn_evaluator_network([9,12], 10, n_scalar_inputs=len(scalar_input_train[0]), conv_layers=conv_layers, dense_layers=dense_layers, lrate=0.00005)
 
     
-    model = build_model(len(train_x[0]), args.hidden, 1, activation='elu')
+    #model = build_model(len(train_x[0]), args.hidden, 1, activation='elu')
 
     # Callbacks
     
@@ -167,38 +216,38 @@ def execute_exp(args):
         # Training
         print("Training...")
         
-        history = model.fit(x=train_x, y=train_y, epochs=args.epochs, 
+        history = model.fit(x=[board_input_train, scalar_input_train], y=train_y, epochs=args.epochs, 
                             verbose=True,
                             batch_size=128,
                             shuffle=True,
-                            validation_data=(valid_x, valid_y),
+                            validation_data=([board_input_valid, scalar_input_valid], valid_y),
                             callbacks=[early_stopping_cb])
         
         print("Done Training")
 
-        plt.plot(history.history['accuracy'])
-        plt.plot(history.history['val_accuracy'])
-        plt.ylabel('Accuracy')
+        plt.plot(history.history['root_mean_squared_error'])
+        plt.plot(history.history['val_root_mean_squared_error'])
+        plt.ylabel('Root MSE')
         plt.xlabel('epochs')
         plt.legend(["Training", "Validation"])
         plt.show()
         plt.savefig('result.png')
 
-        abs_error = np.abs(model.predict(test_x) - test_y)
-        np.savetxt("results/predictions_rounded.txt", (np.round(model.predict(test_x))).astype(int))
-        np.savetxt("results/predictions.txt", model.predict(test_x))
-        print(model.evaluate(test_x, test_y))
+        # abs_error = np.abs(model.predict([board_input_test, scalar_input_test]) - test_y)
+        np.savetxt("results/predictions_rounded.txt", (np.round(model.predict([board_input_test, scalar_input_test]))).astype(int))
+        np.savetxt("results/predictions.txt", model.predict([board_input_test, scalar_input_test]))
+        print(model.evaluate([board_input_test, scalar_input_test], test_y))
 
         
         # Save the training history
         fp = open("results/hw0_results_%s.pkl"%(argstring), "wb")
         pickle.dump(history.history, fp)
         pickle.dump(args, fp)
-        pickle.dump(abs_error, fp)
+        # pickle.dump(abs_error, fp)
         fp.close()
 
         # Save the model (can't be included in the pickle file)
-        model.save("%s_model"%("1"))
+        #model.save("%s_model"%("1"))
 
         
         tfjs.converters.save_keras_model(model, "model_1")
@@ -275,9 +324,14 @@ def create_parser():
     parser = argparse.ArgumentParser(description='XOR Learner')
     parser.add_argument('--exp', type=int, default=0, help='Experimental index')
     parser.add_argument('--epochs', type=int, default=100, help='Number of Training Epochs')
-    parser.add_argument('--hidden', type=int, default=2, help='Number of hidden units')
+    # Hidden unit parameters
+    parser.add_argument('--hidden', nargs='+', type=int, default=[100, 5], help='Number of hidden units per layer (sequence of ints)')
     parser.add_argument('--gpu', action='store_true', help='Use gpu')
     parser.add_argument('--nogo', action='store_true', help='Do not preform the experiment')
+    # Convolutional parameters
+    parser.add_argument('--conv_size', nargs='+', type=int, default=[5], help='Convolution filter size per layer (sequence of ints)')
+    parser.add_argument('--conv_nfilters', nargs='+', type=int, default=[10], help='Convolution filters per layer (sequence of ints)')
+    parser.add_argument('--pool', nargs='+', type=int, default=[2], help='Max pooling size (1=None)')
 
 
     return parser
