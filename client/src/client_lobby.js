@@ -155,8 +155,8 @@ const onNewGame = (sock) => (e) => {
     e.preventDefault();
     let numPlayers = document.querySelector('#num-players').value;
     let timePerPlayer = document.querySelector('#time-per-player').value;
-    //let stallProof = document.querySelector('#stall-proof').checked;
-    sock.emit('newGame', {numPlayers, timePerPlayer}); 
+    let aiPlayer = document.querySelector('#ai-player').checked;
+    sock.emit('newGame', {numPlayers, timePerPlayer, aiPlayer}); 
 };
 
 const onJoinGame = (game, sock) => (e) => {

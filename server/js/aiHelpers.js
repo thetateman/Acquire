@@ -27,6 +27,7 @@ const aiHelpers = {
                 out_of_total_time,
                 out_of_action_time,
                 tiles,
+                timerTotal,
                 ...extractedFeatures} = player;
 
             let playerStateVector = Object.values(extractedFeatures);
@@ -58,6 +59,7 @@ const aiHelpers = {
                 out_of_action_time,
                 tiles,
                 net_worth,
+                timerTotal,
                 ...extractedFeatures} = player;
 
             scalarInputs = scalarInputs.concat(Object.values(extractedFeatures));
@@ -93,6 +95,7 @@ const aiHelpers = {
                 out_of_action_time,
                 tiles,
                 net_worth,
+                timerTotal,
                 ...extractedFeatures} = player;
 
             let playerStateVector = Object.values(extractedFeatures);

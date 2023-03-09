@@ -543,6 +543,9 @@ const generateStatsTable = (game, playerDetails) => {
         if(!playerDetails){
             connected = false;
         }
+        else if(!playerDetails[username].location){
+            connected = false;
+        }
         else{
             connected = (playerDetails[username].location.split('game')[1] === game.id.toString());
         }
@@ -888,7 +891,7 @@ const announceGame = (game) => {
     window.active_socket_conn = sock;
 
     addBoard();
-    //sock.on('gameResponse', populateGame(sock));
+    sock.on('gameResponse', populateGame(sock));
     sock.on('gameUpdate', updateGame(sock));
     sock.on('gameListUpdate', gameListUpdate);
     

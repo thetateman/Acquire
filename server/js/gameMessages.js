@@ -3,12 +3,14 @@
 const internalGameFunctions = require("./internalGameFunctions.js");
 const Timer = require("./timers.js");
 const computerPlayer = require("./computerPlayer.js");
+const NNPlacerHeuristicAgent = require("./NNPlacerHeuristicAgent");
 const GameModel = require("../models/Game.js");
 const rankPlayers = require("./rankPlayers.js");
 const mongoose = require('mongoose');
 require('dotenv').config();
 const connection = mongoose.connect(process.env.RESTREVIEWS_DB_URI)
 .catch(e=>console.error(e));
+let myNNAgent;
 
 const gameMessages = {
     registerGameMessageHandlers: function(games, io, sock, userStatuses, usersInLobby, verbose){
@@ -103,11 +105,18 @@ const gameMessages = {
             }
             
         });
-        sock.on('newGame', ({numPlayers, timePerPlayer}) => {
+        sock.on('newGame', async ({numPlayers, timePerPlayer, aiPlayer}) => {
             const newGameID = internalGameFunctions.createGame(games, parseInt(numPlayers, 10), timePerPlayer, sock.request.session.username);
             let usernameDetails = {};
             usernameDetails[games[newGameID].usernames[0]] = {username: games[newGameID].usernames[0], location: userStatuses[games[newGameID].usernames[0]], admin: false};
-            const gameSummary = {
+
+            if(aiPlayer){
+                myNNAgent = new NNPlacerHeuristicAgent();
+                await myNNAgent.init(1);
+                internalGameFunctions.updateGame(games[newGameID], "NeuralNetPlayer", "joinGame", {});
+                
+            }
+                        const gameSummary = {
                 id: newGameID,
                 usernames: games[newGameID].usernames,
                 watchers: games[newGameID].watchers,
@@ -188,6 +197,9 @@ const gameMessages = {
                     test_time_lim = 5000;
                 }
                 */
+               if(games[game_id].usernames[i] === "NeuralNetPlayer"){
+                games[game_id].state.player_states[i].out_of_total_time = true;
+               }
                 games[game_id].state.player_states[i].timerTotal = new Timer(() => {
                     games[game_id].state.player_states[i].out_of_total_time = true;
                     games[game_id].players_timed_out.push(games[game_id].usernames[i]);
@@ -213,6 +225,14 @@ const gameMessages = {
             }
             gameMessages.emitGameToPlayers(games, game_id, updateType, io);
             io.in('lobby').emit('gameListUpdate', {action: "gameStarted", game: {id: game_id}});
+
+            //////////////////// AI Player Quick Fix ////////////////////
+            if(games[game_id].state.player_states[games[game_id].state.turn].out_of_total_time ||
+                games[game_id].state.player_states[games[game_id].state.turn].out_of_action_time){
+                    if(!games[game_id].state.game_ended){
+                        gameMessages.makeAndSendComputerMove(games, game_id, io, verbose);
+                    }
+            }
         }
         else{
             if(games[game_id].state.player_states[games[game_id].state.turn].out_of_total_time ||
@@ -282,11 +302,12 @@ const gameMessages = {
     },
 
     makeAndSendComputerMove: function(games, game_id, io, verbose){
-        setTimeout(() => {
+        console.log("herererer")
+        setTimeout(async () => {
             if(games[game_id]){ //if game exists (if game has not be deleted due to inactivity)
                 let computerGameActionType = games[game_id].state.expectedNextAction;
                 gameMessages.gameActionHandler(games, io, null, verbose)
-                ({game_id: game_id, updateType: computerGameActionType, updateData: computerPlayer.makeNextMove(games[game_id])});
+                ({game_id: game_id, updateType: computerGameActionType, updateData: await myNNAgent.makeNextMove(games[game_id])});
                 gameMessages.emitGameToPlayers(games, game_id, computerGameActionType, io);
             }
         }, 1000);

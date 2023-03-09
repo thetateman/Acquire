@@ -18,6 +18,7 @@
     "express": "^4.17.3",
     "express-session": "^1.17.2",
     "helmet": "^5.1.0",
+    "mathjs": "^11.5.1",
     "mongodb": "^4.7.0",
     "mongoose": "^6.1.7",
     "nodemon": "^2.0.20",

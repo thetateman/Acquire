@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # In[1]:
-
+# Call with: python acquire_test.py --hidden 50 50 30 --conv_size 3 3 --conv_nfilters 25 25 --pool 1 1 --epochs 9
 
 '''
 Author: Tate Smith - u@ou.edu
@@ -210,6 +210,8 @@ def execute_exp(args):
     # Describe arguments
     argstring = args2string(args)
     print("EXPERIMENT: %s"%argstring)
+    tf.keras.utils.plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
+    print(homo)
     
     # Only execute if we are 'going'
     if not args.nogo:
@@ -250,7 +252,7 @@ def execute_exp(args):
         #model.save("%s_model"%("1"))
 
         
-        tfjs.converters.save_keras_model(model, "model_1")
+        tfjs.converters.save_keras_model(model, "model_2")
 
 
 def display_learning_curve(fname):

@@ -10,8 +10,8 @@ const aiHelpers = require("./aiHelpers");
 
 
 class NNPlacerHeuristicAgent extends HeuristicAgent{
-    async init(){
-        this.model = await tfjs_node.loadLayersModel(`file://../neural_networks/model_1/model.json`);
+    async init(model_version){
+        this.model = await tfjs_node.loadLayersModel(`file://../neural_networks/model_${model_version}/model.json`);
     }
 
     async computerPlayTile(game, abstractGameFeatures){
@@ -43,7 +43,6 @@ class NNPlacerHeuristicAgent extends HeuristicAgent{
             }
             else{
                 // need to reshape and concatenate channels 
-                let thing = (await this.model.predict([tfjs_node.tensor([potentialStates[i][0]]), tfjs_node.tensor([potentialStates[i][1]])]).array());
                 evaluations[i] = (await this.model.predict([tfjs_node.tensor([potentialStates[i][0]]), tfjs_node.tensor([potentialStates[i][1]])]).array())[0][game.state.turn];
             }
             

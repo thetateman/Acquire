@@ -255,15 +255,23 @@ if(verbose){
     //console.log(games[updateID].usernames);
 
     //console.log(internalGameFunctions.updateGame(games[updateID], 'HeuristicAgent', "startGame", {}));
-    
+    let myRandomAgent;
+    let myHeuristicAgent;
+    let myNNAgent;
+    let myNNAgent2;
+    async function initAgents(){
+        myRandomAgent = new RandomPlacerHeuristicAgent();
+        myHeuristicAgent = new HeuristicAgent();
+        myNNAgent = new NNPlacerHeuristicAgent();
+        await myNNAgent.init(1);
+        myNNAgent2 = new NNPlacerHeuristicAgent();
+        await myNNAgent2.init(2);
+    }
     async function runSelfPlayGames(games, numGames){
-        const myRandomAgent = new RandomPlacerHeuristicAgent();
-        const myHeuristicAgent = new HeuristicAgent();
-        const myNNAgent = new NNPlacerHeuristicAgent();
-        await myNNAgent.init();
+        
         let autoGameIds = [];
         console.time("create-auto-games");
-        let aiPlayers = ["HeuristicAgent", "NeuralNet"]; 
+        let aiPlayers = ["NeuralAgent", "RandomAgent"]; 
         //"RandomPlayerHeuristicAgent2", "HeuristicAgent"];
         for(let createGameIndex = 0; createGameIndex < numGames; createGameIndex++){
             let updateID = internalGameFunctions.createGame(games, 6, 1000 * 60 * 1, aiPlayers[0]);
@@ -275,9 +283,9 @@ if(verbose){
         }
         console.timeEnd("create-auto-games");
         console.time("auto-games");
-        let writer = fs.createWriteStream('../training_output/state_history.csv', {start: 0});
+        let writer = fs.createWriteStream('../training_output/state_history1.csv', {start: 0});
         for(let gameIndex = 0; gameIndex < numGames; gameIndex++) {
-            let updateID = autoGameIds[gameIndex]
+            let updateID = autoGameIds[gameIndex]     
             let movingAgent;
             let stateHistory = [];
             for(let i = 0; i<500; i++){
@@ -290,6 +298,9 @@ if(verbose){
                         break;
                     case 'N':
                         movingAgent = myNNAgent;
+                        break;
+                    case '2':
+                        movingAgent = myNNAgent2;
                         break;
                     default:
                         console.error("That agent is not defined.");
@@ -362,9 +373,11 @@ if(verbose){
             console.log(`${aiPlayers[i]} record: \n${placeCounts[aiPlayers[i]]}\n`);
         }
     }
-    runSelfPlayGames(games, 100).then(() => {
+    initAgents().then(() => {
+        runSelfPlayGames(games, 3).then(() => {
         
-    });
+        })
+    })
 
     /*
     console.log(internalGameFunctions.updateGame(games[updateID], 7655, "startGame", {}));
