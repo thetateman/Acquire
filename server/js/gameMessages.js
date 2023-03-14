@@ -114,7 +114,11 @@ const gameMessages = {
                 myNNAgent = new NNPlacerHeuristicAgent();
                 await myNNAgent.init(1);
                 internalGameFunctions.updateGame(games[newGameID], "NeuralNetPlayer", "joinGame", {});
+                games[newGameID].num_ai_opponents = 1;
                 
+            }
+            else{
+                games[newGameID].num_ai_opponents = 0;
             }
                         const gameSummary = {
                 id: newGameID,
@@ -302,7 +306,6 @@ const gameMessages = {
     },
 
     makeAndSendComputerMove: function(games, game_id, io, verbose){
-        console.log("herererer")
         setTimeout(async () => {
             if(games[game_id]){ //if game exists (if game has not be deleted due to inactivity)
                 let computerGameActionType = games[game_id].state.expectedNextAction;
@@ -319,6 +322,7 @@ const gameMessages = {
             usernames: game.usernames_ranked,
             networths: game.final_net_worths,
             players_timed_out: game.players_timed_out,
+            num_ai_opponents: game.num_ai_opponents
         });
         await completedGame.save()
         .catch(err => console.error(err));

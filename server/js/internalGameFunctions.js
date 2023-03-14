@@ -997,9 +997,13 @@ const internalGameFunctions = {
                 return "invalidUpdateType";
                 break;
         }
+
+        // Quick fix way to store game history, long term we should store state deltas, not the full game state
+        /*
         let {history, ...gameCopy} = game;
         
         game.history.push(JSON.parse(JSON.stringify(gameCopy)));
+        */
         return "success";
     },
 }
