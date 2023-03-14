@@ -35,7 +35,13 @@ const updateGames = (sock) => (update) => {
         let numPlayers = update.game.usernames.length;
         let playerList = '<ul class="player-list">';
         update.game.usernames.forEach((username) => {
-            let inGame = update.game.playerDetails[username].location.substring(4) === id.toString();
+            let inGame;
+            if(!update.game.playerDetails[username].location){
+                inGame = false;
+            }
+            else{
+                inGame = update.game.playerDetails[username].location.substring(4) === id.toString();
+            }
             playerList += `<li inGame="${inGame}" username="${username}">${username}</li>`;
         });
         update.game.watchers.forEach((username) => {
