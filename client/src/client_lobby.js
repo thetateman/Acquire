@@ -161,7 +161,17 @@ const onNewGame = (sock) => (e) => {
     e.preventDefault();
     let numPlayers = document.querySelector('#num-players').value;
     let timePerPlayer = document.querySelector('#time-per-player').value;
-    let aiPlayer = document.querySelector('#ai-player').checked;
+    //let aiPlayer = document.querySelector('#ai-player').checked;
+    let aiPlayer = false;
+    sock.emit('newGame', {numPlayers, timePerPlayer, aiPlayer}); 
+};
+
+const startComputerGame = (sock) => (e) => {
+    e.preventDefault();
+    let numPlayers = "2";
+    let timePerPlayer = "30000";
+    //let aiPlayer = document.querySelector('#ai-player').checked;
+    let aiPlayer = true;
     sock.emit('newGame', {numPlayers, timePerPlayer, aiPlayer}); 
 };
 
@@ -282,6 +292,11 @@ const addUsersToLeaderBoards = () => {
     sock.emit('joinLobby');
     addUsersToLeaderBoards();
     let currentUser = localStorage.getItem('username'); //There has to be a better way to do this
+
+    document
+    .querySelector('#start-computer-game')
+    .addEventListener('click', startComputerGame(sock));
+
     document
     .querySelector('#new-game-form')
     .addEventListener('submit', onNewGame(sock));
