@@ -40,6 +40,10 @@
 
 27. Minor bug: clicking tile on puchase phase returns total to $0
 
+28. Apply misc. bug fixes from Exit Exam branch
+
+29. local/global chat toggle
+
 ########### COMPUTER MOVES ##############
 1. On update failure, retry with different move.
 2. Gracefully handle errors in move computation.
