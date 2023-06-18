@@ -6,12 +6,17 @@ const internalGameFunctions = {
     genNewGameID: function(games){ 
         //eventually games should have a UUID for storage and stats calculation
         //this just creates human readable IDs for active games
-        let gameIDs = Object.keys(games)
+        //let gameIDs = Object.keys(games);
         let id;
-        for(let i = 1; i < 10000; i++){
-            if(!gameIDs.includes(i.toString())){
-                id = i;
-                break;
+        if(!games.hasOwnProperty((Object.keys(games).length + 1).toString())){
+            id = Object.keys(games).length + 1;
+        }
+        else{
+            for(let i = 1; i < 10000; i++){
+                if(!games.hasOwnProperty(i.toString())){
+                    id = i;
+                    break;
+                }
             }
         }
         return id;
@@ -356,15 +361,16 @@ const internalGameFunctions = {
             this.endGame(game);
             return false;
         }
+
         //Turn over, pause time.
         //game.state.player_states[game.state.turn].out_of_action_time = false;
-        game.state.player_states[game.state.turn].timerTotal.pause();
+        if(game.state.player_states[game.state.turn].hasOwnProperty('timerTotal')) game.state.player_states[game.state.turn].timerTotal.pause();
         //game.state.player_states[game.state.turn].timerAction.reset();
         //game.state.player_states[game.state.turn].timerAction.pause();
         //increment turn
         game.state.play_count++;
         game.state.turn = game.state.play_count % game.num_players;
-        game.state.player_states[game.state.turn].timerTotal.resume();
+        if(game.state.player_states[game.state.turn].hasOwnProperty('timerTotal')) game.state.player_states[game.state.turn].timerTotal.resume();
         //game.state.player_states[game.state.turn].timerAction.resume();
 
         //determine if new player has a playable tile
@@ -677,6 +683,12 @@ const internalGameFunctions = {
                 switch(this.tilePlacer(game.state.board, game.state.chains, game.state.share_prices, game.state.active_merger, updateData.x, updateData.y, game)){
                     case 'normal':
                         if(this.shouldAutoPass(game)){
+                            //update tile type predictions for all players
+                            game.state.player_states.forEach((player) => {
+                                player.tiles.forEach((tile) => {
+                                    tile.predicted_type = sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
+                                });
+                            });
                             this.endTurn(game);
                         }
                         else{
@@ -694,7 +706,7 @@ const internalGameFunctions = {
                             this.awardPrizes(game);
                             if(this.isNextElimChainTied(game)){
                                 game.state.turn = game.state.active_merger.merging_player;
-                                console.log("setting action to chooseNextElimChain");
+                                if(verbose) console.log("setting action to chooseNextElimChain");
                                 game.state.expectedNextAction = 'chooseNextElimChain';
                             }
                             else{
@@ -715,7 +727,6 @@ const internalGameFunctions = {
                 game.state.player_states.forEach((player) => {
                     player.tiles.forEach((tile) => {
                         tile.predicted_type = sharedGameFunctions.predictTileType(game.state.board, game.state.chains, game.state.available_chains, tile.x, tile.y);
-                        player.has_playable_tile = true;
                     });
                 });
                         
@@ -808,7 +819,7 @@ const internalGameFunctions = {
                     return 'chainIsNotEligibleForElim';
                 }
 
-                console.log(`choosing next elim chain as: ${updateData.nextElimChain}`);
+                if(verbose) console.log(`choosing next elim chain as: ${updateData.nextElimChain}`);
                 // Move nextElimChain to the front of elim_chains
                 game.state.active_merger.elim_chains.splice(game.state.active_merger.disposing_chain_index, 0,
                     game.state.active_merger.elim_chains.splice(
@@ -988,4 +999,3 @@ const internalGameFunctions = {
 }
 
 module.exports = internalGameFunctions;
-
