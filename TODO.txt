@@ -40,9 +40,23 @@
 
 27. Minor bug: clicking tile on puchase phase returns total to $0
 
-28. Apply misc. bug fixes from Exit Exam branch
+28. Apply misc. bug fixes from Exit Exam branch X
 
 29. local/global chat toggle
+
+30. No announcements when guest connects
+
+31. Save games for later retrieval analysis
+
+32. Results announcements
+
+33. Invite only games
+
+34. Trueskill explaination
+
+35. Discord improvements
+
+36. Move database to local mongodb on server
 
 ########### COMPUTER MOVES ##############
 1. On update failure, retry with different move.
