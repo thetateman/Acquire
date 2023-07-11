@@ -261,7 +261,17 @@ const addUsersToLeaderBoards = () => {
         .catch((error) => {
         console.error('Error:', error);
     });
-}
+};
+
+const promptLandscapeOrientation = () => {
+    if (window.matchMedia("(orientation: portrait)").matches && window.matchMedia("(max-width: 750px)").matches) {
+        // Display a message or prompt to switch to landscape mode
+        document.body.insertAdjacentHTML('afterbegin', `<div id="orientation-overlay"><h2>Rotate your phone to landscape mode to play Acquire</h2><img id ="phone-icon" src="/img/phone_rotate.png" alt="rotate phone icon"></div>`);
+    }
+    else {
+        this.document.querySelectorAll('#orientation-overlay').forEach(overlay => overlay.remove());
+    }
+};
 
 (() => {
     const sock = io();
@@ -287,6 +297,8 @@ const addUsersToLeaderBoards = () => {
     .querySelector('#join1')
     .addEventListener('click', onJoinGame(1, sock));
     */
+    promptLandscapeOrientation();
+    window.addEventListener('orientationchange', () => {setTimeout(promptLandscapeOrientation, 200)});
 
     // Force reload when page is accessed with the back button.
     window.addEventListener('pageshow', (event) => {
@@ -295,7 +307,4 @@ const addUsersToLeaderBoards = () => {
           window.location.reload();
         }
     });
-
-
-
 })();
