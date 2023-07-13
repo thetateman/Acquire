@@ -13,6 +13,13 @@
     --a-color: #0000ff;
     --t-color: #ffff00;
     --l-color: #ff0000;
+    --i-light-color: #ffd7ff;
+    --c-light-color: #cbffff;
+    --w-light-color: #e4d1c7;
+    --f-light-color: #dcf1de;
+    --a-light-color: #e5e5ff;
+    --t-light-color: #ffffbc;
+    --l-light-color: #fcd5d5;
     --p-color: gray;
     --s-color: black;
     --single-tile-border-color: dimgray;
@@ -346,6 +353,28 @@ a {
 
 #lhead, #lbutton {
     background-color: var(--l-color);
+}
+
+td[column="i"] {
+    background-color: var(--i-light-color);
+}
+td[column="c"] {
+    background-color: var(--c-light-color);
+}
+td[column="w"] {
+    background-color: var(--w-light-color);
+}
+td[column="f"] {
+    background-color: var(--f-light-color);
+}
+td[column="a"] {
+    background-color: var(--a-light-color);
+}
+td[column="t"] {
+    background-color: var(--t-light-color);
+}
+td[column="l"] {
+    background-color: var(--l-light-color);
 }
 
 .total-time {

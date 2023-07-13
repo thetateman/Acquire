@@ -194,8 +194,14 @@ li {
   height: 5vh;
 }
 
+
 a {
   color: #79b2fc;
+  text-decoration: none;
+}
+
+/* targeting chat messages, which probably should be its own css file */
+.underlined-link {
   text-decoration: underline;
 }
 

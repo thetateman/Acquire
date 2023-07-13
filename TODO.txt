@@ -58,6 +58,20 @@
 
 36. Move database to local mongodb on server
 
+37. Bug fix: grayed-out names that should not be.
+
+38. soft highlight the name that made the merge
+
+39. Bug report: "earlier the person that made themerge was not the person that the game said choose the company"
+    "but it also the user that was the majority owner in that hotel choose it"
+    (choosing eliminated chain?) Possible bug in postGameMessage getting the wrong turn.
+
+40. Bug fix: underline link decoration on watch/join buttons X
+
+41. Share color highlights in table X
+
+42. (user suggestion) show initial share prices in table before chains are on the board
+
 ########### COMPUTER MOVES ##############
 1. On update failure, retry with different move.
 2. Gracefully handle errors in move computation.
