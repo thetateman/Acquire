@@ -116,6 +116,12 @@ app.use('/sitemap', (req, res) => {
     res.sendFile(path.resolve(`${__dirname}/../client/sitemap.xml`));
 });
 
+app.use('/toggl-webhook', (req, res) => {
+    console.log(req);
+    res.status(200);
+    res.send("Hello world");
+})
+
 const server = http.createServer(app);
 const io = socketio(server);
 let player_id = 0;
