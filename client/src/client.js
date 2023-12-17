@@ -787,7 +787,7 @@ const postGameMessage = (gameUpdate) => {
         localStorage.previousTurn = gameUpdate.game.state.turn;
     }
     if(gameUpdate.type === 'joinGame') return;
-    const newMessage = `${deadTileFlag}<li>${usernameSpan} ${messageContentSpan}</li>${sectionEnd}`;
+    const newMessage = `<li>${usernameSpan} ${messageContentSpan}</li>${deadTileFlag}${sectionEnd}`;
     
     parent.insertAdjacentHTML('beforeend', newMessage);
     parent.scrollTop = parent.scrollHeight;

@@ -72,6 +72,10 @@
 
 42. (user suggestion) show initial share prices in table before chains are on the board
 
+43. Use more readable fonts and colors
+
+44. Better game messages
+
 ########### COMPUTER MOVES ##############
 1. On update failure, retry with different move.
 2. Gracefully handle errors in move computation.
