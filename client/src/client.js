@@ -752,26 +752,14 @@ const postGameMessage = (gameUpdate) => {
     }
     else{
         sectionEnd = '';
-        turn = gameUpdate.game.state.turn;
+        turn = gameUpdate.game.state.lastTurn;
         computerFlag = '';
         deadTileFlag = '';
         if(gameUpdate.game.state.game_ended){
             sectionEnd = `<li><span>${gameUpdate.game.usernames[turn]}</span> ended the game.</li>`;
         }
         if(gameUpdate.game.state.expectedNextAction === 'playTile'){
-            sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[turn]}</legend></fieldset>`;
-            turn--;
-            if(turn < 0){
-                turn = gameUpdate.game.num_players - 1;
-            }
-        }
-        if(gameUpdate.type === 'disposeShares'){
-            try{
-                turn = localStorage.previousTurn;
-            }
-            catch(err){
-                turn = 0;
-            }
+            sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[gameUpdate.game.state.turn]}</legend></fieldset>`;
         }
         
         if(gameUpdate.game.state.player_states[turn].total_time_remaining <= 0){
@@ -784,7 +772,6 @@ const postGameMessage = (gameUpdate) => {
             let deadTileText = `${deadTile.x+1}${String.fromCharCode(deadTile.y+65)}`;
             deadTileFlag = `<li>${usernameSpan} drew and replaced dead tile: ${deadTileText}</li>`;
         }
-        localStorage.previousTurn = gameUpdate.game.state.turn;
     }
     if(gameUpdate.type === 'joinGame') return;
     const newMessage = `<li>${usernameSpan} ${messageContentSpan}</li>${deadTileFlag}${sectionEnd}`;

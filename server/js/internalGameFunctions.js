@@ -362,16 +362,8 @@ const internalGameFunctions = {
             return false;
         }
 
-        //Turn over, pause time.
-        //game.state.player_states[game.state.turn].out_of_action_time = false;
-        if(game.state.player_states[game.state.turn].hasOwnProperty('timerTotal')) game.state.player_states[game.state.turn].timerTotal.pause();
-        //game.state.player_states[game.state.turn].timerAction.reset();
-        //game.state.player_states[game.state.turn].timerAction.pause();
-        //increment turn
         game.state.play_count++;
-        game.state.turn = game.state.play_count % game.num_players;
-        if(game.state.player_states[game.state.turn].hasOwnProperty('timerTotal')) game.state.player_states[game.state.turn].timerTotal.resume();
-        //game.state.player_states[game.state.turn].timerAction.resume();
+        this.updateTurnAndTimers(game, game.state.play_count % game.num_players);
 
         //determine if new player has a playable tile
         if(!game.state.player_states[game.state.turn].tiles.some((tile) => !['z', 'd'].includes(tile.predicted_type))){
@@ -400,6 +392,16 @@ const internalGameFunctions = {
         }
         return false;
 
+    },
+
+    updateTurnAndTimers: function(game, newTurn){
+        //Turn over, pause time.
+        if(game.state.player_states[game.state.turn].hasOwnProperty('timerTotal')) game.state.player_states[game.state.turn].timerTotal.pause();
+
+        game.state.turn = newTurn;
+        
+        //Start time for new turn.
+        if(game.state.player_states[game.state.turn].hasOwnProperty('timerTotal')) game.state.player_states[game.state.turn].timerTotal.resume();
     },
 
     endGame: function(game){
@@ -458,6 +460,7 @@ const internalGameFunctions = {
                 game_started: false,
                 game_ended: false,
                 turn: 0,
+                lastTurn: -1,
                 play_count: 0,
                 no_playable_tile_turns: 0,
                 num_new_dead_tiles: 0,
@@ -664,6 +667,7 @@ const internalGameFunctions = {
         //Player made an action, reset the action timer
         //game.state.player_states[game.state.turn].timerAction.reset();
         game.state.lastActionData = updateData;
+        game.state.lastTurn = game.state.turn;
         switch(updateType){
             case 'playTile':
                 //check that action is legal
@@ -708,14 +712,14 @@ const internalGameFunctions = {
                         else{
                             this.awardPrizes(game);
                             if(this.isNextElimChainTied(game)){
-                                game.state.turn = game.state.active_merger.merging_player;
+                                this.updateTurnAndTimers(game, game.state.active_merger.merging_player);
                                 if(verbose) console.log("setting action to chooseNextElimChain");
                                 game.state.expectedNextAction = 'chooseNextElimChain';
                             }
                             else{
                                 // Update turn to first player to dispose shares.
                                 let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
-                                game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+                                this.updateTurnAndTimers(game, game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index]);
 
                                 game.state.expectedNextAction = 'disposeShares';
                             }
@@ -791,13 +795,13 @@ const internalGameFunctions = {
                         this.updateNetWorths(game);
                         
                         if(this.isNextElimChainTied(game)){
-                            game.state.turn = game.state.active_merger.merging_player;
+                            this.updateTurnAndTimers(game, game.state.active_merger.merging_player);
                             game.state.expectedNextAction = 'chooseNextElimChain';
                         }
                         else {
                             // Update turn to first player to dispose shares.
                             let disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
-                            game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+                            this.updateTurnAndTimers(game, game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index]);
                             
                             game.state.expectedNextAction = 'disposeShares';
                         }
@@ -839,7 +843,7 @@ const internalGameFunctions = {
 
                 // Update turn to next player expected to dispose shares
                 let disposingChainUpdated = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
-                game.state.turn = game.state.active_merger.players_disposing[disposingChainUpdated][game.state.active_merger.player_disposing_index];
+                this.updateTurnAndTimers(game, game.state.active_merger.players_disposing[disposingChainUpdated][game.state.active_merger.player_disposing_index]);
                 game.state.expectedNextAction = 'disposeShares';
                 break;
 
@@ -897,7 +901,7 @@ const internalGameFunctions = {
                         });
                         
                         // Reset turn to merging player
-                        game.state.turn = game.state.active_merger.merging_player;
+                        this.updateTurnAndTimers(game, game.state.active_merger.merging_player);
                         
                         //merger operations complete, clear active_merger object
                         game.state.active_merger = {};
@@ -918,19 +922,19 @@ const internalGameFunctions = {
                     }
                     else{
                         if(this.isNextElimChainTied(game)){
-                            game.state.turn = game.state.active_merger.merging_player;
+                            this.updateTurnAndTimers(game, game.state.active_merger.merging_player);
                             game.state.expectedNextAction = 'chooseNextElimChain';
                         }
                         else {
                             // Update turn to next player expected to dispose shares
                             disposingChain = game.state.active_merger.elim_chains[game.state.active_merger.disposing_chain_index];
-                            game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+                            this.updateTurnAndTimers(game, game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index]);
                         }
                     }
                 }
                 else{
                     // Update turn to next player expected to dispose shares 
-                    game.state.turn = game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index];
+                    this.updateTurnAndTimers(game, game.state.active_merger.players_disposing[disposingChain][game.state.active_merger.player_disposing_index]);
                 }
                 this.updateNetWorths(game);
                 break;
