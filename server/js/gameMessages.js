@@ -246,7 +246,6 @@ const gameMessages = {
             }
         }
         game.history.push([updateType, updateData, remainingTimes]);
-        console.log(game.history);
     },
 
     getSendableGame: function(game, requestingUser){
