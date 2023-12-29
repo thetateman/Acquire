@@ -121,7 +121,7 @@ const io = socketio(server);
 let player_id = 0;
 
 io.use(function(socket, next) {
-    sessionMiddleware(socket.request, socket.request.res, next);
+    sessionMiddleware(socket.request, {}, next);
 });
 io.on('connection', (sock) => {
     /**

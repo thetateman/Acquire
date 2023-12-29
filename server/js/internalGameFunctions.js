@@ -440,6 +440,7 @@ const internalGameFunctions = {
     
     createGame: function(games, maxPlayers, timePerPlayer, creator){
         let id = this.genNewGameID(games);
+        let tileBank = this.genTileBank();
         let newGame = {
             id: id,
             creator: creator,
@@ -451,6 +452,8 @@ const internalGameFunctions = {
             players_timed_out: [],
             usernames:[],
             watchers:[],
+            history:[],
+            original_tile_bank: JSON.parse(JSON.stringify(tileBank)),
             state: {
                 game_started: false,
                 game_ended: false,
@@ -462,7 +465,7 @@ const internalGameFunctions = {
                 lastPlayedTile: {},
                 lastActionData: {},
                 drawnDeadTiles: [],
-                tile_bank: this.genTileBank(),
+                tile_bank: tileBank,
                 board: [
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],
                 ['e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',],

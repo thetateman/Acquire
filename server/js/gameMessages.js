@@ -224,6 +224,7 @@ const gameMessages = {
             if(sock !== null){ // move made by user client (not computer player)
                 gameMessages.emitGameToPlayers(games, game_id, updateType, io);
             }
+            gameMessages.updateHistory(games[game_id], updateType, updateData);
         }
         if(verbose){console.timeEnd('gameAction');}
         if(games[game_id].state.game_ended){
@@ -237,10 +238,21 @@ const gameMessages = {
     },
 
     // --------------Game Message helper functions --------------------
+    updateHistory: function(game, updateType, updateData){
+        let remainingTimes = [];
+        for(let i=0; i<game.num_players; i++){
+            if(game.state.player_states[i].timerTotal){
+                remainingTimes.push(game.state.player_states[i].timerTotal.getRemaining());
+            }
+        }
+        game.history.push([updateType, updateData, remainingTimes]);
+        console.log(game.history);
+    },
+
     getSendableGame: function(game, requestingUser){
         //We send a modified copy of the game object to the client, after removing secret data and updating time limits.
         let requestedGameCopy = JSON.parse(JSON.stringify(game, (key, value) => {
-            if(['timerTotal', 'timerAction'].includes(key)){ //Can't stringify circular references in timers.
+            if(['timerTotal', 'timerAction', 'history'].includes(key)){ //Can't stringify circular references in timers.
                 return undefined;
             }
             return value;
@@ -264,6 +276,7 @@ const gameMessages = {
             requestedGameCopy.state.player_states[i].tiles = [];
         }
         requestedGameCopy.state.tile_bank = [];
+        requestedGameCopy.original_tile_bank = [];
         return requestedGameCopy;
     },
 
@@ -298,6 +311,9 @@ const gameMessages = {
             usernames: game.usernames_ranked,
             networths: game.final_net_worths,
             players_timed_out: game.players_timed_out,
+            usernames_original_order: game.usernames,
+            tile_bank: game.original_tile_bank,
+            history: game.history
         });
         await completedGame.save()
         .catch(err => console.error(err));

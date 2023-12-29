@@ -6,6 +6,10 @@ const gameSchema = new Schema({
     usernames :[String], //In place order (1st place at index 0, etc.)
     networths: [String],
     players_timed_out: [String],
+    usernames_original_order: [String],
+    tile_bank: [{ x: Number, y: Number }],
+    history: [[Schema.Types.Mixed]]
+
 });
 
 module.exports = mongoose.model("Game", gameSchema);
