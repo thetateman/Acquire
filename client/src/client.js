@@ -743,6 +743,7 @@ const postGameMessage = (gameUpdate) => {
     let computerFlag;
     let usernameSpan;
     let deadTileFlag = '';
+    let bonusMessage = '';
     if(gameUpdate.type === 'startGame'){
         usernameSpan = '';
         sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[gameUpdate.game.state.turn]}</legend></fieldset>`;
@@ -772,9 +773,53 @@ const postGameMessage = (gameUpdate) => {
             let deadTileText = `${deadTile.x+1}${String.fromCharCode(deadTile.y+65)}`;
             deadTileFlag = `<li>${usernameSpan} drew and replaced dead tile: ${deadTileText}</li>`;
         }
+        if(gameUpdate.game.state.lastActionData.awards){
+            let sortedChains = [...chains];
+            // announce bonuses for smallest chains first, this could be used in end game prize announcements too
+            sortedChains.sort((a, b) => {
+                if(gameUpdate.game.state.chains[a].length > gameUpdate.game.state.chains[b].length){
+                    return 1;
+                }
+                else if(gameUpdate.game.state.chains[a].length < gameUpdate.game.state.chains[b].length){
+                    return -1;
+                } 
+                else{
+                    return 0;
+                }
+            });
+
+            let awardsByChain = {};
+            sortedChains.forEach((chain)=>awardsByChain[chain] = [])
+            let awards = gameUpdate.game.state.lastActionData.awards;
+            
+            for(let player=0;player<awards.length;player++){
+                Object.entries(awards[player]).forEach(([chain, amount]) => {
+                    awardsByChain[chain].push({player, chain, amount});
+                })
+            }
+            let bonusMessages = [];
+            let awardChainIndex = 0;
+            Object.values(awardsByChain).forEach((awards)=>{
+                let lastAmount = 0;
+                bonusMessages.push([]);
+                awards.forEach((award)=>{
+                    let awardChainSpan = `<span class="chain-label" type="${award.chain}">${chainsToTextMap[award.chain]}</span>`;
+                    let newBonusMessage = `<li>${gameUpdate.game.usernames[award.player]} recieved a $${award.amount} prize for ${awardChainSpan}.</li>`;
+                    if(award.amount > lastAmount){ // First place announcement should come first.
+                        bonusMessages[awardChainIndex].unshift(newBonusMessage);
+                    }
+                    else{
+                        bonusMessages[awardChainIndex].push(newBonusMessage);
+                    }
+                    lastAmount = award.amount;
+                })
+                awardChainIndex++;
+            })
+            bonusMessages.forEach((chain)=>chain.forEach((message)=>bonusMessage+=message));
+        }
     }
     if(gameUpdate.type === 'joinGame') return;
-    const newMessage = `<li>${usernameSpan} ${messageContentSpan}</li>${deadTileFlag}${sectionEnd}`;
+    const newMessage = `<li>${usernameSpan} ${messageContentSpan}</li>${bonusMessage}${deadTileFlag}${sectionEnd}`;
     
     parent.insertAdjacentHTML('beforeend', newMessage);
     parent.scrollTop = parent.scrollHeight;

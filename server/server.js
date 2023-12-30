@@ -32,6 +32,8 @@ const connection = mongoose.createConnection(process.env.RESTREVIEWS_DB_URI);
 /* NOTE: resetting the timers gets complicated when restoring games from backup,
 restoring games probably isn't worth the trouble. */
 
+const serverStartTime = new Date();
+
 let games = {};
 
 let guestID = 0;
@@ -83,7 +85,7 @@ function authLogic(req, res, next) {
     if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.webm'|| req.originalUrl === '/img/a_background.mp4'){
          next();
     } else {
-        req.session.username = 'Guest' + guestID;
+        req.session.username = 'Guest' + guestID + '-' + serverStartTime.getMinutes();
         guestID++;
         req.session.isAuth = true;
         //res.status(401);
