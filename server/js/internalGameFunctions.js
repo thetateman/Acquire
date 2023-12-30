@@ -445,6 +445,7 @@ const internalGameFunctions = {
             time_per_player: timePerPlayer * 1000 * 60,
             players_timed_out: [],
             usernames:[],
+            usernames_original_order:[],
             watchers:[],
             history:[],
             original_tile_bank: JSON.parse(JSON.stringify(tileBank)),
@@ -578,6 +579,7 @@ const internalGameFunctions = {
                 return "gameAlreadyStarted";
             }
             else{
+                game.usernames_original_order = [...game.usernames];
                 // Draw first tiles to determine turn order
                 let firstTiles = [];
                 for(let i=0; i<game.num_players; i++){
