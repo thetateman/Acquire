@@ -344,9 +344,16 @@ const postGameMessage = (gameUpdate) => {
                 messageContentSpan = 'bought nothing.';
             }
             else{
+                let nothingFlag = true;
                 messageContentSpan = `bought `
                 for (const [key, value] of Object.entries(gameUpdate.game.state.lastActionData.purchase)){
-                    messageContentSpan += `${value} <span class="chain-label" type="${key}">${chainsToTextMap[key]}</span>, `;
+                    if(value != 0){
+                        messageContentSpan += `${value} <span class="chain-label" type="${key}">${chainsToTextMap[key]}</span>, `;
+                        nothingFlag = false;
+                    }
+                }
+                if(nothingFlag){
+                    messageContentSpan = 'bought nothing  '
                 }
                 messageContentSpan = messageContentSpan.substring(0, messageContentSpan.length - 2);
                 messageContentSpan += '.'
