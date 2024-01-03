@@ -68,8 +68,8 @@ const updateChainSelectorRow = (gameState) => {
     if(gameState.expectedNextAction === 'purchaseShares'){
         const cash = gameState.player_states[gameState.turn].cash;
         chains.forEach((chain) => {
-            if(gameState.bank_shares[chain] - localStorage[`${chain}InCart`] > 0 && !gameState.available_chains.includes(chain)){
-                if(parseInt(localStorage.purchaseTotal, 10) + gameState.share_prices[chain] <= cash){
+            if(gameState.bank_shares[chain] - window.gameGlobals[`${chain}InCart`] > 0 && !gameState.available_chains.includes(chain)){
+                if(parseInt(window.gameGlobals.purchaseTotal, 10) + gameState.share_prices[chain] <= cash){
                     visibleChainSelectors.push(chain);
                 }
             }
@@ -122,13 +122,13 @@ const tileClickHandler = (e, sock) => {
     console.log(`clicked x:${e.getAttribute('x')} y:${e.getAttribute('y')}`);
     const x = e.getAttribute('x');
     const y = e.getAttribute('y');
-    const gameState = JSON.parse(localStorage.gameState);
-    if(localStorage.expected_next_action !== 'playTile'){
+    const gameState = JSON.parse(window.gameGlobals.gameState);
+    if(window.gameGlobals.expected_next_action !== 'playTile'){
         console.log('unexpectedActionType');
         return false;
     }
     try{
-        if(localStorage.admin !== 'true' && !gameState.player_states[gameState.turn].tiles.some((tile) => x == tile.x && y == tile.y)){
+        if(window.gameGlobals.admin !== 'true' && !gameState.player_states[gameState.turn].tiles.some((tile) => x == tile.x && y == tile.y)){
             console.log('userLacksTile');
             return false;
         }
@@ -142,52 +142,52 @@ const tileClickHandler = (e, sock) => {
         console.log(err);
     }
     
-    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'playTile', updateData: {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)}})
+    sock.emit('gameAction', {game_id: window.gameGlobals.current_game_id, updateType: 'playTile', updateData: {x: parseInt(e.getAttribute('x'), 10), y: parseInt(e.getAttribute('y'), 10)}})
 };
 
 const cartShareClickHandler = (IDnum, chainSelection, currentGameState) => () => {
-    localStorage[`${chainSelection}InCart`]--;
-    localStorage.purchaseTotal = parseInt(localStorage.purchaseTotal, 10) - currentGameState.share_prices[chainSelection];
-    document.querySelector('#share-purchase-total').textContent = `Total: ${localStorage.purchaseTotal}`;
+    window.gameGlobals[`${chainSelection}InCart`]--;
+    window.gameGlobals.purchaseTotal = parseInt(window.gameGlobals.purchaseTotal, 10) - currentGameState.share_prices[chainSelection];
+    document.querySelector('#share-purchase-total').textContent = `Total: ${window.gameGlobals.purchaseTotal}`;
     updateChainSelectorRow(currentGameState);
     document.querySelector(`#share-cart span[number="${IDnum}`).remove();
 }
 
 const chainSelectHandler = (e, sock) => {
     const chainSelection = e.id.charAt(0);
-    const currentGameState = JSON.parse(localStorage.gameState);
+    const currentGameState = JSON.parse(window.gameGlobals.gameState);
     //different behavior depending on next expected action
-    if(localStorage.getItem('expected_next_action') === 'chooseNewChain'){
-        sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseNewChain', updateData: {newChainChoice: chainSelection}});
+    if(window.gameGlobals.expected_next_action === 'chooseNewChain'){
+        sock.emit('gameAction', {game_id: window.gameGlobals.current_game_id, updateType: 'chooseNewChain', updateData: {newChainChoice: chainSelection}});
         chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
         document.querySelector('#chain-selector-row-container').style.display = 'none';
     }
-    else if(localStorage.getItem('expected_next_action') === 'purchaseShares'){
+    else if(window.gameGlobals.expected_next_action === 'purchaseShares'){
         let numSharesInCart = 0;
-        chains.forEach((chain) => numSharesInCart+=parseInt(localStorage[`${chain}InCart`], 10));
+        chains.forEach((chain) => numSharesInCart+=parseInt(window.gameGlobals[`${chain}InCart`], 10));
         if(numSharesInCart >= 3){
             console.log("You may buy a maximum of 3 shares.");
         }
         else{
-            localStorage[`${chainSelection}InCart`]++;
-            localStorage.currentCartShareID++;
-            localStorage.purchaseTotal = parseInt(localStorage.purchaseTotal, 10) + currentGameState.share_prices[chainSelection];
-            document.querySelector('#share-purchase-total').textContent = `Total: ${localStorage.purchaseTotal}`;
+            window.gameGlobals[`${chainSelection}InCart`]++;
+            window.gameGlobals.currentCartShareID++;
+            window.gameGlobals.purchaseTotal = parseInt(window.gameGlobals.purchaseTotal, 10) + currentGameState.share_prices[chainSelection];
+            document.querySelector('#share-purchase-total').textContent = `Total: ${window.gameGlobals.purchaseTotal}`;
             let cartShare = 
-                `<span class="cart-share" id="${chainSelection}-cart-share" number="${localStorage.currentCartShareID}" style="background-color:var(--${chainSelection}-color)">
-                ${JSON.parse(localStorage.gameState).share_prices[chainSelection]}</span>`;
+                `<span class="cart-share" id="${chainSelection}-cart-share" number="${window.gameGlobals.currentCartShareID}" style="background-color:var(--${chainSelection}-color)">
+                ${JSON.parse(window.gameGlobals.gameState).share_prices[chainSelection]}</span>`;
             document.querySelector('#share-cart').insertAdjacentHTML('beforeend', cartShare);
-            document.querySelector(`#share-cart span[number="${localStorage.currentCartShareID}`).addEventListener('click', cartShareClickHandler(localStorage.currentCartShareID, chainSelection, currentGameState));
+            document.querySelector(`#share-cart span[number="${window.gameGlobals.currentCartShareID}`).addEventListener('click', cartShareClickHandler(window.gameGlobals.currentCartShareID, chainSelection, currentGameState));
             updateChainSelectorRow(currentGameState);
         }
     }
-    else if(localStorage.getItem('expected_next_action') === 'chooseRemainingChain'){
-        sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseRemainingChain', updateData: {remainingChainChoice: chainSelection}});
+    else if(window.gameGlobals.expected_next_action === 'chooseRemainingChain'){
+        sock.emit('gameAction', {game_id: window.gameGlobals.current_game_id, updateType: 'chooseRemainingChain', updateData: {remainingChainChoice: chainSelection}});
         chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
         document.querySelector('#chain-selector-row-container').style.display = 'none';
     }
-    else if(localStorage.getItem('expected_next_action') === 'chooseNextElimChain'){
-        sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'chooseNextElimChain', updateData: {nextElimChain: chainSelection}});
+    else if(window.gameGlobals.expected_next_action === 'chooseNextElimChain'){
+        sock.emit('gameAction', {game_id: window.gameGlobals.current_game_id, updateType: 'chooseNextElimChain', updateData: {nextElimChain: chainSelection}});
         chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
         document.querySelector('#chain-selector-row-container').style.display = 'none';
     }
@@ -195,148 +195,148 @@ const chainSelectHandler = (e, sock) => {
 };
 
 const disposeSharesEditor = (e) => {
-    let disposingChain = localStorage.disposingChain;
-    let maxSharesToDispose = parseInt(localStorage.maxSharesToDispose, 10);
-    let remainingChain = localStorage.remainingChain;
-    let maxSharesToTradeFor = parseInt(localStorage.maxSharesToTradeFor);
+    let disposingChain = window.gameGlobals.disposingChain;
+    let maxSharesToDispose = parseInt(window.gameGlobals.maxSharesToDispose, 10);
+    let remainingChain = window.gameGlobals.remainingChain;
+    let maxSharesToTradeFor = parseInt(window.gameGlobals.maxSharesToTradeFor);
 
 
     const editAction = e.id.charAt(0);
     const disposalType = e.id.charAt(1);
     if(disposalType === 'k'){
         if(editAction === '+'){
-            if(parseInt(localStorage.keep, 10) >= maxSharesToDispose){
+            if(parseInt(window.gameGlobals.keep, 10) >= maxSharesToDispose){
                 return false;
             }
-            localStorage.keep++;
-            if(parseInt(localStorage.sell, 10) > 0){
-                localStorage.sell--;
+            window.gameGlobals.keep++;
+            if(parseInt(window.gameGlobals.sell, 10) > 0){
+                window.gameGlobals.sell--;
             }
-            else if(parseInt(localStorage.trade, 10) > 0){
-                localStorage.trade = parseInt(localStorage.trade, 10) - 2;
-                localStorage.keep++;
+            else if(parseInt(window.gameGlobals.trade, 10) > 0){
+                window.gameGlobals.trade = parseInt(window.gameGlobals.trade, 10) - 2;
+                window.gameGlobals.keep++;
             }
             else{
                 console.error("this shouldn't happen.");
             }
         }
         else if(editAction === '-'){
-            if(parseInt(localStorage.keep, 10) <= 0){
+            if(parseInt(window.gameGlobals.keep, 10) <= 0){
                 return false;
             }
-            localStorage.keep--;
-            localStorage.sell++;
+            window.gameGlobals.keep--;
+            window.gameGlobals.sell++;
         }
         else if(editAction === 'm'){
-            localStorage.keep = maxSharesToDispose;
-            localStorage.trade = 0;
-            localStorage.sell = 0;
+            window.gameGlobals.keep = maxSharesToDispose;
+            window.gameGlobals.trade = 0;
+            window.gameGlobals.sell = 0;
         }
     } 
     else if(disposalType === 't'){
         if(editAction === '+'){
-            if(parseInt(localStorage.trade, 10) >= Math.min(maxSharesToDispose - (maxSharesToDispose % 2), maxSharesToTradeFor*2)){
+            if(parseInt(window.gameGlobals.trade, 10) >= Math.min(maxSharesToDispose - (maxSharesToDispose % 2), maxSharesToTradeFor*2)){
                 return false;
             }
-            localStorage.trade = parseInt(localStorage.trade, 10) + 2;
-            if(parseInt(localStorage.sell, 10) > 1){
-                localStorage.sell = parseInt(localStorage.sell, 10) - 2;
+            window.gameGlobals.trade = parseInt(window.gameGlobals.trade, 10) + 2;
+            if(parseInt(window.gameGlobals.sell, 10) > 1){
+                window.gameGlobals.sell = parseInt(window.gameGlobals.sell, 10) - 2;
             }
-            else if(parseInt(localStorage.keep, 10) > 1){
-                localStorage.keep = parseInt(localStorage.keep, 10) - 2;
+            else if(parseInt(window.gameGlobals.keep, 10) > 1){
+                window.gameGlobals.keep = parseInt(window.gameGlobals.keep, 10) - 2;
             }
-            else if(parseInt(localStorage.keep, 10) === 1 && parseInt(localStorage.sell, 10) === 1){
-                localStorage.keep = parseInt(localStorage.keep, 10) - 1;
-                localStorage.sell = parseInt(localStorage.sell, 10) - 1;
+            else if(parseInt(window.gameGlobals.keep, 10) === 1 && parseInt(window.gameGlobals.sell, 10) === 1){
+                window.gameGlobals.keep = parseInt(window.gameGlobals.keep, 10) - 1;
+                window.gameGlobals.sell = parseInt(window.gameGlobals.sell, 10) - 1;
             }
             else{
                 console.error("this shouldn't happen.");
             }
         }
         else if(editAction === '-'){
-            if(parseInt(localStorage.trade, 10) <= 0){
+            if(parseInt(window.gameGlobals.trade, 10) <= 0){
                 return false;
             }
-            localStorage.trade = parseInt(localStorage.trade, 10) - 2;
-            localStorage.keep = parseInt(localStorage.keep, 10) + 2;
+            window.gameGlobals.trade = parseInt(window.gameGlobals.trade, 10) - 2;
+            window.gameGlobals.keep = parseInt(window.gameGlobals.keep, 10) + 2;
         }
         else if(editAction === 'm'){
             const tradeMax = Math.min(maxSharesToDispose - (maxSharesToDispose % 2), maxSharesToTradeFor*2);
-            localStorage.trade = tradeMax;
-            localStorage.keep = maxSharesToDispose - tradeMax;
-            localStorage.sell = 0;
+            window.gameGlobals.trade = tradeMax;
+            window.gameGlobals.keep = maxSharesToDispose - tradeMax;
+            window.gameGlobals.sell = 0;
         }
     }
     else if(disposalType === 's'){
         if(editAction === '+'){
-            if(parseInt(localStorage.sell, 10) >= maxSharesToDispose){
+            if(parseInt(window.gameGlobals.sell, 10) >= maxSharesToDispose){
                 return false;
             }
-            localStorage.sell++;
-            if(parseInt(localStorage.keep, 10) > 0){
-                localStorage.keep--;
+            window.gameGlobals.sell++;
+            if(parseInt(window.gameGlobals.keep, 10) > 0){
+                window.gameGlobals.keep--;
             }
-            else if(parseInt(localStorage.trade, 10) > 0){
-                localStorage.trade = parseInt(localStorage.trade, 10) - 2;
-                localStorage.sell++;
+            else if(parseInt(window.gameGlobals.trade, 10) > 0){
+                window.gameGlobals.trade = parseInt(window.gameGlobals.trade, 10) - 2;
+                window.gameGlobals.sell++;
             }
             else{
                 console.error("this shouldn't happen.");
             }
         }
         else if(editAction === '-'){
-            if(parseInt(localStorage.sell, 10) <= 0){
+            if(parseInt(window.gameGlobals.sell, 10) <= 0){
                 return false;
             }
-            localStorage.sell--;
-            localStorage.keep++;
+            window.gameGlobals.sell--;
+            window.gameGlobals.keep++;
         }
         else if(editAction === 'm'){
-            localStorage.sell = maxSharesToDispose;
-            localStorage.trade = 0;
-            localStorage.keep = 0;
+            window.gameGlobals.sell = maxSharesToDispose;
+            window.gameGlobals.trade = 0;
+            window.gameGlobals.keep = 0;
         }
     }
     // Update disposal editor display
-    document.querySelector('#keep-head').textContent = `Keep: ${parseInt(localStorage.keep, 10)}`;
-    document.querySelector('#trade-head').textContent = `Trade: ${parseInt(localStorage.trade, 10)}`;
-    document.querySelector('#sell-head').textContent = `Sell: ${parseInt(localStorage.sell, 10)}`;
+    document.querySelector('#keep-head').textContent = `Keep: ${parseInt(window.gameGlobals.keep, 10)}`;
+    document.querySelector('#trade-head').textContent = `Trade: ${parseInt(window.gameGlobals.trade, 10)}`;
+    document.querySelector('#sell-head').textContent = `Sell: ${parseInt(window.gameGlobals.sell, 10)}`;
 };
 
 const purchaseShares = (e, sock) => {
-    // Generate purchase from localStorage cart
+    // Generate purchase from window.gameGlobals cart
     let purchase = {};
     chains.forEach((chain) => {
-        if(localStorage[`${chain}InCart`] !== '0'){
-            purchase[chain] = parseInt(localStorage[`${chain}InCart`], 10);
+        if(window.gameGlobals[`${chain}InCart`] !== '0'){
+            purchase[chain] = parseInt(window.gameGlobals[`${chain}InCart`], 10);
         }
     });
     console.log(purchase);
     const endGame = document.querySelector('#end-game-selection').checked;
-    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'purchaseShares', updateData: {'endGame': endGame, 'purchase': purchase}});
-    chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0")); // Reset cart to 0's
-    localStorage.purchaseTotal = 0;
+    sock.emit('gameAction', {game_id: window.gameGlobals.current_game_id, updateType: 'purchaseShares', updateData: {'endGame': endGame, 'purchase': purchase}});
+    chains.forEach((chain) => window.gameGlobals[`${chain}InCart`] = "0"); // Reset cart to 0's
+    window.gameGlobals.purchaseTotal = 0;
     document.querySelectorAll(".cart-share").forEach((cartShare) => cartShare.remove());
     document.querySelector("#buy-shares-container").style.display = 'none';
     document.querySelector('#chain-selector-row-container').style.display = 'none';
     chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
 };
 const disposeShares = (e, sock) => {
-    const shareDisposal = {'keep': parseInt(localStorage.keep, 10), 'trade': parseInt(localStorage.trade, 10), 'sell': parseInt(localStorage.sell, 10)};
-    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'disposeShares', updateData: shareDisposal});
+    const shareDisposal = {'keep': parseInt(window.gameGlobals.keep, 10), 'trade': parseInt(window.gameGlobals.trade, 10), 'sell': parseInt(window.gameGlobals.sell, 10)};
+    sock.emit('gameAction', {game_id: window.gameGlobals.current_game_id, updateType: 'disposeShares', updateData: shareDisposal});
     document.querySelector("#dispose-shares-container").style.display = 'none';
 };
 
 const startGame = (sock) => (e) => {
     e.preventDefault();
-    sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'startGame', updateData: {}});
+    sock.emit('gameAction', {game_id: window.gameGlobals.current_game_id, updateType: 'startGame', updateData: {}});
     document.querySelector("#start-game-button").style.display = 'none';
 };
 
 const populateGame = (sock) => (data) => {
     const game = data.game;
-    localStorage.setItem('gameState', JSON.stringify(game.state));
-    chains.forEach((chain) => localStorage.setItem(`${chain}InCart`, "0"));
+    window.gameGlobals.gameState = JSON.stringify(game.state);
+    chains.forEach((chain) => window.gameGlobals[`${chain}InCart`] = "0");
     generateStatsTable(game, data.playerDetails);
     updateGameBoard(game);
     if(!game.state.game_started && game.usernames[0] === localStorage.username){
@@ -362,8 +362,8 @@ const prepareToPurchaseShares = (game) => {
      * To be called whenever we are expecting this user to purchase shares.
      * Puts UI and localStorage variables in correct state for share purchace interaction.
      */
-     localStorage.purchaseTotal = 0;
-     localStorage.currentCartShareID = 0;
+     window.gameGlobals.purchaseTotal = 0;
+     window.gameGlobals.currentCartShareID = 0;
      if(!game.state.game_ended){
         document.querySelector("#buy-shares-container").style.display = 'flex';
      }
@@ -394,20 +394,20 @@ const prepareToDisposeShares = (game) => {
       document.querySelector("#dispose-shares-container").style.display = 'flex';
       let state = game.state;
       let disposingChain = state.active_merger.elim_chains[state.active_merger.disposing_chain_index];
-      localStorage.setItem('disposingChain', disposingChain);
-      localStorage.setItem('keep', state.player_states[state.turn][disposingChain]);
-      localStorage.setItem('trade', '0');
-      localStorage.setItem('sell', '0');
+      window.gameGlobals.disposingChain = disposingChain;
+      window.gameGlobals.keep = state.player_states[state.turn][disposingChain];
+      window.gameGlobals.trade = '0';
+      window.gameGlobals.sell = '0';
 
       // Update disposal editor display
-      document.querySelector('#keep-head').textContent = `Keep: ${parseInt(localStorage.keep, 10)}`;
-      document.querySelector('#trade-head').textContent = `Trade: ${parseInt(localStorage.trade, 10)}`;
-      document.querySelector('#sell-head').textContent = `Sell: ${parseInt(localStorage.sell, 10)}`;
+      document.querySelector('#keep-head').textContent = `Keep: ${parseInt(window.gameGlobals.keep, 10)}`;
+      document.querySelector('#trade-head').textContent = `Trade: ${parseInt(window.gameGlobals.trade, 10)}`;
+      document.querySelector('#sell-head').textContent = `Sell: ${parseInt(window.gameGlobals.sell, 10)}`;
 
-      localStorage.setItem('maxSharesToDispose', state.player_states[state.turn][disposingChain]);
+      window.gameGlobals.maxSharesToDispose = state.player_states[state.turn][disposingChain];
       let remainingChain = state.active_merger.remaining_chain;
-      localStorage.setItem('remainingChain', remainingChain);
-      localStorage.setItem('maxSharesToTradeFor', state.bank_shares[remainingChain]);
+      window.gameGlobals.remainingChain = remainingChain;
+      window.gameGlobals.maxSharesToTradeFor = state.bank_shares[remainingChain];
 };
 
 const statsTableUsernameStyleUpdater = (game) => {
@@ -466,17 +466,17 @@ const updateGame = (sock) => (gameUpdate) => {
          * message to reset this player's UI components to their state prior to the unaccepted action.
          */
         console.error(`Failed to update game because: ${gameUpdate.error}`);
-        localStorage.setItem('gameState', JSON.stringify(gameUpdate.game.state));
-        localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
+        window.gameGlobals.gameState = JSON.stringify(gameUpdate.game.state);
+        window.gameGlobals.expected_next_action = gameUpdate.game.state.expectedNextAction;
         myTurnStateUpdater(gameUpdate.game);
         return false;
     }
     if(['playTile', 'chooseNewChain', 'chooseRemainingChain', 'disposeShares', 'purchaseShares', 'startGame', 'chooseNextElimChain'].includes(gameUpdate.type)){
         if(gameUpdate.type === 'disposeShares'){
-            localStorage.setItem('lastMerger', JSON.stringify(JSON.parse(localStorage.gameState).active_merger));
+            window.gameGlobals.lastMerger = JSON.stringify(JSON.parse(window.gameGlobals.gameState).active_merger);
         }
-        localStorage.setItem('gameState', JSON.stringify(gameUpdate.game.state));
-        localStorage.setItem('expected_next_action', gameUpdate.game.state.expectedNextAction);
+        window.gameGlobals.gameState = JSON.stringify(gameUpdate.game.state);
+        window.gameGlobals.expected_next_action = gameUpdate.game.state.expectedNextAction;
         updateStatsTable(gameUpdate.game); // Specialized function to only update a part of the table would be faster.
         updateGameBoard(gameUpdate.game);
         if(gameUpdate.game.usernames.indexOf(localStorage.username) !== -1){ //if user is a player in this game
@@ -688,8 +688,8 @@ const postGameMessage = (gameUpdate) => {
             let eliminatedChain;
             let remainingChain;
             try{
-                eliminatedChain = JSON.parse(localStorage.lastMerger).elim_chains[JSON.parse(localStorage.lastMerger).disposing_chain_index];
-                remainingChain = JSON.parse(localStorage.lastMerger).remaining_chain;
+                eliminatedChain = JSON.parse(window.gameGlobals.lastMerger).elim_chains[JSON.parse(window.gameGlobals.lastMerger).disposing_chain_index];
+                remainingChain = JSON.parse(window.gameGlobals.lastMerger).remaining_chain;
             }
             catch(err){
                 console.log("Probably missing merger object, did user join in the middle of a merger?");
@@ -943,6 +943,6 @@ const announceGame = (game) => {
     });
 
     let current_game_id = window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1];
-    localStorage.current_game_id = current_game_id;
+    window.gameGlobals.current_game_id = current_game_id;
     sock.emit('gameRequest', current_game_id);
 })();
