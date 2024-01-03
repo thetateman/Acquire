@@ -603,6 +603,19 @@ td[column="l"] {
     background-color: var(--t-color);
 }
 
+#fb-button-container{
+    display: flex;
+    justify-content: space-around;
+    width: 50%;
+    margin: auto;
+}
+
+.fb-button{
+    font-weight: 900;
+    font-size: 2.0rem;
+    height: auto;
+}
+
 /*--------------- Scroll bars -------------------*/
 body {
     scrollbar-color: #888 var(--main-bg-color);

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Game History</title>
+        <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+        <link rel="stylesheet" href="styles/main.css" />
+        <link rel="stylesheet" href="styles/dark_mode_toggle.css" />
+        <link rel="stylesheet" href="styles/topnav.css" />
+    </head>
+    <body class="dark-mode">
+        <div class="flex-container">
+            <div class="game-column">
+                <table class="game-board"></table>
+            </div>
+            <div class="stats-column">
+                <table class="stats-board">
+                    <tr id="stats-table-header-row">
+                        <th class="player-table-header">Player</th>
+                        <th class="chain-table-header" id="ihead">I</th>
+                        <th class="chain-table-header" id="chead">C</th>
+                        <th class="chain-table-header" id="whead">W</th>
+                        <th class="chain-table-header" id="fhead">F</th>
+                        <th class="chain-table-header" id="ahead">A</th>
+                        <th class="chain-table-header" id="thead">T</th>
+                        <th class="chain-table-header" id="lhead">L</th>
+                        <th class="cash-table-header">Cash</th>
+                        <th class="net-table-header">Net</th>
+                    </tr>
+                    <tr id="stats-placeholder-row-parent">
+                        <td id="stats-placeholder-row">.</td>
+                    </tr>
+                </table>  
+                <div id="tile-action-container">
+                    <div class="flex-container" id="tile-bank">
+                    </div>
+                </div>
+                <div id="fb-button-container"><button id="back-button" class="fb-button"><</button><button id="forward-button" class="fb-button">></button></div>
+                <div class="chain-chat-action-container"> 
+                    <div class="chat-controls-wrapper">
+                        <ul id="messages"></ul>
+                        <form id="chat-form">
+                            <input id="chat-input" autocomplete="off" title="chat" placeholder="Send message..." />
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="/src/linkedJS/internalGameFunctions.js"></script>
+        <script src="/src/linkedJS/sharedGameFunctions.js"></script>
+        <script src="/src/common/dark_mode_toggle.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="src/client_history.js"></script>
+        <script src="src/common/navbar.js"></script>
+        <script src="src/common/global_chat.js"></script>
+    </body>
+</html>

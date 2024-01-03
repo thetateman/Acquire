@@ -51,7 +51,7 @@ const internalGameFunctions = {
                 tileChain = 'p' //pending, should change with next action
             }
             else {
-                let connectingTrueChains = connectingChains.filter((f) => f !== 's');
+                let connectingTrueChains = connectingChains.filter((f) => f !== 's' && f !== 'p');
                 if(connectingTrueChains.length === 1){
                     tileChain = connectingTrueChains[0];
                     chains[tileChain].push({'x': x, 'y': y});
@@ -432,9 +432,9 @@ const internalGameFunctions = {
         game.final_net_worths = networths;
     },
     
-    createGame: function(games, maxPlayers, timePerPlayer, creator){
-        let id = this.genNewGameID(games);
-        let tileBank = this.genTileBank();
+    createGame: function(games, maxPlayers, timePerPlayer, creator, {id=undefined, history=[], original_tile_bank=[], usernames_original_order=[]}={}){
+        id = id ?? this.genNewGameID(games);
+        let tileBank = original_tile_bank.length > 0 ? original_tile_bank : this.genTileBank();
         let newGame = {
             id: id,
             creator: creator,
@@ -445,8 +445,10 @@ const internalGameFunctions = {
             time_per_player: timePerPlayer * 1000 * 60,
             players_timed_out: [],
             usernames:[],
+            usernames_original_order:[],
             watchers:[],
-            history:[],
+            history: history.length > 0 ? history : [],
+            historical_state_index: 0,
             original_tile_bank: JSON.parse(JSON.stringify(tileBank)),
             state: {
                 game_started: false,
@@ -505,7 +507,14 @@ const internalGameFunctions = {
                 player_states: []
             }
         };
-        this.updateGame(newGame, creator, 'joinGame', {});
+        if(usernames_original_order.length > 0){
+            usernames_original_order.forEach((username) => {
+                this.updateGame(newGame, username, 'joinGame', {});
+            })
+        }
+        else{
+            this.updateGame(newGame, creator, 'joinGame', {});
+        }
         games[id] = newGame;
         return id;
     },
@@ -578,6 +587,7 @@ const internalGameFunctions = {
                 return "gameAlreadyStarted";
             }
             else{
+                game.usernames_original_order = [...game.usernames];
                 // Draw first tiles to determine turn order
                 let firstTiles = [];
                 for(let i=0; i<game.num_players; i++){
