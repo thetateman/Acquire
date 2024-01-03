@@ -3,6 +3,10 @@ const displayError = (err) => {
         let errorMessage = `<p class="error">Could not find that username :(</p>`;
         document.body.insertAdjacentHTML("beforeend", errorMessage);
     }
+    else if(err === 'gamesNotFound'){
+        let errorMessage = `<p class="error">This user hasn't played any games yet.</p>`;
+        document.body.insertAdjacentHTML("beforeend", errorMessage);
+    }
     
     if(err !== 'none'){
         return false;
@@ -14,7 +18,7 @@ const getLadder = (numPlayers) => (e) => {
     e.preventDefault();
 
     // Remove old html
-    document.querySelectorAll('#stats-table').forEach(table => table.remove());
+    document.querySelectorAll('.stats-table').forEach(table => table.remove());
     document.querySelectorAll('.error').forEach(error => error.remove());
 
     // Request player Ladder
@@ -89,7 +93,7 @@ const getLadder = (numPlayers) => (e) => {
                         `);
                     }
                     const statsTable = (`
-                    <table id="stats-table">
+                    <table id="stats-table" class="stats-table">
                         <thead>
                             <tr>
                                 <th>Rank</th>
@@ -123,7 +127,7 @@ const onSearch = (e) => {
     e.preventDefault();
 
     // Remove old html
-    document.querySelectorAll('#stats-table').forEach(table => table.remove());
+    document.querySelectorAll('.stats-table').forEach(table => table.remove());
     document.querySelectorAll('.error').forEach(error => error.remove());
     
     let usernameToSearch = document.querySelector('#search-username').value;
@@ -179,7 +183,7 @@ const onSearch = (e) => {
                         }
                     }
                     const statsTable = (`
-                    <table id="stats-table">
+                    <table id="stats-table" class="stats-table">
                         <thead>
                             <tr>
                                 <th># Players</th>
@@ -194,7 +198,39 @@ const onSearch = (e) => {
                     </thead> 
                     <tbody>${gameTypeRows}</tbody>
                     `);
-                    document.body.insertAdjacentHTML("beforeend", statsTable);
+                    document.getElementById('stats-tables-container').insertAdjacentHTML("afterbegin", statsTable);
+                    
+                    let gameTables = '';
+                    if(json.games.length > 0){
+                        json.games.forEach((game) => {
+                            if(game.history.length > 0){
+                                let userRows = '';
+                                for(let i = 0; i < game.usernames.length; i++){
+                                    userRows += `<tr><td>${game.usernames[i]}</td><td>${game.networths[i]}</td></tr>`
+                                }
+                                gameTables += (`
+                                    <table class="game-table stats-table">
+                                    <thead>
+                                        <tr>
+                                            <th>${game.date_created.substring(0,10)}</th> 
+                                            <th><a href="/history?gameid=${game._id}"><button>Review</button></a></th>
+                                        </tr> 
+                                    </thead> 
+                                    <tbody>
+                                    ${userRows}
+                                    </tbody>
+                                    </table>
+                            `);
+                            }
+                            
+                        })
+                        document.getElementById('game-tables-container').insertAdjacentHTML("afterbegin", gameTables);
+                    }
+                    else{
+                        let errorMessage = `<p class="error">This user hasn't played any games yet.</p>`;
+                        document.body.insertAdjacentHTML("beforeend", errorMessage);
+                    }
+                    
 
                 }
             })

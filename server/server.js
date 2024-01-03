@@ -114,6 +114,9 @@ app.use('/game', (req, res) => {
 app.use('/stats', (req, res) => {
     res.sendFile(path.resolve(`${__dirname}/../client/stats.html`));
 });
+app.use('/history', (req, res) => {
+    res.sendFile(path.resolve(`${__dirname}/../client/history.html`));
+});
 app.use('/sitemap', (req, res) => {
     res.sendFile(path.resolve(`${__dirname}/../client/sitemap.xml`));
 });

@@ -63,6 +63,19 @@ button {
     margin: 20px auto;
 }
 
+#game-tables-container{
+    margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-items: right;
+    width: fit-content;
+}
+
+.game-table{
+    display:inline-block;
+    margin: 0.8rem;
+}
+
 .error{
     width: fit-content;
     margin: 20px auto;

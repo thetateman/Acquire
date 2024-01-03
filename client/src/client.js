@@ -440,7 +440,7 @@ const myTurnStateUpdater = (game) => {
     if(game.state.player_states[game.usernames.indexOf(localStorage.username)].total_time_remaining < 0){
         document.querySelector('.chain-controls-container').style.display = 'none';
     }
-    else if(game.usernames[game.state.turn] === localStorage.username){
+    else if(game.usernames[game.state.turn] === localStorage.username && !game.state.game_ended){
         if(['playTile', 'disposeShares'].includes(game.state.expectedNextAction)){
             //play turn indicator audio
             var audio = new Audio('audio/beep3.mp3');
@@ -942,6 +942,7 @@ const announceGame = (game) => {
         }
     });
 
-    localStorage.current_game_id = window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1];
-    sock.emit('gameRequest', localStorage.current_game_id);
+    let current_game_id = window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1];
+    localStorage.current_game_id = current_game_id;
+    sock.emit('gameRequest', current_game_id);
 })();

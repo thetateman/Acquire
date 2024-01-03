@@ -8,7 +8,11 @@ const gameSchema = new Schema({
     players_timed_out: [String],
     usernames_original_order: [String],
     tile_bank: [{ x: Number, y: Number }],
-    history: [[Schema.Types.Mixed]]
+    history: [[Schema.Types.Mixed]],
+    date_created: { 
+        type: Date, 
+        default: Date.now
+    }, 
 
 });
 

@@ -18,7 +18,7 @@ const UserMiddleware = {
          return true;
       }
       function emailAllowed(str) {
-        if(!(/^[\x21-\x3B\x40-\x7E]{1,99}$/.test(str))){
+        if(!(/^[\x30-\x39\x61-\x7A]{1,99}$/.test(str))){
          return false;
         }
         return true;
@@ -151,7 +151,12 @@ const UserMiddleware = {
     if(!result){
       responseObj.error = 'userNotFound';
     }
+    let gamesResult = result ? await GameModel.find({ usernames: req.query.username }) : [];
+    if(!gamesResult){
+      responseObj.error = 'gamesNotFound';
+    }
     responseObj.user = result;
+    responseObj.games = gamesResult;
     return res.json(responseObj);
 
   },
