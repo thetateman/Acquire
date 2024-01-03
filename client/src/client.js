@@ -336,6 +336,7 @@ const startGame = (sock) => (e) => {
 const populateGame = (sock) => (data) => {
     const game = data.game;
     window.gameGlobals.gameState = JSON.stringify(game.state);
+    window.gameGlobals.expected_next_action = game.state.expectedNextAction;
     chains.forEach((chain) => window.gameGlobals[`${chain}InCart`] = "0");
     generateStatsTable(game, data.playerDetails);
     updateGameBoard(game);
@@ -907,6 +908,7 @@ const announceGame = (game) => {
 };
 
 (() => {
+    window.gameGlobals = {};
     const sock = io();
     window.active_socket_conn = sock;
 
