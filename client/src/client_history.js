@@ -390,11 +390,8 @@ const postGameMessage = (gameUpdate) => {
             sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[gameUpdate.game.state.turn]}</legend></fieldset>`;
         }
         
-        if((gameUpdate.game.state.player_states[turn].total_time_remaining ?? -1) <= 0){
-            computerFlag = ' (computer)';
-        }
         console.log(turn);
-        usernameSpan = `<span>${gameUpdate.game.usernames[turn]}${computerFlag}</span>`;
+        usernameSpan = `<span>${gameUpdate.game.usernames[turn]}</span>`;
         if(gameUpdate.game.state.num_new_dead_tiles > 0 && gameUpdate.game.state.expectedNextAction === 'playTile'){
             let deadTile = gameUpdate.game.state.drawnDeadTiles[gameUpdate.game.state.drawnDeadTiles.length - 1];
             let deadTileText = `${deadTile.x+1}${String.fromCharCode(deadTile.y+65)}`;
