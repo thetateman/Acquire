@@ -924,6 +924,9 @@ const announceGame = (game) => {
             location.reload();
         }
     });
+    sock.on('reconnect', () => {
+        console.log("reconnected!!!");
+    });
     
     addBoard();
     sock.on('gameResponse', populateGame(sock));
