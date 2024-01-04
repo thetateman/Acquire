@@ -554,8 +554,15 @@ const forwardClickHandler = (sock) => (e) => {
 
 (() => {
     window.gameGlobals = {};
-    const sock = io('/', {transports: ['websocket']});
+    const sock = io();
     window.active_socket_conn = sock;
+
+    sock.on('disconnect', () => {
+        // Handle disconnect event
+        sock = io();
+        window.active_socket_conn = sock;
+    });
+
     window.current_move_number = 0;
     let games = {};
 

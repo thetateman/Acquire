@@ -245,8 +245,15 @@ const onSearch = (e) => {
 }
 
 (() => {
-    const sock = io('/', {transports: ['websocket']});
+    const sock = io();
     window.active_socket_conn = sock;
+
+    sock.on('disconnect', () => {
+        // Handle disconnect event
+        sock = io();
+        window.active_socket_conn = sock;
+    });
+    
     document.querySelector('#search-form').addEventListener('submit', onSearch);
     document.querySelectorAll('.game-type-selector')
     .forEach((button) => {
