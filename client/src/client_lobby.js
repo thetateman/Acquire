@@ -274,7 +274,7 @@ const promptLandscapeOrientation = () => {
 };
 
 (() => {
-    const sock = io('/', { forceNew: true });
+    const sock = io('/', {transports: ['websocket']});
     window.active_socket_conn = sock;
     sock.on('gameResponse', loadGames(sock));
     sock.on('gameListUpdate', updateGames(sock));
