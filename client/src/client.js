@@ -919,6 +919,33 @@ const announceGame = (game) => {
     const sock = io('/', {transports: ['websocket']});
     window.active_socket_conn = sock;
 
+
+    sock.on('disconnect', () => {
+        // Handle disconnect event
+        console.log("disconnected");
+    });
+    
+    sock.on('reconnect', () => {
+        // Handle reconnect event
+        console.log("reconnect");
+    });
+    
+    sock.on('reconnect_attempt', () => {
+        // Handle reconnect attempt event
+        console.log("reconnect_attempt");
+    });
+    
+    sock.on('reconnect_error', (error) => {
+        // Handle reconnect error event
+        console.error('Reconnect error:', error);
+    });
+    
+    sock.on('reconnect_failed', () => {
+        // Handle reconnect failure event
+        console.error('Reconnect failed');
+    });
+    
+
     addBoard();
     sock.on('gameResponse', populateGame(sock));
     sock.on('gameUpdate', updateGame(sock));
