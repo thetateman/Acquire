@@ -122,14 +122,7 @@ app.use('/sitemap', (req, res) => {
 });
 
 const server = http.createServer(app);
-const io = socketio(server, {
-    connectionStateRecovery: {
-      // the backup duration of the sessions and the packets
-      maxDisconnectionDuration: 2 * 60 * 1000,
-      // whether to skip middlewares upon successful recovery
-      skipMiddlewares: false,
-    }
-  });
+const io = socketio(server);
 let player_id = 0;
 
 io.use(function(socket, next) {

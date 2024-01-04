@@ -558,9 +558,7 @@ const forwardClickHandler = (sock) => (e) => {
     window.active_socket_conn = sock;
 
     sock.on("disconnect", (reason) => {
-        if (reason === "io server disconnect") {
-            location.reload();
-        }
+        location.reload();
     });
 
     window.current_move_number = 0;

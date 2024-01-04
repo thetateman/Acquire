@@ -920,12 +920,7 @@ const announceGame = (game) => {
     window.active_socket_conn = sock;
 
     sock.on("disconnect", (reason) => {
-        if (reason === "io server disconnect") {
-            location.reload();
-        }
-    });
-    sock.on('reconnect', () => {
-        console.log("reconnected!!!");
+        location.reload();
     });
 
     sock.onAny((event)=>{
