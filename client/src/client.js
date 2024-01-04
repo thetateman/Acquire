@@ -927,6 +927,10 @@ const announceGame = (game) => {
     sock.on('reconnect', () => {
         console.log("reconnected!!!");
     });
+
+    sock.onAny((event)=>{
+        console.log(event);
+    })
     
     addBoard();
     sock.on('gameResponse', populateGame(sock));
