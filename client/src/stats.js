@@ -245,7 +245,7 @@ const onSearch = (e) => {
 }
 
 (() => {
-    const sock = io();
+    const sock = io('/', { forceNew: true });
     window.active_socket_conn = sock;
     document.querySelector('#search-form').addEventListener('submit', onSearch);
     document.querySelectorAll('.game-type-selector')

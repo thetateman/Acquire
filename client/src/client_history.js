@@ -554,7 +554,7 @@ const forwardClickHandler = (sock) => (e) => {
 
 (() => {
     window.gameGlobals = {};
-    const sock = io();
+    const sock = io('/', { forceNew: true });
     window.active_socket_conn = sock;
     window.current_move_number = 0;
     let games = {};
