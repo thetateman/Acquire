@@ -86,7 +86,7 @@ const gameMessages = {
                     
                     const requestedGameCopy = this.getSendableGame(requestedGame, requestingUser);
                     sock.emit('gameResponse', {game: requestedGameCopy, playerDetails: usernameDetails});
-                    sock.data.username = requestingUser;
+                    sock.data.username = requestingUser; // SETTING DATA ON THE SOCKET IS A BAD IDEA - IT GETS WIPED IF THE SOCKET RECONNECTS
                     sock.request.session.lastKnownLocation = `game${gameID}`;
                     userStatuses[sock.request.session.username] = `game${gameID}`;
                     io.in('lobby').in(gameID).emit('gameListUpdate', {
@@ -308,7 +308,7 @@ const gameMessages = {
         io.in(game_id.toString()).fetchSockets()
         .then((sockets) => {
             sockets.forEach((playerSocket) => {
-                playerSocket.emit('gameUpdate', {type: updateType, game: this.getSendableGame(games[game_id], playerSocket.data.username)});
+                playerSocket.emit('gameUpdate', {type: updateType, game: this.getSendableGame(games[game_id], playerSocket.request.session.username)});
             });
         });
     },

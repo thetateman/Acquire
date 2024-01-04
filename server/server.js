@@ -46,12 +46,12 @@ const app = express();
 // Security middleware
 app.set('trust proxy', 'loopback');
 
-app.use(helmet());
-app.use(helmet.contentSecurityPolicy({
-    directives: {
-        connectSrc: ["'self'", "wss://onlineacquire.com"],
-    },
-}));
+// app.use(helmet({strictTransportSecurity: false}));
+// app.use(helmet.contentSecurityPolicy({
+//     directives: {
+//         connectSrc: ["'self'", "wss://onlineacquire.com", "192.168.1.129"],
+//     },
+// }));
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -108,7 +108,7 @@ app.use('/about', (req, res) => {
     res.sendFile(path.resolve(`${__dirname}/../client/about.html`));
 });
 app.use('/game', (req, res) => {
-    let requestedGameID = req.query.gameid;
+    req.session.current_game = req.query.gameid;
     res.sendFile(path.resolve(`${__dirname}/../client/index.html`));
 });
 app.use('/stats', (req, res) => {
@@ -122,9 +122,7 @@ app.use('/sitemap', (req, res) => {
 });
 
 const server = http.createServer(app);
-const io = socketio(server, {
-    connectionStateRecovery: {}
-  });
+const io = socketio(server);
 let player_id = 0;
 
 io.use(function(socket, next) {
@@ -141,6 +139,7 @@ io.on('connection', (sock) => {
     if(sock.request.session === undefined){
         console.error(`${Date()} Session undefined`);
         sock.disconnect();
+        return false;
     }
     if(sock.request.session.username === undefined){
         console.error(`${Date()} Client attempted connection with undefined username.`);
@@ -159,6 +158,10 @@ io.on('connection', (sock) => {
     }
     if(userStatuses[sock.request.session.username] === undefined){
         userStatuses[sock.request.session.username] = 'unknown';
+    }
+
+    if(sock.request.session.current_game){
+        sock.join(sock.request.session.current_game);
     }
 
     if(!connectedUsers.includes(sock.request.session.username)){
