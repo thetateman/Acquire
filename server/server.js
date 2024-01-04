@@ -122,7 +122,9 @@ app.use('/sitemap', (req, res) => {
 });
 
 const server = http.createServer(app);
-const io = socketio(server);
+const io = socketio(server, {
+    connectionStateRecovery: {}
+  });
 let player_id = 0;
 
 io.use(function(socket, next) {
