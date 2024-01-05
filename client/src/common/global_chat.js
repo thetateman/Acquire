@@ -95,6 +95,19 @@ const onChatSubmitted = (sock) => (e) => {
         else if(text.indexOf('help') === 1){
             text += '<br><br>You can use the following commands:<br><br>/mute &lt;username&gt; - block messages from a user<br><br>/unmute &lt;username&gt; - unmute user<br><br>See the about page for more info.'
         }
+        else if(text.indexOf('invite') === 1){
+            let gameID;
+            let invitees = text.split(' ');
+            invitees.shift();
+            invitees.forEach((userToInvite) => userToInvite = userToUnMute.replace('@', ''));
+            if(window.location.href.includes('game')){
+                gameID = window.location.href.split("gameid=")[window.location.href.split("gameid=").length - 1];
+            }
+            else{
+                return false;
+            }
+            sock.emit("invite", {invitees, gameID})
+        }
         else{
             text = 'invalid_command';
         }

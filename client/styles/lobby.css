@@ -162,7 +162,7 @@ li {
   padding: 10px;
 }
 
-@media (max-width: 1050px) {
+@media (max-width: 1250px) {
   #new-game-form {
     flex-direction: column;
   }
@@ -170,10 +170,6 @@ li {
 
 .controls {
   border-bottom: var(--standard-section-divider);
-}
-
-#new-game-form input{
-  flex-grow: 1;
 }
 
 #new-game-form > *{
@@ -192,6 +188,10 @@ li {
 
 .new-game-option-selector{
   height: 5vh;
+}
+
+#invite-only-label{
+  margin-left: 1rem;
 }
 
 

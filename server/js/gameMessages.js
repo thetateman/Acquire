@@ -41,6 +41,19 @@ const gameMessages = {
             userStatuses[sock.request.session.username] = 'lobby';
             io.in('lobby').emit('lobbyUpdate', {action: 'add', users: [sock.request.session.username]});
         });
+
+        sock.on('gameInvite', ({invitees, gameID}) => {
+            if(!Object.keys(games).includes(gameID)){
+                if(verbose){console.log("Requested a game that does not exist!");}
+                return false;
+            }
+            if(games[gameID].creator != sock.request.session.username){
+                return false;
+            }
+            invitees.forEach((invitee) => {
+                games[gameID].invite_list.push(invitee);
+            })
+        })
     
         sock.on('gameRequest', gameID => {
             let requestingUser = sock.request.session.username;
@@ -105,8 +118,8 @@ const gameMessages = {
             }
             
         });
-        sock.on('newGame', ({numPlayers, timePerPlayer}) => {
-            const newGameID = internalGameFunctions.createGame(games, parseInt(numPlayers, 10), timePerPlayer, sock.request.session.username);
+        sock.on('newGame', ({numPlayers, timePerPlayer, inviteOnly}) => {
+            const newGameID = internalGameFunctions.createGame(games, parseInt(numPlayers, 10), timePerPlayer, sock.request.session.username, {inviteOnly: inviteOnly});
             let usernameDetails = {};
             usernameDetails[games[newGameID].usernames[0]] = {username: games[newGameID].usernames[0], location: userStatuses[games[newGameID].usernames[0]], admin: false};
             const gameSummary = {
@@ -123,8 +136,9 @@ const gameMessages = {
                 "game": gameSummary
             }
             sock.emit('forceRedirect', newGameID);
-            io.in('lobby').emit('gameListUpdate', updateObject);
-             
+            if(!inviteOnly){
+                io.in('lobby').emit('gameListUpdate', updateObject);
+            }
         });
     },
 

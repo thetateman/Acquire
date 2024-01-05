@@ -432,12 +432,14 @@ const internalGameFunctions = {
         game.final_net_worths = networths;
     },
     
-    createGame: function(games, maxPlayers, timePerPlayer, creator, {id=undefined, history=[], original_tile_bank=[], usernames_original_order=[]}={}){
+    createGame: function(games, maxPlayers, timePerPlayer, creator, {id=undefined, history=[], original_tile_bank=[], usernames_original_order=[], inviteOnly=false}={}){
         id = id ?? this.genNewGameID(games);
         let tileBank = original_tile_bank.length > 0 ? original_tile_bank : this.genTileBank();
         let newGame = {
             id: id,
             creator: creator,
+            invite_only: inviteOnly,
+            invite_list: [creator],
             num_players: 0,
             num_connected_players: 0,
             inactive_since: new Date(8640000000000000).getTime(),
@@ -556,6 +558,9 @@ const internalGameFunctions = {
             }
             if(game.max_players === game.usernames.length){
                 return "gameFull";
+            }
+            if(game.invite_only && !game.invite_list.includes(username)){
+                return "notInvited";
             }
             else{
                 game.num_players++;
