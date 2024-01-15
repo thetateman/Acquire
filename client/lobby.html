@@ -7,8 +7,8 @@
         <meta name="keywords" content="Acquire, game, board, boardgame, board-game, multiplayer, computer, internet, fun, competetitive, Sid, Sackson, Hasbro, Avalon, Hill, merger, hotel, chain, stock, share, tile, grid, rules, rulebook, poker, risk, monopoly, tabletop, timed, tlstyer, acquisition">
         <title>Acquire Board Game: Play Online</title>
         <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
-        <link rel="stylesheet" href="styles/topnav.css">
         <link rel='stylesheet' href='styles/lobby.css'>
+        <link rel="stylesheet" href="styles/topnav.css">
         <link rel="stylesheet" href="styles/dark_mode_toggle.css">
     </head>
     <body class="dark-mode">
@@ -127,10 +127,11 @@
                 </div>
             </div>
         </div>
-        <script src="src/common/dark_mode_toggle.js"></script> <!--Put this up here attempting to avoid dark mode -> light mode flash on page load-->    
+        <script src="src/common/preset_dark_mode.js"></script> <!--Put this up here attempting to avoid dark mode -> light mode flash on page load-->    
         <script src="/socket.io/socket.io.js"></script>
         <script src="src/client_lobby.js"></script>
         <script src="src/common/navbar.js"></script>
+        <script src="src/common/dark_mode_toggle.js"></script>
         <script src="src/common/global_chat.js"></script>
     </body>
 </html>
