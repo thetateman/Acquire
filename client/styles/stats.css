@@ -5,7 +5,6 @@
     --button-hover-bg-color: #79b2fc;
     --standard-box-shadow: rgba(0, 0, 0, 0.65) 1px 2px 6px;
     --standard-section-divider: 2px solid #8d8d8d;
-    --navbar-bg-color: rgb(82 102 115);
 }
 body {
     font-family: "Helvetica Neue", sans-serif;
@@ -94,5 +93,4 @@ body.dark-mode{
     /*--standard-border-color: rgb(92, 92, 92);*/
     --standard-empty-tile-color: #adad72;
     --tile-bank-single-color: #f8f8bc;
-    --navbar-bg-color: rgb(14, 14, 14);
   }

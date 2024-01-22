@@ -12,13 +12,14 @@
         <span class="color-label" id="light-label">Light</span>
         <span class="color-label" id="dark-label">Dark</span>
     </label>`;
-    document.querySelector(".topnav-left").insertAdjacentHTML('beforeend', toggleHTML);
+    document.body.insertAdjacentHTML('beforeend', toggleHTML);
 
     if(!('dark_mode' in localStorage)){
         localStorage.dark_mode = 'true';
     }
     if(localStorage.dark_mode === 'false'){
-        //set toggle
+        // Turn off dark mode, set toggle
+        document.body.classList.toggle('dark-mode');
         document.querySelector('#color-scheme-toggle').checked = true;
     }
     document

@@ -32,7 +32,6 @@
     --tile-bank-dead-asleep-color:
     */
     --column-scrollbar-width: 10px;
-    --navbar-bg-color: rgb(82 102 115);
 }
 body {
     font-family: "Helvetica Neue", sans-serif;
@@ -651,7 +650,6 @@ body.dark-mode{
     /*--standard-border-color: rgb(92, 92, 92);*/
     --standard-empty-tile-color: #adad72;
     --tile-bank-single-color: #f8f8bc;
-    --navbar-bg-color: rgb(14, 14, 14);
   }
   
   .dark-mode button {

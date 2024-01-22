@@ -1,7 +1,6 @@
 :root {
     --main-bg-color: white;
     --main-text-color: black;
-    --navbar-bg-color: rgb(82 102 115);
 }
 body {
     font-family: "Helvetica Neue", sans-serif;
@@ -44,5 +43,4 @@ p, ul, ol, h4{
 body.dark-mode{
     --main-bg-color: rgb(28, 28, 28);;
     --main-text-color: white;
-    --navbar-bg-color: rgb(14, 14, 14);
   }
