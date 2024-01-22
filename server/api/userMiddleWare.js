@@ -18,7 +18,7 @@ const UserMiddleware = {
          return true;
       }
       function emailAllowed(str) {
-        if(!(/^[\x30-\x39\x61-\x7A]{1,99}$/.test(str))){
+        if(!(/^[\x2E-\x39\x40-\x7A]{1,99}$/.test(str))){
          return false;
         }
         return true;
