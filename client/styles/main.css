@@ -39,6 +39,9 @@ body {
     margin: 0;
     padding: 0;
     background-color: var(--main-bg-color);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 input {
@@ -194,9 +197,10 @@ a {
 
 
 .chain-chat-action-container {
-    height: 25.5vw;
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
 }
 
 #chain-selector-row-container {
@@ -490,11 +494,18 @@ td[column="l"] {
 .stats-column{
     flex-basis: 45%;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .flex-container {
     display: flex;
     flex-direction: row;
+}
+
+#main-content {
+    height: 100%;
+    overflow: hidden;
 }
 
 .chat-controls-wrapper {
@@ -523,6 +534,7 @@ td[column="l"] {
 }
 
 /* ------------- Styles for elements within chat-column ------------ */
+
 #messages {
     height: 100%;
     overflow-x: hidden;
