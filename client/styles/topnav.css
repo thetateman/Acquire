@@ -6,7 +6,7 @@ body {
 
 /* Add a black background color to the top navigation */
 .topnav {
-    background-color: rgb(14, 14, 14);
+    background-color: var(--navbar-bg-color);
     overflow: hidden;
     width: 100%;
     z-index: 5;
@@ -20,7 +20,7 @@ body {
 
 /* Style the links inside the navigation bar */
 .topnav a {
-  float: left;
+  display: inline-block;
   color: #f2f2f2;
   text-align: center;
   padding: 11px 16px;
@@ -55,4 +55,12 @@ body {
 /* Right-aligned section inside the top navigation */
 .topnav-right {
   float: right;
+}
+/* Left-aligned section inside the top navigation */
+.topnav-left a {
+  float: left;
+}
+
+.topnav-left{
+  display: inline-block;
 }

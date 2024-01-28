@@ -1,9 +1,9 @@
 /* The switch - the box around the slider */
 .switch {
     --switch-width: 75px;
-    position: fixed;
-    bottom: 7px;
-    right: 6px;
+    position: relative;
+    bottom: -5px;
+    right: -11px;
     display: inline-block;
     cursor: pointer;
     width: var(--switch-width);
@@ -26,7 +26,7 @@
     right: 0;
     bottom: 0;
     background-color: rgb(197, 197, 197);
-    box-shadow: rgba(0, 0, 0, 0.95) 1px 2px 6px;
+    /*box-shadow: rgba(0, 0, 0, 0.95) 1px 2px 6px;*/
     -webkit-transition: .4s;
     transition: .4s;
   }
