@@ -65,7 +65,7 @@ button:hover {
 
 #rooms-controls-wrapper {
   margin-top: 0.674vh; /* Dumb patch fix because I can't get the columns aligned right */
-  width: 92%;
+  width: 96%;
   overflow-y: scroll;
   padding-left: var(--column-scrollbar-width);
 }
