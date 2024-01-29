@@ -552,7 +552,34 @@ const forwardClickHandler = (sock) => (e) => {
 
 }
 
+const resizeBoard = () => {
+    
+    let board = document.querySelector('.game-board');
+    if(window.innerHeight * 1.25 > window.innerWidth){
+        board.style['font-size'] = '1.5vw';
+    } else {
+        board.style['font-size'] = '2.6vh';
+    }
+    board.style['max-height'] = "";
+    let boardHeight = document.querySelector('.game-board').scrollHeight;
+    let boardWidth = boardHeight * (4/3);
+    let boardFlexBasis = boardWidth / window.innerWidth;
+    if(boardFlexBasis > 0.54){
+        boardFlexBasis = 0.54;
+    }
+    const statsFlexBasis = 1 - boardFlexBasis;
+    document.querySelector('.game-column').style['flex-basis'] = `${boardFlexBasis*100}%`;
+    document.querySelector('.stats-column').style['flex-basis'] = `${statsFlexBasis*100}%`;
+    if(boardFlexBasis === 0.54){
+        let board = document.querySelector('.game-board');
+        let newHeight = board.scrollWidth * (3/4);
+        board.style['max-height'] = `${newHeight}px`;
+        board.style['min-height'] = `${newHeight}px`;
+    }
+};
+
 (() => {
+    window.onresize = resizeBoard;
     window.gameGlobals = {};
     const sock = io();
     window.active_socket_conn = sock;
@@ -565,6 +592,7 @@ const forwardClickHandler = (sock) => (e) => {
     let games = {};
 
     addBoard();
+    resizeBoard();
     sock.on('gameResponse', populateGame(sock, games));
     //sock.on('gameUpdate', updateGame(sock));
     //sock.on('gameListUpdate', gameListUpdate);

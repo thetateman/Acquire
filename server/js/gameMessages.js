@@ -138,6 +138,7 @@ const gameMessages = {
         if(!matchingGame){
             return false;
         }
+        sock.request.session.lastKnownLocation = `game${gameID}`;
         sock.emit('gameResponse', {game: matchingGame, playerDetails: []});
     },
 

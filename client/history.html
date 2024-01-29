@@ -2,16 +2,24 @@
 <html lang="en">
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Game History</title>
+        <title>Acquire BETA</title>
         <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
         <link rel="stylesheet" href="styles/main.css" />
         <link rel="stylesheet" href="styles/dark_mode_toggle.css" />
         <link rel="stylesheet" href="styles/topnav.css" />
     </head>
     <body class="dark-mode">
-        <div class="flex-container">
+        <div class="flex-container" id="main-content">
             <div class="game-column">
                 <table class="game-board"></table>
+                <div class="multi-chat-wrapper">
+                    <div class="chat-controls-wrapper user-messages">
+                        <ul id="messages-lobby" class="messages"></ul>
+                        <form class="chat-form" chattarget="lobby">
+                            <input class="chat-input" id="lobby-chat-input" chattarget="lobby" autocomplete="off" title="chat" placeholder="Global Chat" />
+                        </form>
+                    </div>
+                </div>
             </div>
             <div class="stats-column">
                 <table class="stats-board">
@@ -36,14 +44,11 @@
                     </div>
                 </div>
                 <div id="fb-button-container"><button id="back-button" class="fb-button"><</button><button id="forward-button" class="fb-button">></button></div>
-                <div class="chain-chat-action-container"> 
+                <div class="chain-chat-action-container">
                     <div class="chat-controls-wrapper">
-                        <ul id="messages"></ul>
-                        <form id="chat-form">
-                            <input id="chat-input" autocomplete="off" title="chat" placeholder="Send message..." />
-                        </form>
-                    </div>
-                </div>
+                        <ul id="messages" class="messages"></ul>
+                    </div>  
+                </div>        
             </div>
         </div>
         <script src="/src/linkedJS/internalGameFunctions.js"></script>
@@ -51,6 +56,7 @@
         <script src="/src/common/preset_dark_mode.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="src/client_history.js"></script>
+        <script src="src/common/prompt_landscape_orientation.js"></script>
         <script src="src/common/navbar.js"></script>
         <script src="/src/common/dark_mode_toggle.js"></script>
         <script src="src/common/global_chat.js"></script>

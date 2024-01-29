@@ -89,17 +89,16 @@ a {
 .game-board {
     background-color: var(--standard-empty-tile-color);
     border-spacing: 3px;
-    margin: 3px;
     /* width: 54vw;
     height: 40.5vw; */
-    width: 96vh;
-    height: 72vh;
+    flex-basis: 74%;
+    font-size: 2.6vh;
+    flex-shrink: 0;
 }
 
 .game-board td {
     border-style: inset;
     text-align: center;
-    font-size: 1.5vw;
     font-weight: 700;
     width: 8.333333%;
     background-color: var(--standard-empty-tile-color);
@@ -110,12 +109,18 @@ a {
     display: flex;
     flex-direction: row;
     flex-grow: 1;
+    overflow: hidden;
+    justify-content: space-between;
 }
 
 .messages {
     height: 100%;
     overflow-x: hidden;
     overflow-y: scroll;
+}
+
+.user-messages {
+    flex-basis: 50%;
 }
 
 #tile-action-container {
@@ -260,8 +265,8 @@ a {
     margin: 0.2vw auto;
     border: var(--standard-section-divider);
     padding: 0.5vw 0px;
-    flex-basis: 70%;
-    height: 3.25vw;
+    width: 35vw;
+    height: 3.75vw;
     justify-content: space-around;
 }
 
@@ -504,6 +509,8 @@ td[column="l"] {
     flex-basis: 55%;
     display: flex;
     flex-direction: column;
+    margin: 3px;
+    overflow: hidden;
 }
   
 /* Right column */
@@ -528,7 +535,7 @@ td[column="l"] {
     background-color: var(--main-bg-color);
     width: 97%;
     flex-grow: 1;
-    margin: 1vw auto;
+    margin: 0.5vw auto;
     border: var(--standard-section-divider);
     overflow-x: hidden;
     display: flex;
@@ -551,13 +558,13 @@ td[column="l"] {
 
 /* ------------- Styles for elements within chat-column ------------ */
 
-#messages {
+.messages {
     height: 100%;
     overflow-x: hidden;
     overflow-y: scroll;
   }
   
-  #messages li {
+  .messages li {
     word-wrap: break-word;
   }
   

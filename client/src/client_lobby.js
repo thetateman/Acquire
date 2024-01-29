@@ -263,16 +263,6 @@ const addUsersToLeaderBoards = () => {
     });
 };
 
-const promptLandscapeOrientation = () => {
-    if (window.matchMedia("(orientation: portrait)").matches && window.matchMedia("(max-width: 750px)").matches) {
-        // Display a message or prompt to switch to landscape mode
-        document.body.insertAdjacentHTML('afterbegin', `<div id="orientation-overlay"><h2>Rotate your phone to landscape mode to play Acquire</h2><img id ="phone-icon" src="/img/phone_rotate.png" alt="rotate phone icon"></div>`);
-    }
-    else {
-        this.document.querySelectorAll('#orientation-overlay').forEach(overlay => overlay.remove());
-    }
-};
-
 (() => {
     const sock = io();
     window.active_socket_conn = sock;
@@ -290,20 +280,12 @@ const promptLandscapeOrientation = () => {
     sock.emit('gameRequest', "all");
     sock.emit('joinLobby');
     addUsersToLeaderBoards();
-    let currentUser = localStorage.getItem('username'); //There has to be a better way to do this
     document
     .querySelector('#new-game-form')
     .addEventListener('submit', onNewGame(sock));
 
     document
     .querySelectorAll('.header-container').forEach(header => header.addEventListener('click', onUserListClick));
-    /*
-    document
-    .querySelector('#join1')
-    .addEventListener('click', onJoinGame(1, sock));
-    */
-    promptLandscapeOrientation();
-    window.addEventListener('orientationchange', () => {setTimeout(promptLandscapeOrientation, 200)});
 
     // Force reload when page is accessed with the back button.
     window.addEventListener('pageshow', (event) => {

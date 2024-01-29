@@ -17,13 +17,13 @@
             <div class="game-column">
                 <table class="game-board"></table>
                 <div class="multi-chat-wrapper">
-                    <div class="chat-controls-wrapper">
+                    <div class="chat-controls-wrapper user-messages">
                         <ul id="messages-lobby" class="messages"></ul>
                         <form class="chat-form" chattarget="lobby">
                             <input class="chat-input" id="lobby-chat-input" chattarget="lobby" autocomplete="off" title="chat" placeholder="Global Chat" />
                         </form>
                     </div>
-                    <div class="chat-controls-wrapper">
+                    <div class="chat-controls-wrapper user-messages" >
                         <ul id="messages-game" class="messages"></ul>
                         <form class="chat-form" chattarget="game">
                             <input class="chat-input" id="game-chat-input" chattarget="game" autocomplete="off" title="chat" placeholder="Game Chat" />
@@ -166,6 +166,7 @@
         <script src="/src/common/preset_dark_mode.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="src/client.js"></script>
+        <script src="src/common/prompt_landscape_orientation.js"></script>
         <script src="src/common/navbar.js"></script>
         <script src="/src/common/dark_mode_toggle.js"></script>
         <script src="src/common/global_chat.js"></script>
