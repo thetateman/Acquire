@@ -1,5 +1,5 @@
 "use strict";
-const chains = ['i', 'c', 'w', 'f', 'a', 't', 'l'];
+const chains = ['l', 't', 'a', 'f', 'w', 'c', 'i',];
 
 const addBoard = () => {
     let spaces = "";
@@ -216,6 +216,12 @@ const generateStatsTable = (game) => {
 
     document.querySelector("#stats-placeholder-row-parent").insertAdjacentHTML("afterend", miscStats);
 
+    chains.forEach((chain)=>{
+        if(game.state.chains[chain].length > 10){
+            document.querySelectorAll(`td[column=${chain}]`).forEach(element => {element.style['font-style'] = 'italic'})
+        }
+    })
+
     addTimers(game);
 };
 
@@ -251,6 +257,12 @@ const updateStatsTable = (game) => {
     chains.forEach((chain) => {
         document.querySelector(`[row="price"][column="${chain}"]`).innerHTML = game.state.share_prices[chain];
     });
+
+    chains.forEach((chain)=>{
+        if(game.state.chains[chain].length > 10){
+            document.querySelectorAll(`td[column=${chain}]`).forEach(element => {element.style['font-style'] = 'italic'})
+        }
+    })
     
     addTimers(game);
     statsTableUsernameStyleUpdater(game);

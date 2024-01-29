@@ -401,6 +401,10 @@ td[column="l"] {
     background-color: var(--l-light-color);
 }
 
+.safe-chain-flash {
+    background-color: gold;
+}
+
 .total-time {
     position: absolute;
     color: rgb(0, 0, 0);
