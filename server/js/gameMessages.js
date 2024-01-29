@@ -58,7 +58,8 @@ const gameMessages = {
                         playerDetails: usernameDetails,
                         max_players: value.max_players,
                         game_started: value.state.game_started,
-                        game_ended: value.state.game_ended
+                        game_ended: value.state.game_ended,
+                        time_per_player: value.time_per_player
                     };
                 }
                 sock.emit('gameResponse', gameSummaries);
@@ -116,7 +117,8 @@ const gameMessages = {
                 playerDetails: usernameDetails,
                 max_players: games[newGameID].max_players,
                 game_started: games[newGameID].state.game_started,
-                game_ended: games[newGameID].state.game_ended
+                game_ended: games[newGameID].state.game_ended, 
+                time_per_player: games[newGameID].time_per_player
             };
             const updateObject = {
                 "action": "addGame",
