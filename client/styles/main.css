@@ -89,9 +89,11 @@ a {
 .game-board {
     background-color: var(--standard-empty-tile-color);
     border-spacing: 3px;
-    margin: 3px auto;
-    width: 54vw;
-    height: 40.5vw;
+    margin: 3px;
+    /* width: 54vw;
+    height: 40.5vw; */
+    width: 96vh;
+    height: 72vh;
 }
 
 .game-board td {
@@ -102,6 +104,18 @@ a {
     width: 8.333333%;
     background-color: var(--standard-empty-tile-color);
     border-color: var(--standard-empty-tile-color);
+}
+
+.multi-chat-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+.messages {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
 #tile-action-container {
@@ -488,6 +502,8 @@ td[column="l"] {
 /* Left column */
 .game-column {   
     flex-basis: 55%;
+    display: flex;
+    flex-direction: column;
 }
   
 /* Right column */
@@ -545,12 +561,12 @@ td[column="l"] {
     word-wrap: break-word;
   }
   
-  #chat-form {
+  .chat-form {
     width: 100%;
     overflow: visible;
   }
   
-  #chat-input {
+  .chat-input {
     font-size: 1.15rem;
     box-sizing: border-box;
     width: 100%;

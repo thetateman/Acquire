@@ -166,9 +166,10 @@ io.on('connection', (sock) => {
 
     if(!connectedUsers.includes(sock.request.session.username)){
         //welcome message
-        io.in('lobby').emit('message', {
+        io.emit('message', {
             sender: 'SERVER',
             origin: 'lobby',
+            target: 'lobby',
             mentions: [],
             message_content: `${sock.request.session.username} connected.`});
     }
@@ -213,9 +214,10 @@ io.on('connection', (sock) => {
             setTimeout(() => {
                 if(!connectedUsers.includes(sock.request.session.username)){
                     //user disconnected from the site
-                    io.in('lobby').emit('message', {
+                    io.emit('message', {
                         sender: 'SERVER',
                         origin: 'lobby',
+                        target: 'lobby',
                         mentions: [],
                         message_content: `${sock.request.session.username} disconnected.`});
                 }

@@ -29,40 +29,40 @@ const log = (messageObj) => {
     else{
         messageColor = '#006eff';
     }
-    const playerMentions = messageObj.mentions.filter((mention) => !['server', 'lobby', 'everyone', 'SERVER'].includes(mention));
-    if(playerMentions.length > 0){
-        if(playerMentions.includes(localStorage.username)){
-            messageContentSpan = `<span style="background-color:yellow">${messageObj.message_content}</span>`;
-        }
-        else{ //server sends message to everyone, so we should hide if the origin is not current location or lobby.
-            if(messageObj.mentions.includes('everyone')){
-                //do nothing, show the message
-            }
-            else if(messageObj.mentions.includes('lobby') && location === 'lobby'){
-                //do nothing, show the message
-            }
-            else if(!(['lobby', location].includes(messageObj.origin))){
-                return false;
-            }
-        }
-    }
-    let originSpan = '';
-    if(messageObj.origin !== location){
-        originSpan = `<span> (${messageObj.origin})</span>`;
-    }
-    const parent = document.querySelector('#messages');
-    const newMessage = `<li style="color:${messageColor}"><span>${messageObj.sender}${originSpan}:</span> ${messageContentSpan}</li>`;
-    console.log(`origin: ${messageObj.origin} location: ${location}`);
+    // const playerMentions = messageObj.mentions.filter((mention) => !['server', 'lobby', 'everyone', 'SERVER'].includes(mention));
+    // if(playerMentions.length > 0){
+    //     if(playerMentions.includes(localStorage.username)){
+    //         messageContentSpan = `<span style="background-color:yellow">${messageObj.message_content}</span>`;
+    //     }
+    //     else{ //server sends message to everyone, so we should hide if the origin is not current location or lobby.
+    //         if(messageObj.mentions.includes('everyone')){
+    //             //do nothing, show the message
+    //         }
+    //         else if(messageObj.mentions.includes('lobby') && location === 'lobby'){
+    //             //do nothing, show the message
+    //         }
+    //         else if(!(['lobby', location].includes(messageObj.origin))){
+    //             return false;
+    //         }
+    //     }
+    // }
+    // let originSpan = '';
+    // if(messageObj.origin !== location){
+    //     originSpan = `<span> (${messageObj.origin})</span>`;
+    // }
+    const parent = document.querySelector(`#messages-${messageObj.target}`);
+    const newMessage = `<li style="color:${messageColor}"><span>${messageObj.sender}:</span> ${messageContentSpan}</li>`;
 
     parent.insertAdjacentHTML('beforeend', newMessage);
     parent.scrollTop = parent.scrollHeight;
 };
 
-const onChatSubmitted = (sock) => (e) => {
+const onChatSubmitted = (element, sock) => (e) => {
     e.preventDefault();
+    const target = element.getAttribute('chattarget')
 
     let location = getLocation();
-    const input = document.querySelector('#chat-input');
+    const input = document.querySelector(`#${target}-chat-input`);
     let text = input.value;
     input.value = '';
 
@@ -102,12 +102,13 @@ const onChatSubmitted = (sock) => (e) => {
         log({
             sender: 'COMMAND_RUN',
             origin: location,
+            target: target,
             'mentions': [],
             message_content: text});
         return true;
     }
 
-    sock.emit('message', text);
+    sock.emit('message', {text, location, target});
 };
 
 const getLocation = () => {
@@ -131,8 +132,7 @@ const getLocation = () => {
     sock.on('message', log);
     
     document
-    .querySelector('#chat-form')
-    .addEventListener('submit', onChatSubmitted(sock));
+    .querySelectorAll('.chat-form').forEach((element) => element.addEventListener('submit', onChatSubmitted(element, sock)));
 
     if(getLocation() === 'lobby'){
         let welcomeMessage = (`Hi ${localStorage.username}, welcome to OnlineAcquire.com!<br><br><br>
@@ -142,6 +142,7 @@ const getLocation = () => {
         log({
             sender: 'SERVER',
             origin: 'lobby',
+            target: 'lobby',
             'mentions': [],
             message_content: welcomeMessage});
     }
