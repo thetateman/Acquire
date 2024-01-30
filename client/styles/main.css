@@ -462,10 +462,10 @@ td[column="l"] {
 
 .dispose-shares-button-container button {
     height: auto;
-    width: 2.7vw;
-    font-size: 1.2vw;
+    width: 3vw;
+    font-size: 1.4vw;
     font-weight: bold;
-    padding: 0.1vw 0vw 0.1vw 0vw;
+    padding: 0.2vw;
 }
 
 .share-action-button {
@@ -495,9 +495,10 @@ td[column="l"] {
     color: var(--main-text-color);
 }
 .dynamic-share-action-column button {
-    font-size: 1.4vw;
+    font-size: 1.9vw;
     font-weight: bold;
     height: auto;
+    padding: 0.5vw 2vw;
 }
 
 .dynamic-share-action-column input[type=checkbox] {
