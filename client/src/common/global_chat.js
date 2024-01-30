@@ -140,8 +140,7 @@ const getLocation = () => {
 
     if(getLocation() === 'lobby'){
         let welcomeMessage = (`Hi ${localStorage.username}, welcome to OnlineAcquire.com!<br><br><br>
-        You can start a new game over here >>>><br><br><br>
-        Or join a game waiting for players >>>><br><br><br>
+        You can start a new game or join one waiting for players. <br><br><br>
         Click to join the <a class="underlined-link" href="https://discord.gg/D5Q72xppmZ" target="_blank" rel="noopener noreferrer">Discord Server</a>! Chat with other players about games and strategy, or submit ideas and feedback for the site. Announcements about the site or events will be posted on Discord.<br><br>`);
         log({
             sender: 'SERVER',

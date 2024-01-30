@@ -1,5 +1,5 @@
 :root {
-    --main-bg-color: white;
+    --main-bg-color: #ececec;
     --main-text-color: black;
     --button-bg-color: #4897ff;
     --button-hover-bg-color: #79b2fc;
@@ -34,7 +34,7 @@ button {
     font-size: 1rem;
     font-weight: bold;
     padding: 3px 15px;
-    color: var(--main-bg-color);
+    color: rgb(28, 28, 28);
     background-color: var(--button-bg-color);
     border: none;
     border-radius: 2px;

@@ -24,18 +24,12 @@
                 </div>
                 <div class="rooms-column">
                     <div class="controls-wrapper" id="rooms-controls-wrapper">
-                        <div class="lobby-container">
-                            <div class="lobby-header-container header-container">
-                                <h3 class="lobby-text collapse-caret">></h3>
-                                <h3 class="lobby-text" id="lobby-header"> Lobby (<span id="num-users-in-lobby">0</span>)</h3>
-                            </div>
-                            <ul class="user-list" id="lobby-user-list"></ul>
-                        </div>
+                        
                         <div class="controls">
                             <form id="new-game-form">
                                 <button id="new-game-button">New Game</button>
                                 <span class="input-label">Max<br>Players:</span>
-                                <select class="new-game-option-selector" id="num-players">
+                                <select class="new-game-option-selector" id="num-players" title="Max players">
                                     <option value="1">1</option>
                                     <option value="2">2</option>
                                     <option value="3">3</option>
@@ -44,7 +38,7 @@
                                     <option value="6">6</option>
                                 </select>
                                 <span class="input-label">Minutes per Player:</span>
-                                <select class="new-game-option-selector" id="time-per-player">
+                                <select class="new-game-option-selector" id="time-per-player" title="Time Limit">
                                     <option value="30000" selected>No Limit</option>
                                     <option value="1">1 min</option>
                                     <option value="2">2 min</option>
@@ -59,6 +53,7 @@
                                     <option value="15">15 min</option>
                                     <option value="30">30 min</option>
                                 </select>
+                                
                             </form>
                         </div>
                         <ul id="games">
@@ -88,6 +83,13 @@
                 </div>
                 <div class="leaderboard-column">
                     <div class="controls-wrapper">
+                        <div class="lobby-container">
+                            <div class="lobby-header-container header-container">
+                                <h3 class="lobby-text collapse-caret">></h3>
+                                <h3 class="lobby-text" id="lobby-header"> Lobby (<span id="num-users-in-lobby">0</span>)</h3>
+                            </div>
+                            <ul class="user-list" id="lobby-user-list"></ul>
+                        </div>
                         <div class="leader-board-container" id="leader-board-2">
                             <div class="leader-board-header-container header-container" num="2">
                                 <h3 class="lobby-text collapse-caret">></h3>

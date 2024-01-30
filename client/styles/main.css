@@ -1,6 +1,6 @@
 :root {
     user-select: none;
-    --main-bg-color: white;
+    --main-bg-color: #ececec;
     --main-text-color: black;
     --button-bg-color: #4897ff;
     --button-hover-bg-color: #79b2fc;
@@ -53,7 +53,7 @@ input {
 button {
     font-size: 1rem;
     padding: 3px 15px;
-    color: var(--main-bg-color);
+    color: rgb(28, 28, 28);
     background-color: var(--button-bg-color);
     border: none;
     border-radius: 2px;
@@ -161,11 +161,11 @@ a {
 }
 
 #tile-bank span[type="n"] {
-    outline: 4px dotted goldenrod;
+    outline: 5px dotted goldenrod;
 }
 
 #tile-bank span[type="j"] {
-    outline: 4px dotted gray;
+    outline: 5px dotted gray;
 }
 
 #tile-bank span[type="d"], #tile-bank span[type='z'] {
@@ -475,6 +475,7 @@ td[column="l"] {
 #start-game-button {
     font-size: 1.2vw;
     padding: 0.2vw;
+    margin-top: 0.5vw;
     height: auto;
     font-weight: bold;
     position: absolute;

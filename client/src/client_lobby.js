@@ -285,6 +285,7 @@ const addUsersToLeaderBoards = () => {
     sock.emit('gameRequest', "all");
     sock.emit('joinLobby');
     addUsersToLeaderBoards();
+    displayUserList(document.querySelector('.lobby-header-container'));
     document
     .querySelector('#new-game-form')
     .addEventListener('submit', onNewGame(sock));
