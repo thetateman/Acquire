@@ -81,7 +81,7 @@ const getLadder = (numPlayers) => (e) => {
                         userRows += (`
                             <tr>
                                 <td>${i+1}</td>
-                                <td>${users[i].username}</td>
+                                <td class="username" username="${users[i].username}">${users[i].username}</td>
                                 <td>${ratingRounded}</td>
                                 <td>${muRounded} ± ${ratingRangeRounded}</td>
                                 <td>${recordSum}</td>
@@ -110,6 +110,9 @@ const getLadder = (numPlayers) => (e) => {
                     <tbody>${userRows}</tbody>
                     `);
                     document.body.insertAdjacentHTML("beforeend", statsTable);
+                    document.querySelectorAll('.username').forEach(username => {
+                        username.addEventListener('click', userClickHandler(username));
+                    });
                 }
                 
             })
@@ -206,7 +209,7 @@ const onSearch = (e) => {
                             if(game.history.length > 0){
                                 let userRows = '';
                                 for(let i = 0; i < game.usernames.length; i++){
-                                    userRows += `<tr><td>${game.usernames[i]}</td><td>${game.networths[i]}</td></tr>`
+                                    userRows += `<tr><td class="username" username="${game.usernames[i]}">${game.usernames[i]}</td><td>${game.networths[i]}</td></tr>`
                                 }
                                 gameTables += (`
                                     <table class="game-table stats-table">
@@ -225,6 +228,9 @@ const onSearch = (e) => {
                             
                         })
                         document.getElementById('game-tables-container').insertAdjacentHTML("afterbegin", gameTables);
+                        document.querySelectorAll('.username').forEach(username => {
+                            username.addEventListener('click', userClickHandler(username));
+                        });
                     }
                     else{
                         let errorMessage = `<p class="error">This user hasn't played any games yet.</p>`;
@@ -242,6 +248,13 @@ const onSearch = (e) => {
         console.error('Error:', error);
     });
     //do stuff after search, before response
+}
+
+const userClickHandler = (usernameElement) => (e) => {
+    let username = usernameElement.getAttribute('username');
+    document.getElementById('search-username').value = username;
+    document.getElementById('search-button').click();
+
 }
 
 (() => {
