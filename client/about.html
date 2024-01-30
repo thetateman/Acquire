@@ -27,10 +27,19 @@
             <p>A common complaint with multiplayer computer Acquire is quitters. In Acquire there is no resigning, if one
             player leaves the game abruptly, it ruins the game for the other players, as there is no obvious way to distribute 
             the quitting player's tiles and shares without messing up other players' plans and strategies.<br><br>
-            <b>Solution:</b> On this site, games are timed. If a user's time runs out before they make a play, a (dumb)
+            <b>Solution:</b> On this site, games can be timed. If a user's time runs out before they make a play, a (dumb)
              computer player will play for them. This way, if you leave in the middle of a game, the dumb computer will continue to play for you,
              so you will likely lose, but the other players can continue their game uninterupted.</p>
-            <h2>Chat</h2>
+             <h2>Rankings</h2>
+             <p>The player rankings displayed on the leaderboards and in Game Stats are computed using the TrueSkill algorithm. Your
+                Ranking is a probabilistic estimate of your skill that is updated after each game. TrueSkill factors in the strength of your
+                opponents (for example if you beat someone with a high skill estimate, your rating will increase more). As you play more games TrueSkill
+                becomes more "confident" in your skill rating (if you look in Game Stats you will see that the players with more games have a smaller ± rating range, meaning we can be more confident that their actual skill is close to their rating).
+                The leaderboards display the "conservative" or lower end of players' rating range. 
+                <br><br>Note: Your record and rankings are only updated based on games with 2 or more signed in players. If you only play against guests your ranking will not be updated.
+                <br><br>See <a href="https://www.microsoft.com/en-us/research/project/trueskill-ranking-system/" target="_blank">here</a> for more information on TrueSkill.
+             </p>
+            <!-- <h2>Chat</h2>
             <p>You can use the chat box to send messages to other players. You
                 can <i>mention</i> other players (type: <span class=highlighted>@example_username my message...</span>) to send them a highlighted message, wherever they are.
                 If you are in a game, you can use <span class=highlighted>@lobby</span> to send a message to the lobby.
@@ -42,7 +51,7 @@
                 <p>You can also <i>mute</i> other players (type: <span class=highlighted>/mute example_username</span>), to not see their messages. 
                 You can <span class=highlighted>/mute everyone</span> to hide all player messages, <span class=highlighted>/mute lobby</span> to not see lobby messages while in a game, or
                 <span class=highlighted>/mute server</span> to hide server messages. Type <span class=highlighted>/unmute example_username</span> to revert the mute.
-            </p>
+            </p> -->
             <!--
             <h2>FAQ</h2>
             <ul>
