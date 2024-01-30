@@ -51,7 +51,11 @@ const log = (messageObj) => {
     //     originSpan = `<span> (${messageObj.origin})</span>`;
     // }
     const parent = document.querySelector(`#messages-${messageObj.target}`);
-    const newMessage = `<li style="color:${messageColor}"><span>${messageObj.sender}:</span> ${messageContentSpan}</li>`;
+    let senderSpan = ''
+    if(messageObj.sender !== "SERVER"){
+        senderSpan = `<span>${messageObj.sender}:</span>`;
+    }
+    const newMessage = `<li style="color:${messageColor}">${senderSpan} ${messageContentSpan}</li>`;
 
     parent.insertAdjacentHTML('beforeend', newMessage);
     parent.scrollTop = parent.scrollHeight;

@@ -126,6 +126,7 @@ const gameMessages = {
             }
             sock.emit('forceRedirect', newGameID);
             io.in('lobby').emit('gameListUpdate', updateObject);
+            this.sendStartingGameChatMessage(io, games[newGameID]);
              
         });
     },
@@ -194,6 +195,7 @@ const gameMessages = {
                 // is there any case where we could not infer all the data on the client-side?
             };
             io.in(game_id.toString()).emit('gameUpdate', gameUpdate);
+            gameMessages.sendStartingGameChatMessage(io, games[game_id]);
         }
         else if(updateType === 'startGame'){
             // Set Timers on players. Logically I feel like this should happen in updateGame, but I want to keep IO out of internalGameFunctions.
@@ -249,6 +251,7 @@ const gameMessages = {
         if(games[game_id].state.game_ended){
             //clean up game
             io.in('lobby').emit('gameListUpdate', {action: "gameEnded", game: {id: game_id}});
+            gameMessages.sendGameEndedChatMessage(io, games[game_id]);
             if(games[game_id].num_players > 1){ // db and trueskill functions not set up to handle single player games
                 rankPlayers.postGameAdjust(games[game_id]); //updates player skill level and record in db
                 gameMessages.saveGameToDatabase(games[game_id]);
@@ -339,6 +342,40 @@ const gameMessages = {
         });
         await completedGame.save()
         .catch(err => console.error(err));
+    },
+
+    sendStartingGameChatMessage: function(io, game){
+        let playerText = '';
+        game.usernames.forEach((username)=>playerText+=`${username}, `)
+        playerText = playerText.slice(0, -2);
+        let messageText = `Game #${game.id}: Starting (${game.max_players}-Player). Players: ${playerText}`;
+
+        let messageObj = {
+            sender: 'SERVER',
+            origin: 'lobby',
+            'mentions': [],
+            target: 'lobby',
+            message_content: messageText
+        };
+        io.emit('message', messageObj);
+    },
+
+    sendGameEndedChatMessage: function(io, game){
+        let scoreText = '';
+        for(let i=0;i<game.num_players;i++){
+            scoreText += `${game.usernames_ranked[i]}: ${game.final_net_worths[i]}, `
+        }
+        scoreText = scoreText.slice(0, -2);
+        let messageText = `Game #${game.id} Ended. Score : ${scoreText}`;
+
+        let messageObj = {
+            sender: 'SERVER',
+            origin: 'lobby',
+            'mentions': [],
+            target: 'lobby',
+            message_content: messageText
+        };
+        io.emit('message', messageObj);
     }
 }
 module.exports = gameMessages;

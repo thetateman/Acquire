@@ -73,6 +73,10 @@ const updateGames = (sock) => (update) => {
                 gameStatus = 'In Progress';
             }
         }
+        let timeText = '';
+        if(update.game.time_per_player < 1000 * 60 * 30000){
+            timeText = `<br><b>--- Timed: ${update.game.time_per_player / 60000} Min ---</b>`
+        }
         const gameElements = 
             `<li gamenum="${id}">
                 <span class="game-label">Game #${id}</span> | <span class="game-status">${gameStatus}</span>
@@ -80,6 +84,7 @@ const updateGames = (sock) => (update) => {
                     <button id="watch${id}">${watchButtonText}</button>
                 </a>
                 ${joinButton}
+                ${timeText}
                 ${playerList}
             </li>`;
         document.querySelector('#games').insertAdjacentHTML("afterbegin", gameElements);

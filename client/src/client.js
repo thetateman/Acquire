@@ -777,8 +777,9 @@ const postGameMessage = (gameUpdate) => {
         computerFlag = '';
         deadTileFlag = '';
         if(gameUpdate.game.state.game_ended){
-            sectionEnd = `<li><span>${gameUpdate.game.usernames[turn]}</span> ended the game.</li>`;
+            sectionEnd = `<li><span>${gameUpdate.game.usernames[turn]}</span> ended the game.</li><li><b>Game Over.</b></li>`;
             // Rankings
+            
         }
         if(gameUpdate.game.state.expectedNextAction === 'playTile'){
             sectionEnd = `<fieldset><legend>${gameUpdate.game.usernames[gameUpdate.game.state.turn]}</legend></fieldset>`;
