@@ -392,8 +392,10 @@
 
             game.state.turn = newTurn;
             
-            //Start time for new turn.
-            if(game.state.player_states[game.state.turn].hasOwnProperty('timerTotal')) game.state.player_states[game.state.turn].timerTotal.resume();
+            if(!game.state.game_ended){
+                //Start time for new turn.
+                if(game.state.player_states[game.state.turn].hasOwnProperty('timerTotal')) game.state.player_states[game.state.turn].timerTotal.resume();
+            }
         },
 
         endGame: function(game){
