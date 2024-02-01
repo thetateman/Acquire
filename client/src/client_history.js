@@ -293,9 +293,6 @@ const getReadableTimer = (totalSeconds) => {
 };
 
 const addTimers = (game) => {
-    if(game.time_per_player === 60 * 30000){
-        return;
-    }
     let totalSecondsRemainingArr = [];
     if(window.next_move_number === 0 || window.next_move_number === undefined){
         totalSecondsRemainingArr = new Array(game.usernames.length).fill(game.time_per_player);
