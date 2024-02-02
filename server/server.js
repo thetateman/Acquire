@@ -128,7 +128,7 @@ function authLogic(req, res, next) {
 
 function websocketAuthLogic(socket, next) {
     if(bannedUsers.includes(socket.request.session.username)){
-        setTimeout(() => socket.disconnect(), 300);
+        return false;
     }
     else{
         next();
