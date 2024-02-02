@@ -1,5 +1,6 @@
 "use strict";
 
+const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const express = require('express');
@@ -74,12 +75,37 @@ const sessionMiddleware = session({
 
 app.use(sessionMiddleware);
 
-let bannedUsers = [];
+let bannedUsers = {};
+let bannedIPs = [];
+let lastUserIPs = {};
+try{
+    bannedUsers = JSON.parse(fs.readFileSync('../server_data_backup/banned_users.json', 'utf8'));
+    Object.values(bannedUsers).forEach((user) => {
+        user.ips.forEach((ip) => bannedIPs.push(ip));
+    });
+}
+catch(err){
+    console.error(`${Date()} Could not restore banned users: `, err);
+    bannedUsers = {};
+    bannedIPs = [];
+}
+
+
 
 
 app.use('/banapi', (req, res) => {
     if(req.body.ban_unban === 'ban'){
-        bannedUsers.push(req.body.username);
+        bannedUsers[req.body.username] = {
+            ips: [lastUserIPs[req.body.username] ?? "a-string-that-will-never-match-anyones-ip"],
+            reason: req.body.reason
+        }
+        fs.writeFile('../server_data_backup/banned_users.json', JSON.stringify(bannedUsers), err => {
+            if (err) {
+              console.error(err);
+            }
+            // file written successfully
+          });
+        bannedIPs.push(lastUserIPs[req.body.username] ?? "a-string-that-will-never-match-anyones-ip");
 
         io.fetchSockets()
         .then((sockets) => {
@@ -92,7 +118,17 @@ app.use('/banapi', (req, res) => {
         
     }
     else {
-        bannedUsers = bannedUsers.filter(item => item !== req.body.username);
+        if(bannedUsers[req.body.username] !== undefined){
+            bannedIPs = bannedIPs.filter((ip) => !bannedUsers[req.body.username].ips.includes(ip));
+            delete bannedUsers[req.body.username];
+            fs.writeFile('../server_data_backup/banned_users.json', JSON.stringify(bannedUsers), err => {
+                if (err) {
+                console.error(err);
+                }
+                // file written successfully
+            });
+        }
+        
     }
     res.send(`<h1>Successfully ${req.body.ban_unban === 'ban' ? "banned" : "unbanned"} ${req.body.username}</h1>`);
 })
@@ -108,8 +144,8 @@ app.get("/robots.txt", (req, res) => {
 
 function authLogic(req, res, next) {
     //TODO: fix below
-    req.session.ip= req.ip;
-    if(bannedUsers.includes(req.session.username) && req.originalUrl !== '/banned.html'){
+    req.session.ip= req.ip; 
+    if((Object.keys(bannedUsers).includes(req.session.username) || bannedIPs.includes(req.session.ip)) && req.originalUrl !== '/banned.html'){
         // sock.request.session.destroy();
         // sock.disconnect();
         res.redirect('/banned.html');
@@ -133,7 +169,7 @@ function authLogic(req, res, next) {
 }
 
 function websocketAuthLogic(socket, next) {
-    if(bannedUsers.includes(socket.request.session.username)){
+    if(Object.keys(bannedUsers).includes(socket.request.session.username)){
         return false;
     }
     else{
@@ -233,6 +269,7 @@ io.on('connection', (sock) => {
                 console.error(updateErr);
             }
         });
+        lastUserIPs[sock.request.session.username] = sock.request.session.ip;
         // let logEntry = `${sock.request.connection.remoteAddress} ${sock.request.session.username} -> (${target}): ${text}\n`;
         //     fs.writeFile('../server_data_backup/chatlog.txt', logEntry, { flag: 'a' }, err => {
         //         if (err) {
