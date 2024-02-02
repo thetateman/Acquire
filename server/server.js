@@ -108,6 +108,7 @@ app.get("/robots.txt", (req, res) => {
 
 function authLogic(req, res, next) {
     //TODO: fix below
+    req.session.ip= req.ip;
     if(bannedUsers.includes(req.session.username) && req.originalUrl !== '/banned.html'){
         // sock.request.session.destroy();
         // sock.disconnect();
@@ -225,7 +226,7 @@ io.on('connection', (sock) => {
         //save new ip addresses to database
         UserModel.updateOne({username: sock.request.session.username}, {
             $addToSet: {
-                associated_ip_addresses: sock.request.connection.remoteAddress, 
+                associated_ip_addresses: sock.request.session.ip, 
             }
         }, function(updateErr, updateDocs){
             if(updateErr){
