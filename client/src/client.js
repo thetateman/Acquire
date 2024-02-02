@@ -893,7 +893,7 @@ const gameListUpdate = (update) => {
         console.log("Shouldn't be here...");
     }
     // generate chat message about game update
-    const parent = document.querySelector('#messages');
+    const parent = document.querySelector('#messages-game');
     parent.insertAdjacentHTML('beforeend', newMessage);
     parent.scrollTop = parent.scrollHeight;
 };

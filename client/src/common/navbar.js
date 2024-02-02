@@ -17,6 +17,10 @@ const logout = () => {
 };
 
 (() => {
+    if(sessionStorage.banned === "true"){
+        sessionStorage.banned = "false";
+        location.reload();
+    }
     let logButtonText = 'Log Out';
     if(window.hasOwnProperty('active_socket_conn')){
         const sock = window.active_socket_conn;

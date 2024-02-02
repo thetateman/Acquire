@@ -114,6 +114,7 @@ a {
 }
 
 .messages {
+    user-select: text;
     height: 100%;
     overflow-x: hidden;
     overflow-y: scroll;

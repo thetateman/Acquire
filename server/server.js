@@ -16,7 +16,7 @@ const gameManager = require("./js/gameManager.js");
 const computerPlayer = require("./js/computerPlayer");
 const rankPlayers = require("./js/rankPlayers.js");
 const Timer = require("./js/timers.js");
-const userModel = require("./models/User");
+const UserModel = require("./models/User");
 
 const MongoStore = require('connect-mongo')(session);
 
@@ -40,6 +40,7 @@ let guestID = 0;
 let connectedUsers = [];
 let usersInLobby = [];
 let userStatuses = {};
+let io;
 
 const app = express();
 
@@ -73,6 +74,29 @@ const sessionMiddleware = session({
 
 app.use(sessionMiddleware);
 
+let bannedUsers = [];
+
+
+app.use('/banapi', (req, res) => {
+    if(req.body.ban_unban === 'ban'){
+        bannedUsers.push(req.body.username);
+
+        io.fetchSockets()
+        .then((sockets) => {
+            sockets.forEach((playerSocket) => {
+                if(req.body.username === playerSocket.request.session.username){
+                    playerSocket.disconnect();
+                }
+            });
+        });
+        
+    }
+    else {
+        bannedUsers = bannedUsers.filter(item => item !== req.body.username);
+    }
+    res.send(`<h1>Successfully ${req.body.ban_unban === 'ban' ? "banned" : "unbanned"} ${req.body.username}</h1>`);
+})
+
 
 app.use("/api", apiRouter);
 app.get("/robots.txt", (req, res) => {
@@ -80,8 +104,16 @@ app.get("/robots.txt", (req, res) => {
 });
 
 
+
+
 function authLogic(req, res, next) {
     //TODO: fix below
+    if(bannedUsers.includes(req.session.username) && req.originalUrl !== '/banned.html'){
+        // sock.request.session.destroy();
+        // sock.disconnect();
+        res.redirect('/banned.html');
+        return false;
+    }
     if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.webm'|| req.originalUrl === '/img/a_background.mp4'){
          next();
     } else {
@@ -90,6 +122,15 @@ function authLogic(req, res, next) {
         req.session.isAuth = true;
         //res.status(401);
         //res.redirect('/login');
+        next();
+    }
+}
+
+function websocketAuthLogic(socket, next) {
+    if(bannedUsers.includes(socket.request.session.username)){
+        setTimeout(() => socket.disconnect(), 300);
+    }
+    else{
         next();
     }
 }
@@ -122,12 +163,15 @@ app.use('/sitemap', (req, res) => {
 });
 
 const server = http.createServer(app);
-const io = socketio(server);
+io = socketio(server);
 let player_id = 0;
 
 io.use(function(socket, next) {
     sessionMiddleware(socket.request, {}, next);
 });
+io.use(websocketAuthLogic);
+
+
 io.on('connection', (sock) => {
     /**
      * Some user tracking objects (like userStatuses or sock.request.session.<some_user_tracking_variable>) can be
@@ -172,6 +216,25 @@ io.on('connection', (sock) => {
             target: 'lobby',
             mentions: [],
             message_content: `${sock.request.session.username} connected.`});
+
+        //save new ip addresses to database
+        UserModel.updateOne({username: sock.request.session.username}, {
+            $addToSet: {
+                associated_ip_addresses: sock.request.connection.remoteAddress, 
+            }
+        }, function(updateErr, updateDocs){
+            if(updateErr){
+                console.error(updateErr);
+            }
+        });
+        // let logEntry = `${sock.request.connection.remoteAddress} ${sock.request.session.username} -> (${target}): ${text}\n`;
+        //     fs.writeFile('../server_data_backup/chatlog.txt', logEntry, { flag: 'a' }, err => {
+        //         if (err) {
+        //           console.error(err);
+        //         }
+        //         // file written successfully
+        //     });
+
     }
     connectedUsers.push(sock.request.session.username);
 
@@ -186,45 +249,49 @@ io.on('connection', (sock) => {
     gameMessages.registerGameMessageHandlers(games, io, sock, userStatuses, usersInLobby, verbose);
 
     sock.on('disconnect', (reason) => {
-        if(sock.request.session.lastKnownLocation.includes('game')){ //User disconnected from a game
-            const gameDisconnectedFrom = sock.request.session.lastKnownLocation.split('game')[1];
-            if(games[gameDisconnectedFrom] !== undefined){
-                if(games[gameDisconnectedFrom].watchers.includes(sock.request.session.username)){
-                    games[gameDisconnectedFrom].watchers = games[gameDisconnectedFrom].watchers.filter((watcher) => watcher !== sock.request.session.username);
-                    io.in('lobby').in(gameDisconnectedFrom).emit('gameListUpdate', {action: 'removePlayer', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
+        try{
+            if(sock.request.session.lastKnownLocation.includes('game')){ //User disconnected from a game
+                const gameDisconnectedFrom = sock.request.session.lastKnownLocation.split('game')[1];
+                if(games[gameDisconnectedFrom] !== undefined){
+                    if(games[gameDisconnectedFrom].watchers.includes(sock.request.session.username)){
+                        games[gameDisconnectedFrom].watchers = games[gameDisconnectedFrom].watchers.filter((watcher) => watcher !== sock.request.session.username);
+                        io.in('lobby').in(gameDisconnectedFrom).emit('gameListUpdate', {action: 'removePlayer', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
+                    }
+                    else{
+                        io.in('lobby').in(gameDisconnectedFrom).emit('gameListUpdate', {action: 'playerDisconnected', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
+                    }
+                    games[gameDisconnectedFrom].num_connected_players--;
                 }
-                else{
-                    io.in('lobby').in(gameDisconnectedFrom).emit('gameListUpdate', {action: 'playerDisconnected', game: {id: gameDisconnectedFrom}, username: sock.request.session.username});
-                }
-                games[gameDisconnectedFrom].num_connected_players--;
+                // Leave the room for the game
+                // Actually this happens anyway on redirect
+                //sock.leave(gameDisconnectedFrom);
             }
-            // Leave the room for the game
-            // Actually this happens anyway on redirect
-            //sock.leave(gameDisconnectedFrom);
-        }
-        else if(sock.request.session.lastKnownLocation === 'lobby'){
-            usersInLobby = usersInLobby.filter((user) => user !== sock.request.session.username);
-            io.in('lobby').emit('lobbyUpdate', {action: 'remove', users: [sock.request.session.username]});
-        }
-        sock.request.session.lastKnownLocation = 'disconnected';
-        userStatuses[sock.request.session.username] = 'disconnected';
-        setTimeout(() => {
-            const usernameIndex = connectedUsers.indexOf(sock.request.session.username);
-            if (usernameIndex > -1){
-                 connectedUsers.splice(usernameIndex, 1);
+            else if(sock.request.session.lastKnownLocation === 'lobby'){
+                usersInLobby = usersInLobby.filter((user) => user !== sock.request.session.username);
+                io.in('lobby').emit('lobbyUpdate', {action: 'remove', users: [sock.request.session.username]});
             }
+            sock.request.session.lastKnownLocation = 'disconnected';
+            userStatuses[sock.request.session.username] = 'disconnected';
             setTimeout(() => {
-                if(!connectedUsers.includes(sock.request.session.username)){
-                    //user disconnected from the site
-                    io.emit('message', {
-                        sender: 'SERVER',
-                        origin: 'lobby',
-                        target: 'lobby',
-                        mentions: [],
-                        message_content: `${sock.request.session.username} disconnected.`});
+                const usernameIndex = connectedUsers.indexOf(sock.request.session.username);
+                if (usernameIndex > -1){
+                    connectedUsers.splice(usernameIndex, 1);
                 }
+                setTimeout(() => {
+                    if(!connectedUsers.includes(sock.request.session.username)){
+                        //user disconnected from the site
+                        io.emit('message', {
+                            sender: 'SERVER',
+                            origin: 'lobby',
+                            target: 'lobby',
+                            mentions: [],
+                            message_content: `${sock.request.session.username} disconnected.`});
+                    }
+                }, 1000);
             }, 1000);
-        }, 1000);
+        } catch(err){
+            console.error(err);
+        }
     });
 });
 
