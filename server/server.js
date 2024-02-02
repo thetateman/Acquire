@@ -114,6 +114,11 @@ function authLogic(req, res, next) {
         res.redirect('/banned.html');
         return false;
     }
+    if(req.session.username !== 'thetateman' && (req.originalUrl.includes('admin') || req.originalUrl.includes('banapi'))){
+        res.status(401);
+        res.redirect('/');
+        return false;
+    }
     if(req.session.isAuth || req.originalUrl.includes('login') || req.originalUrl === '/img/a_background.webm'|| req.originalUrl === '/img/a_background.mp4'){
          next();
     } else {
