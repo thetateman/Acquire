@@ -3,3 +3,4 @@
 **/server_data_backup/**
 **/.vscode/**
 **/.prettierignore
+**/admin/logs/**
