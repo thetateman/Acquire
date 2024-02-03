@@ -89,4 +89,8 @@ const logout = () => {
     document
     .querySelector('#logout-button')
     .addEventListener('click', logout);
+
+    if(localStorage.username === 'thetateman'){
+        document.querySelector(".topnav-left").insertAdjacentHTML('beforeend', '<a href="/admin/index.html">Admin</a>');
+    }
 })();

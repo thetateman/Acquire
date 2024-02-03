@@ -130,7 +130,7 @@ app.use('/banapi', (req, res) => {
         }
         
     }
-    res.send(`<h1>Successfully ${req.body.ban_unban === 'ban' ? "banned" : "unbanned"} ${req.body.username}</h1>`);
+    res.send(`<h1>Successfully ${req.body.ban_unban === 'ban' ? "banned" : "unbanned"} ${req.body.username}</h1><a href="/">Lobby</a>`);
 })
 
 
