@@ -63,7 +63,7 @@ const updateTileBank = (game, sock) => {
 };
 
 const updateChainSelectorRow = (gameState) => {
-    chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
+    chains.forEach((chain) => document.querySelector(`#${chain}button`).style.visibility = 'hidden');
     let visibleChainSelectors = [];
     if(gameState.expectedNextAction === 'purchaseShares'){
         const cash = gameState.player_states[gameState.turn].cash;
@@ -102,7 +102,7 @@ const updateChainSelectorRow = (gameState) => {
         console.log('HMMMM, check on this.');
         return false;
     }
-    visibleChainSelectors.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'inline-flex');
+    visibleChainSelectors.forEach((chain) => document.querySelector(`#${chain}button`).style.visibility = 'visible');
     document.querySelector('#chain-selector-row-container').style.display = 'flex';
 }
 
@@ -159,7 +159,7 @@ const chainSelectHandler = (e, sock) => {
     //different behavior depending on next expected action
     if(window.gameGlobals.expected_next_action === 'chooseNewChain'){
         sock.emit('gameAction', {game_id: window.gameGlobals.current_game_id, updateType: 'chooseNewChain', updateData: {newChainChoice: chainSelection}});
-        chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
+        chains.forEach((chain) => document.querySelector(`#${chain}button`).style.visibility = 'hidden');
         document.querySelector('#chain-selector-row-container').style.display = 'none';
     }
     else if(window.gameGlobals.expected_next_action === 'purchaseShares'){
@@ -183,12 +183,12 @@ const chainSelectHandler = (e, sock) => {
     }
     else if(window.gameGlobals.expected_next_action === 'chooseRemainingChain'){
         sock.emit('gameAction', {game_id: window.gameGlobals.current_game_id, updateType: 'chooseRemainingChain', updateData: {remainingChainChoice: chainSelection}});
-        chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
+        chains.forEach((chain) => document.querySelector(`#${chain}button`).style.visibility = 'hidden');
         document.querySelector('#chain-selector-row-container').style.display = 'none';
     }
     else if(window.gameGlobals.expected_next_action === 'chooseNextElimChain'){
         sock.emit('gameAction', {game_id: window.gameGlobals.current_game_id, updateType: 'chooseNextElimChain', updateData: {nextElimChain: chainSelection}});
-        chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
+        chains.forEach((chain) => document.querySelector(`#${chain}button`).style.visibility = 'hidden');
         document.querySelector('#chain-selector-row-container').style.display = 'none';
     }
     //sock.emit('gameAction', {game_id: localStorage.getItem('current_game_id'), updateType: 'selectChain', updateData: {chain_selection: chainSelection}});
@@ -319,7 +319,7 @@ const purchaseShares = (e, sock) => {
     document.querySelectorAll(".cart-share").forEach((cartShare) => cartShare.remove());
     document.querySelector("#buy-shares-container").style.display = 'none';
     document.querySelector('#chain-selector-row-container').style.display = 'none';
-    chains.forEach((chain) => document.querySelector(`#${chain}button`).style.display = 'none');
+    chains.forEach((chain) => document.querySelector(`#${chain}button`).style.visibility = 'hidden');
 };
 const disposeShares = (e, sock) => {
     const shareDisposal = {'keep': parseInt(window.gameGlobals.keep, 10), 'trade': parseInt(window.gameGlobals.trade, 10), 'sell': parseInt(window.gameGlobals.sell, 10)};
@@ -371,6 +371,10 @@ const prepareToPurchaseShares = (game) => {
      document.querySelector('#share-purchase-total').textContent = 'Total: 0';
      if(gameIsEndable(game)){
         document.querySelectorAll('.end-game-action').forEach((e) => e.style.visibility = 'visible');
+        if(mobileCheck()){
+            document.querySelectorAll('.dynamic-share-action-column').forEach((e) => e.style.margin = 'auto');
+        }
+
      }
      updateChainSelectorRow(game.state);
 };
@@ -928,7 +932,7 @@ const announceGame = (game) => {
 const resizeBoard = () => {
     
     let board = document.querySelector('.game-board');
-    if(window.innerHeight * 1.25 > window.innerWidth){
+    if(window.innerHeight * 1.4 > window.innerWidth){
         board.style['font-size'] = '1.5vw';
     } else {
         board.style['font-size'] = '2.6vh';

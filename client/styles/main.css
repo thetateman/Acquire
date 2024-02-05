@@ -234,6 +234,7 @@ a {
 }
 
 #share-cart-label-container {
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     flex-basis: 15%;
@@ -259,6 +260,7 @@ a {
 }
 
 #chain-selector-label {
+    flex-shrink: 0;
     flex-basis: 15%;
 }
 
@@ -271,7 +273,7 @@ a {
     justify-content: space-around;
 }
 
-#chain-selector-row-placeholder {
+.chain-selector-row-placeholder {
     flex-basis: 15%;
 }
 
@@ -302,7 +304,7 @@ a {
 #chain-selector-row span {
     font-size: 1.5vw;
     font-weight: bold;
-    display: none;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 10.9%; 
@@ -320,7 +322,7 @@ a {
     border: 0.3vw solid var(--main-bg-color);
     border-collapse: collapse;
     background-color: lightgray;
-    font-size: 1.25vw;
+    font-size: 1.35vw;
     font-weight: bold;
     text-align: center;
     overflow: hidden;
@@ -429,6 +431,7 @@ td[column="l"] {
 }
 
 #dispose-shares-container .dynamic-share-action-column {
+    margin: auto;
     flex-basis: 15%; 
 }
 
@@ -451,7 +454,7 @@ td[column="l"] {
 
 .share-disposal-info-head {
     color: var(--main-text-color);
-    font-size: 1.2vw;
+    font-size: 1.5vw;
     font-weight: bold;
     text-align: center;
 }
@@ -488,7 +491,8 @@ td[column="l"] {
 }
 
 .dynamic-share-action-column {
-    flex-basis: 30%;
+    margin: 0px 20px;
+    flex-basis: 15%;
     display: flex;
     align-items: center;
     justify-content: left;
@@ -509,6 +513,11 @@ td[column="l"] {
 
 .end-game-action {
     visibility: hidden;
+}
+
+#dynamic-share-container {
+    width: 35vw;
+    margin: auto;
 }
 
 /* Left column */

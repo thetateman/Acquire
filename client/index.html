@@ -82,21 +82,24 @@
                                 <span class="chain-button" id="cbutton">C</span>
                                 <span class="chain-button" id="ibutton">I</span>
                             </div>
-                            <div id="chain-selector-row-placeholder"></div>
+                            <div class="chain-selector-row-placeholder"></div>
                         </div>
                         <div class="flex-container" id="buy-shares-container">
                             <div class="flex-container" id="share-cart-label-container">
                                 <span class="share-info-label" id="share-cart-label">Share cart:</span>
                                 <span id="share-purchase-total">Total:</span>
                             </div>
-                            <div class="dynamic-share-info-column" id="share-cart-container">
-                                <div class="flex-container" id="share-cart"></div>
+                            <div class="flex-container" id="dynamic-share-container">
+                                <div class="dynamic-share-info-column" id="share-cart-container">
+                                    <div class="flex-container" id="share-cart"></div>
+                                </div>
+                                <div class="dynamic-share-action-column">
+                                    <button class="share-action-button" id="buy-shares-button">Buy</button>
+                                    <input class="end-game-action" id="end-game-selection" type="checkbox">
+                                    <label class="end-game-action" for="end-game-selection">End Game</label>
+                                </div>
                             </div>
-                            <div class="dynamic-share-action-column">
-                                <button class="share-action-button" id="buy-shares-button">Buy</button>
-                                <input class="end-game-action" id="end-game-selection" type="checkbox">
-                                <label class="end-game-action" for="end-game-selection">End Game</label>
-                            </div>
+                            <div class="chain-selector-row-placeholder"></div>
                         </div>
                         <div class="flex-container" id="dispose-shares-container">
                             <div class="dynamic-share-info-column">
@@ -165,8 +168,8 @@
         </div>
         <script src="/src/common/preset_dark_mode.js"></script>
         <script src="/socket.io/socket.io.js"></script>
-        <script src="src/client.js"></script>
         <script src="src/common/prompt_landscape_orientation.js"></script>
+        <script src="src/client.js"></script>
         <script src="src/common/navbar.js"></script>
         <script src="/src/common/dark_mode_toggle.js"></script>
         <script src="src/common/global_chat.js"></script>
