@@ -206,7 +206,7 @@ const onSearch = (e) => {
                     let gameTables = '';
                     if(json.games.length > 0){
                         json.games.forEach((game) => {
-                            if(game.history.length > 0){
+                            if(true){ // we were checking for history here, but removed history in response because the objects got too large
                                 let userRows = '';
                                 for(let i = 0; i < game.usernames.length; i++){
                                     userRows += `<tr><td class="username" username="${game.usernames[i]}">${game.usernames[i]}</td><td>${game.networths[i]}</td></tr>`

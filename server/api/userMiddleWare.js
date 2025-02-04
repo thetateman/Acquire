@@ -151,7 +151,8 @@ const UserMiddleware = {
     if(!result){
       responseObj.error = 'userNotFound';
     }
-    let gamesResult = result ? await GameModel.find({ usernames: req.query.username }) : [];
+    let gamesResult = await GameModel.find({ usernames: req.query.username })
+    .select('-tile_bank -history');
     if(!gamesResult){
       responseObj.error = 'gamesNotFound';
     }
